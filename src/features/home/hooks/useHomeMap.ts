@@ -6,6 +6,7 @@ import { REVERSE_GEOCODE_DEBOUNCE_MS } from '@/constants/timeouts';
 import { useBookingDraft, type BookingDraftStore, type PinTarget } from '@/features/booking/store';
 import type { AppMapHandle } from '@/features/map/components/AppMap';
 import type { CurrentLocation } from '@/features/map/hooks/useCurrentLocation';
+import { PICK_ZOOM_DELTA } from '@/features/map/constants';
 import { useReverseGeocode } from '@/features/map/hooks/useReverseGeocode';
 import { distanceMeters } from '@/lib/geo';
 import { triggerHaptic } from '@/lib/haptics';
@@ -145,7 +146,7 @@ export function useHomeMap(
           : mapPick === 'pickup'
             ? focusPickup
             : focusDestination;
-      if (target) mapRef.current?.animateTo(target);
+      if (target) mapRef.current?.animateTo(target, PICK_ZOOM_DELTA);
       return;
     }
     if (mapPick !== null || !focusPickup) return;
@@ -238,7 +239,7 @@ export function useHomeMap(
     }
     if (mapPick) pickTarget.current = { target: mapPick, point: location.coords };
     unlockPickup();
-    mapRef.current?.animateTo(location.coords);
+    mapRef.current?.animateTo(location.coords, mapPick ? PICK_ZOOM_DELTA : undefined);
   }, [location, mapRef, destination, mapPick, myLocationStartsPick, unlockPickup, startPinPicking]);
 
   return {

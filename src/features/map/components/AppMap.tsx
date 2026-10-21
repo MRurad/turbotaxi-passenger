@@ -25,8 +25,8 @@ import { appleFocusShift, focusError } from '../focus';
 export interface AppMapHandle {
   /** Frame several points (pickup + destination, route) leaving room for overlays. */
   fitToCoordinates: (coords: LatLng[], padding: EdgePadding) => void;
-  /** Put a point exactly under the focus point (the center pin) at street-level zoom. */
-  animateTo: (coord: LatLng) => void;
+  /** Put a point exactly under the focus point (the center pin); zoom as a region delta. */
+  animateTo: (coord: LatLng, zoomDelta?: number) => void;
   /**
    * Map coordinate under a screen point (map view coordinates). Used for the center pin: exact
    * on every provider, independent of how padding is applied.
@@ -73,17 +73,17 @@ export function AppMap({
   useImperativeHandle(ref, () => ({
     fitToCoordinates: (coords, padding) =>
       mapRef.current?.fitToCoordinates(coords, { edgePadding: padding, animated: true }),
-    animateTo: (coord) => {
+    animateTo: (coord, zoomDelta = USER_ZOOM_DELTA) => {
       pendingFocus.current = coord;
       const shift = IS_GOOGLE_MAP
         ? 0
-        : appleFocusShift({ coord, viewWidth, viewHeight, overlayInsets, span: USER_ZOOM_DELTA });
+        : appleFocusShift({ coord, viewWidth, viewHeight, overlayInsets, span: zoomDelta });
       mapRef.current?.animateToRegion(
         {
           latitude: coord.latitude - shift,
           longitude: coord.longitude,
-          latitudeDelta: USER_ZOOM_DELTA,
-          longitudeDelta: USER_ZOOM_DELTA,
+          latitudeDelta: zoomDelta,
+          longitudeDelta: zoomDelta,
         },
         MAP_ANIMATION_MS,
       );

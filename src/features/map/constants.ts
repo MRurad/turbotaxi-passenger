@@ -24,3 +24,6 @@ export const BAKU_REGION: Region = {
 
 /** Zoom when centering on the user (≈ a few blocks). */
 export const USER_ZOOM_DELTA = 0.012;
+
+/** Closer zoom while placing a pickup / destination pin ("Choose on map"): street level. */
+export const PICK_ZOOM_DELTA = 0.005;
