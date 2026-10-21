@@ -8,6 +8,9 @@ export const ROUTES = {
   login: '/login',
   register: '/register',
   search: '/search',
+  /** Active ride (searching → in progress), cancelled and no-driver states. */
+  ride: '/ride',
+  rideSummary: '/ride/summary',
   /** Dev-only design-system showcase. */
   devUiKit: '/dev/ui-kit',
   /** Dev-only SignalR inspector. */
@@ -15,3 +18,10 @@ export const ROUTES = {
 } as const;
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];
+
+/** expo-router segments of the routes above (route guards compare against these). */
+export const ROUTE_SEGMENTS = {
+  signedIn: '(app)',
+  ride: 'ride',
+  rideSummary: 'summary',
+} as const;

@@ -18,7 +18,7 @@ export type RecoveryDecision =
   /**
    * Restore the store and resubscribe. The snapshot may already be final (killed on the
    * summary screen) — then just show it. A restored `searching` ride still goes through the
-   * store's search timeout (SEARCH_TIMEOUT_MS from `updatedAt`), so it can't hang for 3 h.
+   * store's search timeout (SEARCH_TIMEOUT_MS from `searchStartedAt`), so it can't hang for 3 h.
    */
   | { kind: 'restore'; snapshot: RideSnapshot }
   /** Last-resort fallback: too old to trust, reset to idle. */

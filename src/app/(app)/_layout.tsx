@@ -1,20 +1,30 @@
 import { Stack } from 'expo-router';
 import { View } from 'react-native';
 
+import { useRideEvents } from '@/features/ride/hooks/useRideEvents';
+import { useRideRecovery } from '@/features/ride/hooks/useRideRecovery';
+import { useRideRouteGuard } from '@/features/ride/hooks/useRideRouteGuard';
+import { hasActiveRide } from '@/features/ride/store';
 import { useRealtimeLifecycle } from '@/realtime/useRealtimeLifecycle';
 import { makeStyles } from '@/theme';
 
 // Only reachable when signed in (guarded by Stack.Protected in src/providers/RootStack.tsx).
 export default function AppLayout() {
   const styles = useStyles();
-  // TODO(Prompt 9): keepAliveInBackground from the ride store (active ride → stay connected).
-  useRealtimeLifecycle();
+  // During an active ride the hub stays connected in the background.
+  useRealtimeLifecycle({ keepAliveInBackground: hasActiveRide });
+  useRideRecovery();
+  useRideEvents();
+  useRideRouteGuard();
 
   return (
     <View style={styles.root}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="search" options={{ presentation: 'modal' }} />
+        {/* Phases are routed by useRideRouteGuard; no swipe-back out of a ride. */}
+        <Stack.Screen name="ride/index" options={{ gestureEnabled: false }} />
+        <Stack.Screen name="ride/summary" options={{ gestureEnabled: false }} />
       </Stack>
     </View>
   );

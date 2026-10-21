@@ -235,7 +235,8 @@
       "originalPrice": "Original price",
       "discount": "Discount",
       "promo": "Promo code",
-      "done": "Done"
+      "done": "Done",
+      "discountValue": "−{{amount}}"
     },
     "cancelled": {
       "title": "Ride cancelled",
@@ -255,9 +256,12 @@
       "car": "{{color}} {{brand}} {{model}}",
       "plate": "Plate number {{plate}}",
       "call": "Call driver",
-      "chat": "Message driver"
+      "chat": "Message driver",
+      "fallbackName": "Your driver"
     },
-    "restoring": "Restoring your ride…"
+    "restoring": "Restoring your ride…",
+    "promoNotApplied": "Your promo code wasn’t applied to this ride",
+    "destinationUnknown": "Pinned destination"
   },
   "chat": {
     "title": "Chat with {{name}}",

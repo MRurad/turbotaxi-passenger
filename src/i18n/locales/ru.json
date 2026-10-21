@@ -241,7 +241,8 @@
       "originalPrice": "Цена без скидки",
       "discount": "Скидка",
       "promo": "Промокод",
-      "done": "Готово"
+      "done": "Готово",
+      "discountValue": "−{{amount}}"
     },
     "cancelled": {
       "title": "Поездка отменена",
@@ -261,9 +262,12 @@
       "car": "{{brand}} {{model}}, {{color}}",
       "plate": "Госномер {{plate}}",
       "call": "Позвонить водителю",
-      "chat": "Написать водителю"
+      "chat": "Написать водителю",
+      "fallbackName": "Ваш водитель"
     },
-    "restoring": "Восстанавливаем поездку…"
+    "restoring": "Восстанавливаем поездку…",
+    "promoNotApplied": "Промокод не применён к этой поездке",
+    "destinationUnknown": "Точка на карте"
   },
   "chat": {
     "title": "Чат · {{name}}",

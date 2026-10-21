@@ -10,7 +10,7 @@ Send this to the backend developer. Claude Code appends new items here when it h
 ## Open questions (the app works around them; answers improve it)
 
 1. **Server → client SignalR events for the passenger** (`/hubs/user`). *Partly answered*: the app has seen `RideStatusUpdated(rideId, "ride_update", payload)` and `DriverLocationUpdated(driverId, lat, lng)` (captured 2026-10-22, now in `docs/REALTIME_CONTRACT.md`). Still needed:
-   - **driver and vehicle info** once a driver accepts: name, phone, plate, brand, model, color. None of the captured payloads carry it, so the app can't show who is coming.
+   - **driver and vehicle info** once a driver accepts: name, phone, plate, brand, model, color. None of the captured payloads carry it. **Now the most visible gap**: the ride screen shows "Your driver" + the vehicle class, no plate, and hides Call (no phone). The app already reads `driverName`, `driverSurname`, `driverPhoneNumber`, `vehiclePlateNumber`, `vehicleBrand`, `vehicleModel`, `vehicleColor` from the `RideStatusUpdated` payload as soon as they appear.
    - the payload for **cancelled by driver**, **no driver found / timeout** and **driver arrived at pickup** (not seen yet). Do these also come as `RideStatusUpdated`, and with which `status`?
    - are there other values of the second argument besides `"ride_update"`?
    - driver heading in `DriverLocationUpdated` (optional, to rotate the car marker).
@@ -19,6 +19,8 @@ Send this to the backend developer. Claude Code appends new items here when it h
 5. **Full list of ride status strings.** Seen so far: `Searching`, `OnWay` (trip started) and `Completed`, plus one driver-on-the-way update (`polylinePhase: "Approach"`) whose status wasn't captured. Which strings mean accepted, arrived at pickup, cancelled (by whom) and no driver found? Please also confirm that `OnWay` means "trip started" (it came with `startedAt` and `polylinePhase: "EnRoute"`), not "driver on the way to pickup".
 6. **VehicleType 0–3 names** (0 = ?, 1 = ?, 2 = ?, 3 = ?). Ideally return them as string enums in Swagger (`JsonStringEnumConverter`), or provide `GET /api/vehicle-types` with name and capacity.
 7. **Chat `actorRole` value** for passengers (`"User"`? `"user"`? `"Passenger"`?).
+26. **Who cancelled, and why.** When a ride is cancelled by the driver or the system, please send it as `RideStatusUpdated` with a status that says who (e.g. `CancelledByDriver`) and an optional `reason` text. The app shows "The driver cancelled the ride" only when the status names the driver; a plain `Cancelled` shows no reason.
+27. **Server-side search timeout.** The app gives up after 3 minutes (`SEARCH_TIMEOUT_MS`) and shows "No drivers nearby" with Retry. Retry cancels the old ride (cancel-by-user) and creates a new one. Does the backend also time out searches, and does it send a status for it (e.g. `NoDriverFound`)? If a driver accepts after the app's timeout, the app still follows them.
 25. **Trip history as the ride-recovery source.** The app finds a ride that ended while it was closed on the first page of `GET /api/TripHistory/user/{userId}` (see "Won't do" #3/#4). Please confirm: newest rides come first; a ride appears there as soon as it ends (or already while active?); and which `status` a cancelled and a no-driver ride get.
 
 ## Nice to have

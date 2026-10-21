@@ -1,0 +1,97 @@
+import { useTranslation } from 'react-i18next';
+import { Linking, View } from 'react-native';
+import { useShallow } from 'zustand/react/shallow';
+
+import { Button, Card, Text, useToast } from '@/components/ui';
+import { useChangeLanguage } from '@/i18n/useChangeLanguage';
+import { formatDuration } from '@/lib/format';
+import { makeStyles } from '@/theme';
+
+import { TEL_URL_SCHEME } from '../constants';
+import { useRideStore } from '../store';
+import { DriverCard } from './DriverCard';
+import { RideCancelButton } from './RideCancelButton';
+
+/** Driver on the way / arrived: status, ETA, driver card, Call / Chat, Cancel. */
+export function DriverContent() {
+  const styles = useStyles();
+  const { t } = useTranslation();
+  const { language } = useChangeLanguage();
+  const toast = useToast();
+  const { phase, driver, vehicleType, etaMinutes } = useRideStore(
+    useShallow((s) => ({
+      phase: s.phase,
+      driver: s.driver,
+      vehicleType: s.vehicleType,
+      etaMinutes: s.etaMinutes,
+    })),
+  );
+  const arrived = phase === 'driver_arrived';
+  const phone = driver?.phoneNumber ?? null;
+
+  const call = () => {
+    if (!phone) return;
+    Linking.openURL(`${TEL_URL_SCHEME}${phone}`).catch(() =>
+      toast.show({ message: t('errors.unknown'), tone: 'danger' }),
+    );
+  };
+  // Chat is built in Prompt 10.
+  const chat = () => toast.show({ message: t('common.labels.comingSoon') });
+
+  return (
+    <>
+      {arrived ? (
+        <Card variant="soft" padding="lg" animated testID="ride-arrived">
+          <Text variant="heading" color="primaryText" accessibilityRole="header">
+            {t('ride.driverArrived.title')}
+          </Text>
+          <Text variant="body" color="primaryText">
+            {t('ride.driverArrived.message')}
+          </Text>
+        </Card>
+      ) : (
+        <View style={styles.status}>
+          <Text variant="heading" accessibilityRole="header">
+            {t('ride.driverOnTheWay.title')}
+          </Text>
+          {etaMinutes !== null ? (
+            <Text variant="body" color="textSecondary" testID="ride-eta">
+              {t('ride.driverOnTheWay.eta', { duration: formatDuration(etaMinutes, language) })}
+            </Text>
+          ) : null}
+        </View>
+      )}
+      <DriverCard driver={driver} vehicleType={vehicleType} />
+      <View style={styles.actions}>
+        {phone ? (
+          <Button
+            // Short label fits two buttons side by side on small phones (ru/az).
+            label={t('common.actions.call')}
+            accessibilityLabel={t('ride.driver.call')}
+            variant="secondary"
+            leftIcon="call"
+            onPress={call}
+            style={styles.action}
+            testID="ride-call"
+          />
+        ) : null}
+        <Button
+          label={t('common.actions.chat')}
+          accessibilityLabel={t('ride.driver.chat')}
+          variant="secondary"
+          leftIcon="chatbubble-ellipses"
+          onPress={chat}
+          style={styles.action}
+          testID="ride-chat"
+        />
+      </View>
+      <RideCancelButton />
+    </>
+  );
+}
+
+const useStyles = makeStyles((t) => ({
+  status: { gap: t.spacing.xxs },
+  actions: { flexDirection: 'row', gap: t.spacing.md },
+  action: { flex: 1 },
+}));

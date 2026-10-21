@@ -235,7 +235,8 @@
       "originalPrice": "İlkin qiymət",
       "discount": "Endirim",
       "promo": "Promokod",
-      "done": "Hazırdır"
+      "done": "Hazırdır",
+      "discountValue": "−{{amount}}"
     },
     "cancelled": {
       "title": "Sifariş ləğv edildi",
@@ -255,9 +256,12 @@
       "car": "{{brand}} {{model}}, {{color}}",
       "plate": "Dövlət nömrəsi {{plate}}",
       "call": "Sürücüyə zəng et",
-      "chat": "Sürücüyə yaz"
+      "chat": "Sürücüyə yaz",
+      "fallbackName": "Sürücünüz"
     },
-    "restoring": "Gedişiniz bərpa olunur…"
+    "restoring": "Gedişiniz bərpa olunur…",
+    "promoNotApplied": "Promo kod bu sifarişə tətbiq olunmadı",
+    "destinationUnknown": "Xəritədə seçilmiş nöqtə"
   },
   "chat": {
     "title": "{{name}} ilə yazışma",

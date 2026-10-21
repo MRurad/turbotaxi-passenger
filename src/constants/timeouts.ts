@@ -4,6 +4,12 @@ export const API_TIMEOUT_MS = 15_000;
 /** How long to wait for a driver before showing "no driver found". */
 export const SEARCH_TIMEOUT_MS = 3 * 60_000;
 
+/** "Searching for 0:42" ticks this often. */
+export const ELAPSED_TICK_MS = 1_000;
+
+/** One pulse of the ring around the pickup while searching. */
+export const SEARCH_PULSE_MS = 1_800;
+
 /** SignalR keep-alive Ping interval. */
 export const PING_INTERVAL_MS = 30_000;
 

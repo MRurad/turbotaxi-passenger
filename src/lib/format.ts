@@ -65,6 +65,15 @@ export function formatDuration(minutes: number, lang: Language = getLanguage()):
   return i18n.t('common.units.hoursMinutes', { hours, minutes: rest, lng: lang });
 }
 
+const SECONDS_IN_MINUTE = 60;
+
+/** Elapsed time as "m:ss" (e.g. a running search: "0:42", "2:05"). */
+export function formatElapsed(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.floor(totalSeconds));
+  const minutes = Math.floor(seconds / SECONDS_IN_MINUTE);
+  return `${minutes}:${String(seconds % SECONDS_IN_MINUTE).padStart(2, '0')}`;
+}
+
 /**
  * Parses a backend timestamp as UTC. ASP.NET often omits the zone designator
  * ("2026-01-15T12:00:00"), which JS would otherwise read as local time.

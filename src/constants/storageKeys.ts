@@ -4,6 +4,8 @@ export const SECURE_KEYS = {
   refreshToken: 'turbotaxi.refreshToken',
   tokenExpiresAt: 'turbotaxi.tokenExpiresAt',
   user: 'turbotaxi.session.user',
+  /** Active ride's pickup + destination (addresses and coordinates are personal data). */
+  activeRidePlaces: 'turbotaxi.activeRide.places',
 } as const;
 
 /** AsyncStorage keys (non-secret data). */

@@ -25,6 +25,10 @@ export const sizes = {
   route: { line: 5, outline: 9 },
   /** Floating map controls (top bar, my-location button). */
   mapControl: 48,
+  /** Searching: pulse ring diameter around the pickup. */
+  searchPulse: 160,
+  /** Driver card: plate number badge border. */
+  plateBorder: 2,
 } as const;
 
 export type Sizes = typeof sizes;

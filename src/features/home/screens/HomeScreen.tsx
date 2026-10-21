@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View, type LayoutChangeEvent } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RealtimeBanner } from '@/components/RealtimeBanner';
@@ -11,6 +11,7 @@ import { AppMap, type AppMapHandle } from '@/features/map/components/AppMap';
 import { CenterPin } from '@/features/map/components/CenterPin';
 import { BAKU_REGION } from '@/features/map/constants';
 import { useCurrentLocation } from '@/features/map/hooks/useCurrentLocation';
+import { useMapOverlayLayout } from '@/features/map/hooks/useMapOverlayLayout';
 import { makeStyles, useTheme } from '@/theme';
 
 import { HomeMapLayers } from '../components/HomeMapLayers';
@@ -26,8 +27,6 @@ export function HomeScreen() {
   const { spacing, sizes } = useTheme();
   const insets = useSafeAreaInsets();
   const mapRef = useRef<AppMapHandle>(null);
-  const [view, setView] = useState({ width: 0, height: 0 });
-  const [sheetHeight, setSheetHeight] = useState(0);
   const [cardHeight, setCardHeight] = useState(0);
   const destination = useBookingDraft((s) => s.destination);
   const hydrateRecents = useRecentPlaces((s) => s.hydrate);
@@ -38,24 +37,8 @@ export function HomeScreen() {
   // The pin lives between the top overlays (permission card) and the sheet.
   const cardTop = insets.top + sizes.mapControl + spacing.md;
   const overlayTop = showCard && cardHeight > 0 ? cardTop + cardHeight : 0;
-  const overlays = useMemo(
-    () => ({ top: overlayTop, bottom: sheetHeight, left: 0, right: 0 }),
-    [overlayTop, sheetHeight],
-  );
-  const framePadding = useMemo(
-    () => ({
-      top: Math.max(overlayTop, cardTop) + spacing.xl,
-      bottom: sheetHeight + spacing.xl,
-      left: spacing.xxl,
-      right: spacing.xxl,
-    }),
-    [overlayTop, cardTop, sheetHeight, spacing],
-  );
-  const pinPoint = useMemo(
-    () =>
-      view.height ? { x: view.width / 2, y: (overlayTop + view.height - sheetHeight) / 2 } : null,
-    [view, overlayTop, sheetHeight],
-  );
+  const { view, onLayout, sheetHeight, setSheetHeight, overlays, framePadding, pinPoint } =
+    useMapOverlayLayout({ overlayTop, frameTop: cardTop });
 
   const routeCoords = useRoutePolyline();
   const map = useHomeMap(mapRef, location, { pinPoint, framePadding, routeCoords });
@@ -64,9 +47,6 @@ export function HomeScreen() {
   useEffect(() => {
     hydrateRecents().catch(() => undefined);
   }, [hydrateRecents]);
-
-  const onLayout = (e: LayoutChangeEvent) =>
-    setView({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height });
 
   return (
     <View style={styles.root} onLayout={onLayout} testID="home-screen">

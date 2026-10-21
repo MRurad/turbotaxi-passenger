@@ -13,6 +13,11 @@ const snapshot = (overrides: Partial<RideSnapshot> = {}): RideSnapshot => ({
   rideId: 2,
   phase: 'in_progress',
   driverId: 4,
+  vehicleType: 1,
+  fare: { estimated: 5, original: 5, discount: 0, promoCode: null, final: null },
+  tripKm: 3,
+  tripMinutes: 8,
+  searchStartedAt: NOW - 120_000,
   updatedAt: NOW - 60_000,
   ...overrides,
 });
