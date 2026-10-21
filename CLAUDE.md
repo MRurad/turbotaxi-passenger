@@ -52,7 +52,7 @@ src/
 7. Use `makeStyles` + `useTheme` for styles; never hardcode `#hex` outside `src/theme`.
 8. Money: AZN, formatted via `formatMoney` in `src/lib/format.ts` (₼). Distances/durations via formatters too.
 9. Keep Expo Go compatibility unless a task explicitly says otherwise (no native modules that need a dev build).
-10. After each task: `npx tsc --noEmit`, `npx expo lint`, tests pass, then commit with a conventional commit message.
+10. After each task: `npx tsc --noEmit`, `npx expo lint`, tests pass, then commit with a conventional commit message and `git push` to `origin` (private repo `MRurad/turbotaxi-passenger`). Before pushing, confirm `.env` is not tracked and no API keys/tokens are in the commit.
 
 ## Backend facts you must respect
 - Auth: `POST /api/Auth/register` and `/api/Auth/login` (email + password) → `{ success, message, data: { user, tokens: { accessToken, refreshToken, expiresIn, tokenType } } }`. All other APIs require `Authorization: Bearer <token>`. **No refresh endpoint yet** → on 401 clear session and go to login.
@@ -69,6 +69,7 @@ Agents in `.claude/agents/`: `code-reviewer`, `ui-reviewer`, `api-contract-check
 
 ## Definition of done (every task)
 - Typecheck, lint and tests pass
+- Committed and pushed to GitHub (`origin/main`)
 - Light + dark mode checked; az/ru/en strings added
 - No hardcoded strings/colors/URLs; no `any`
 - Loading/error/empty states present
