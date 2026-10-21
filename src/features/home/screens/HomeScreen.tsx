@@ -3,19 +3,19 @@ import { useTranslation } from 'react-i18next';
 import { View, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BottomPanel, IconButton } from '@/components/ui';
+import { IconButton } from '@/components/ui';
+import { useRoutePolyline } from '@/features/booking/hooks/useRoutePolyline';
 import { useBookingDraft } from '@/features/booking/store';
 import { AppMap, type AppMapHandle } from '@/features/map/components/AppMap';
 import { CenterPin } from '@/features/map/components/CenterPin';
-import { PlaceMarker } from '@/features/map/components/PlaceMarker';
 import { BAKU_REGION } from '@/features/map/constants';
 import { useCurrentLocation } from '@/features/map/hooks/useCurrentLocation';
 import { makeStyles, useTheme } from '@/theme';
 
-import { HomeSheetContent } from '../components/HomeSheetContent';
+import { HomeMapLayers } from '../components/HomeMapLayers';
+import { HomePanel } from '../components/HomePanel';
 import { HomeTopBar } from '../components/HomeTopBar';
 import { LocationPermissionCard } from '../components/LocationPermissionCard';
-import { PinDestinationContent } from '../components/PinDestinationContent';
 import { useHomeMap } from '../hooks/useHomeMap';
 import { useRecentPlaces } from '../recentPlaces';
 
@@ -28,7 +28,6 @@ export function HomeScreen() {
   const [view, setView] = useState({ width: 0, height: 0 });
   const [sheetHeight, setSheetHeight] = useState(0);
   const [cardHeight, setCardHeight] = useState(0);
-  const pickup = useBookingDraft((s) => s.pickup);
   const destination = useBookingDraft((s) => s.destination);
   const hydrateRecents = useRecentPlaces((s) => s.hydrate);
 
@@ -57,7 +56,8 @@ export function HomeScreen() {
     [view, overlayTop, sheetHeight],
   );
 
-  const map = useHomeMap(mapRef, location, { pinPoint, framePadding });
+  const routeCoords = useRoutePolyline();
+  const map = useHomeMap(mapRef, location, { pinPoint, framePadding, routeCoords });
   const choosingDestination = map.pinTarget === 'destination';
   const pinIsActive = choosingDestination || !destination;
 
@@ -81,13 +81,7 @@ export function HomeScreen() {
           onRegionChangeComplete={map.onRegionChangeComplete}
           testID="home-map"
         >
-          {/* The pickup gets its own marker whenever the center pin isn't choosing it. */}
-          {pickup && (!pinIsActive || choosingDestination) ? (
-            <PlaceMarker coordinate={pickup.location} kind="pickup" />
-          ) : null}
-          {destination && !choosingDestination ? (
-            <PlaceMarker coordinate={destination.location} kind="destination" />
-          ) : null}
+          <HomeMapLayers />
         </AppMap>
       </View>
 
@@ -122,13 +116,11 @@ export function HomeScreen() {
         />
       </View>
 
-      <BottomPanel onHeightChange={setSheetHeight} testID="home-sheet">
-        {choosingDestination ? (
-          <PinDestinationContent pinnedPlace={map.pinnedPlace} loading={map.pinLoading} />
-        ) : (
-          <HomeSheetContent pinLoading={map.pinLoading} />
-        )}
-      </BottomPanel>
+      <HomePanel
+        pinnedPlace={map.pinnedPlace}
+        pinLoading={map.pinLoading}
+        onHeightChange={setSheetHeight}
+      />
     </View>
   );
 }

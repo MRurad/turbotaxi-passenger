@@ -11,6 +11,8 @@ export interface SearchFieldsProps {
   destinationQuery: string;
   /** Current pickup address, shown as the pickup placeholder. */
   pickupPlaceholder?: string;
+  /** Which input gets the keyboard when the screen opens. */
+  initialField: SearchField;
   onChange: (field: SearchField, text: string) => void;
   onFocus: (field: SearchField) => void;
 }
@@ -20,6 +22,7 @@ export function SearchFields({
   pickupQuery,
   destinationQuery,
   pickupPlaceholder,
+  initialField,
   onChange,
   onFocus,
 }: SearchFieldsProps) {
@@ -37,6 +40,7 @@ export function SearchFields({
         leftIcon="radio-button-on"
         returnKeyType="search"
         autoCorrect={false}
+        autoFocus={initialField === 'pickup'}
         containerStyle={styles.input}
         testID="search-pickup"
       />
@@ -52,7 +56,7 @@ export function SearchFields({
         leftIcon="flag-outline"
         returnKeyType="search"
         autoCorrect={false}
-        autoFocus
+        autoFocus={initialField === 'destination'}
         containerStyle={styles.input}
         testID="search-destination"
       />

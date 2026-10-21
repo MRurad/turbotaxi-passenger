@@ -174,7 +174,10 @@
       "applied": "Promo {{code}} applied",
       "remove": "Remove promo code",
       "sheetTitle": "Your promo codes",
-      "empty": "You have no active promo codes"
+      "empty": "You have no active promo codes",
+      "loadError": "Couldn't load your promo codes",
+      "rejected": "This promo code can't be used for this ride. Remove it to see prices.",
+      "noEffect": "This promo code doesn't lower the price of this ride."
     },
     "payment": {
       "title": "Payment",
@@ -182,7 +185,11 @@
     },
     "order": "Order {{vehicle}}",
     "editRoute": "Edit route",
-    "clearDestination": "Clear destination"
+    "clearDestination": "Clear destination",
+    "editPickup": "Change pickup",
+    "editDestination": "Change destination",
+    "originalPrice": "without discount {{price}}",
+    "selectAnother": "No price for this class right now — choose another."
   },
   "ride": {
     "status": {

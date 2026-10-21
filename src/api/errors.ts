@@ -167,3 +167,18 @@ export function unwrapEnvelope<T>(envelope: Envelope<T> | null | undefined): T {
   }
   return envelope.data;
 }
+
+const RETRYABLE_CODES: ReadonlySet<ApiErrorCode> = new Set([
+  'network',
+  'timeout',
+  'server',
+  'unknown',
+]);
+
+/**
+ * Worth retrying automatically: connectivity and server hiccups. Client errors (4xx), an
+ * explicit `{ success:false }`, bad responses and cancellations won't change on retry.
+ */
+export function isRetryableError(error: unknown): boolean {
+  return error instanceof ApiError ? RETRYABLE_CODES.has(error.code) : true;
+}

@@ -174,7 +174,10 @@
       "applied": "{{code}} promokodu tətbiq edildi",
       "remove": "Promokodu sil",
       "sheetTitle": "Promokodlarınız",
-      "empty": "Aktiv promokodunuz yoxdur"
+      "empty": "Aktiv promokodunuz yoxdur",
+      "loadError": "Promokodlar yüklənmədi",
+      "rejected": "Bu promokod bu gedişə tətbiq oluna bilməz. Qiymətləri görmək üçün onu silin.",
+      "noEffect": "Bu promokod bu gedişin qiymətini azaltmır."
     },
     "payment": {
       "title": "Ödəniş",
@@ -182,7 +185,11 @@
     },
     "order": "{{vehicle}} sifariş et",
     "editRoute": "Marşrutu dəyiş",
-    "clearDestination": "Təyinat yerini sil"
+    "clearDestination": "Təyinat yerini sil",
+    "editPickup": "Minmə yerini dəyiş",
+    "editDestination": "Təyinat yerini dəyiş",
+    "originalPrice": "endirimsiz {{price}}",
+    "selectAnother": "Bu tarif üçün hazırda qiymət yoxdur — başqasını seçin."
   },
   "ride": {
     "status": {

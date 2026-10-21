@@ -19,6 +19,8 @@ export const sizes = {
   zIndexToast: 1000,
   /** Map pins (center pin, place markers). */
   pin: { head: 36, stem: 14, stemWidth: 3, lift: 14, shadow: 18 },
+  /** Skeleton placeholder widths. */
+  skeleton: { price: 56 },
   /** Route polyline stroke widths. */
   route: { line: 5, outline: 9 },
   /** Floating map controls (top bar, my-location button). */

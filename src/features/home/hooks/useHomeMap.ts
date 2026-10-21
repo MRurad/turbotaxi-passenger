@@ -13,12 +13,16 @@ import type { Place } from '@/types/place';
 
 const toLatLng = (r: Region): LatLng => ({ latitude: r.latitude, longitude: r.longitude });
 const coordKey = (c?: LatLng | null) => (c ? `${c.latitude},${c.longitude}` : '');
+/** Refit only when the sheet height changes noticeably (not on every pixel). */
+const PADDING_BUCKET_PX = 40;
 
 interface HomeMapLayout {
   /** Where the center pin's tip is, in map view coordinates (null until laid out). */
   pinPoint: Point | null;
   /** Room to leave around framed points (overlays + margin). */
   framePadding: EdgePadding;
+  /** Route to frame once a destination is set (falls back to the two endpoints). */
+  routeCoords: LatLng[];
 }
 
 /**
@@ -37,6 +41,7 @@ export function useHomeMap(
   // Apple Maps never reports details.isGesture, so detect user touches ourselves.
   const touched = useRef(false);
   const framePadding = useRef(layout.framePadding);
+  const routeCoords = useRef(layout.routeCoords);
   const { pinTarget, pickup, destination, pickupLocked } = useBookingDraft(
     useShallow((s) => ({
       pinTarget: s.pinTarget,
@@ -50,7 +55,8 @@ export function useHomeMap(
 
   useEffect(() => {
     framePadding.current = layout.framePadding;
-  }, [layout.framePadding]);
+    routeCoords.current = layout.routeCoords;
+  }, [layout.framePadding, layout.routeCoords]);
 
   const debouncedCenter = useDebouncedValue(center, REVERSE_GEOCODE_DEBOUNCE_MS);
   const settled = !dragging && debouncedCenter !== null && debouncedCenter === center;
@@ -82,15 +88,24 @@ export function useHomeMap(
   }, [pinnedPlace, setPickupFromPin]);
 
   // Camera follows the draft: frame pickup + destination, or show a fixed (searched) pickup.
+  // With a destination, also refit when the route arrives and when the (taller) booking sheet
+  // settles, so the route is never framed against the old, shorter sheet.
+  const frameDetail = destination
+    ? `|${layout.routeCoords.length > 1}|${Math.round(layout.framePadding.bottom / PADDING_BUCKET_PX)}`
+    : '';
   const focusKey = `${pinTarget}|${coordKey(destination?.location)}|${
     pickupLocked ? coordKey(pickup?.location) : ''
-  }`;
+  }${frameDetail}`;
   const focusPickup = pickup?.location;
   const focusDestination = destination?.location;
   useEffect(() => {
     if (pinTarget !== 'pickup' || !focusPickup) return;
     if (focusDestination) {
-      mapRef.current?.fitToCoordinates([focusPickup, focusDestination], framePadding.current);
+      const route = routeCoords.current;
+      mapRef.current?.fitToCoordinates(
+        route.length > 1 ? route : [focusPickup, focusDestination],
+        framePadding.current,
+      );
     } else if (pickupLocked) {
       mapRef.current?.animateTo(focusPickup);
     }

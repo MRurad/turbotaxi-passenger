@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { Button, IconButton } from '@/components/ui';
 import { ROUTES } from '@/constants/routes';
 import { useBookingDraft } from '@/features/booking/store';
 import type { Place } from '@/types/place';
@@ -16,18 +15,15 @@ export interface HomeSheetContentProps {
   pinLoading: boolean;
 }
 
-/** Default home panel: pickup, "Where to?" or the chosen destination, and recent places. */
+/** "Where to?" panel: current pickup, the search entry point and recent destinations. */
 export function HomeSheetContent({ pinLoading }: HomeSheetContentProps) {
   const router = useRouter();
   const { t } = useTranslation();
   const pickup = useBookingDraft((s) => s.pickup);
   const pickupLocked = useBookingDraft((s) => s.pickupLocked);
-  const destination = useBookingDraft((s) => s.destination);
   const setDestination = useBookingDraft((s) => s.setDestination);
-  const clearDestination = useBookingDraft((s) => s.clearDestination);
   const recents = useRecentPlaces((s) => s.places);
   const addRecent = useRecentPlaces((s) => s.add);
-  const unnamed = t('home.pickupUnknown');
 
   const selectRecent = (place: Place) => {
     setDestination(place);
@@ -39,44 +35,17 @@ export function HomeSheetContent({ pinLoading }: HomeSheetContentProps) {
       <PlaceLine
         kind="pickup"
         label={t('common.labels.pickup')}
-        value={pickup?.title || unnamed}
+        value={pickup?.title || t('home.pickupUnknown')}
         // Never show an address the pin has already left (no stale pickup).
         loading={!pickup || (pinLoading && !pickupLocked)}
         loadingLabel={t('home.pickupLoading')}
         testID="home-pickup"
       />
-      {destination ? (
-        <>
-          <PlaceLine
-            kind="destination"
-            label={t('common.labels.destination')}
-            value={destination.title || unnamed}
-            testID="home-destination"
-            right={
-              <IconButton
-                icon="close"
-                variant="ghost"
-                onPress={clearDestination}
-                accessibilityLabel={t('booking.clearDestination')}
-                testID="home-clear-destination"
-              />
-            }
-          />
-          {/* Vehicle selection + price arrive in Prompt 7. */}
-          <Button
-            label={t('booking.title')}
-            size="lg"
-            fullWidth
-            disabled
-            onPress={() => undefined}
-          />
-        </>
-      ) : (
-        <>
-          <WhereToButton label={t('home.whereTo')} onPress={() => router.push(ROUTES.search)} />
-          {recents.length > 0 ? <RecentPlacesRow places={recents} onSelect={selectRecent} /> : null}
-        </>
-      )}
+      <WhereToButton
+        label={t('home.whereTo')}
+        onPress={() => router.push({ pathname: ROUTES.search, params: { field: 'destination' } })}
+      />
+      {recents.length > 0 ? <RecentPlacesRow places={recents} onSelect={selectRecent} /> : null}
     </>
   );
 }

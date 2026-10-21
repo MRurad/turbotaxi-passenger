@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
-import { View } from 'react-native';
+import { View, type AccessibilityState } from 'react-native';
 
 import { makeStyles, useTheme } from '@/theme';
 
@@ -23,6 +23,9 @@ export interface ListItemProps {
   showChevron?: boolean;
   onPress?: () => void;
   accessibilityLabel?: string;
+  /** Defaults to "button" when pressable; use "radio" in single-select lists. */
+  accessibilityRole?: 'button' | 'radio';
+  accessibilityState?: AccessibilityState;
   testID?: string;
 }
 
@@ -36,6 +39,8 @@ export function ListItem({
   showChevron,
   onPress,
   accessibilityLabel,
+  accessibilityRole = 'button',
+  accessibilityState,
   testID,
 }: ListItemProps) {
   const styles = useStyles();
@@ -89,7 +94,8 @@ export function ListItem({
     <PressableScale
       testID={testID}
       onPress={onPress}
-      accessibilityRole="button"
+      accessibilityRole={accessibilityRole}
+      accessibilityState={accessibilityState}
       accessibilityLabel={label}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
     >

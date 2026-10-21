@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { VEHICLE_TYPE, type VehicleType } from '@/constants/vehicles';
+import type { UserPromo } from '@/features/promo/types';
 import type { Place } from '@/types/place';
 
 /** Which point the center pin is currently choosing on the home map. */
@@ -16,6 +18,11 @@ interface BookingDraftState {
    * frames both points). Cleared only when the user drags the map in pickup mode.
    */
   pickupLocked: boolean;
+  vehicleType: VehicleType;
+  /** True once the user tapped a class; until then the app may switch to one that has a price. */
+  vehicleChosen: boolean;
+  /** Promo applied to the estimates (and later to the ride). */
+  promo: UserPromo | null;
 }
 
 interface BookingDraftActions {
@@ -31,6 +38,11 @@ interface BookingDraftActions {
   startPinPicking: (target: PinTarget) => void;
   /** Leave destination-on-map mode without picking (pickup stays where it was). */
   cancelPinPicking: () => void;
+  /** Explicit user choice. */
+  selectVehicle: (vehicleType: VehicleType) => void;
+  /** App fallback (e.g. the default class has no price); ignored after an explicit choice. */
+  autoSelectVehicle: (vehicleType: VehicleType) => void;
+  setPromo: (promo: UserPromo | null) => void;
   reset: () => void;
 }
 
@@ -41,9 +53,15 @@ const INITIAL: BookingDraftState = {
   destination: null,
   pinTarget: 'pickup',
   pickupLocked: false,
+  vehicleType: VEHICLE_TYPE.Economy,
+  vehicleChosen: false,
+  promo: null,
 };
 
-/** Pickup/destination being booked. In-memory: a fresh launch starts from the user's location. */
+/**
+ * What's being booked: pickup, destination, vehicle and promo. In-memory (a fresh launch starts
+ * from the user's location); reset after a ride is created and on logout.
+ */
 export const useBookingDraft = create<BookingDraftStore>()((set, get) => ({
   ...INITIAL,
   setPickupFromPin: (place) => {
@@ -61,5 +79,10 @@ export const useBookingDraft = create<BookingDraftStore>()((set, get) => ({
       target === 'destination' ? { pinTarget: target, pickupLocked: true } : { pinTarget: target },
     ),
   cancelPinPicking: () => set({ pinTarget: 'pickup' }),
+  selectVehicle: (vehicleType) => set({ vehicleType, vehicleChosen: true }),
+  autoSelectVehicle: (vehicleType) => {
+    if (!get().vehicleChosen) set({ vehicleType });
+  },
+  setPromo: (promo) => set({ promo }),
   reset: () => set(INITIAL),
 }));

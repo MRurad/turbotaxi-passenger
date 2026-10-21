@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -29,7 +29,10 @@ export function usePlaceSearch() {
     })),
   );
   const addRecent = useRecentPlaces((s) => s.add);
-  const [active, setActive] = useState<SearchField>('destination');
+  // Opened from "Edit pickup" → start in the pickup field.
+  const { field } = useLocalSearchParams<{ field?: string }>();
+  const initialField: SearchField = field === 'pickup' ? 'pickup' : 'destination';
+  const [active, setActive] = useState<SearchField>(initialField);
   const [queries, setQueries] = useState<Record<SearchField, string>>({
     pickup: '',
     destination: '',
@@ -64,6 +67,7 @@ export function usePlaceSearch() {
   };
 
   return {
+    initialField,
     active,
     queries,
     pickupPlaceholder: draft.pickup?.title,

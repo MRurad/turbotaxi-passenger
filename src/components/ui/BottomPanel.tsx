@@ -1,56 +1,106 @@
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import type { PropsWithChildren } from 'react';
-import { useWindowDimensions, type LayoutChangeEvent } from 'react-native';
+import BottomSheet, {
+  BottomSheetFooter,
+  BottomSheetScrollView,
+  BottomSheetView,
+  type BottomSheetFooterProps,
+} from '@gorhom/bottom-sheet';
+import { useCallback, useState, type PropsWithChildren, type ReactNode } from 'react';
+import { View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { makeStyles } from '@/theme';
+import { makeStyles, useTheme } from '@/theme';
 
 export interface BottomPanelProps {
   /** Reports the panel's visible height (content + handle), e.g. to pad the map above it. */
   onHeightChange?: (height: number) => void;
+  /** Pinned to the bottom, always visible even when the content scrolls (e.g. "Order"). */
+  footer?: ReactNode;
+  /** Content scrolls once the panel reaches its maximum height. */
+  scrollable?: boolean;
   testID?: string;
 }
 
+/** The panel never takes more than this share of the screen. */
+const MAX_PANEL_HEIGHT_RATIO = 0.62;
+
 /**
  * Always-visible themed bottom sheet over the map (not a modal: no backdrop, can't be closed).
- * Sizes itself to its content.
+ * Sizes itself to its content up to MAX_PANEL_HEIGHT_RATIO of the screen.
  */
 export function BottomPanel({
   onHeightChange,
+  footer,
+  scrollable = false,
   testID,
   children,
 }: PropsWithChildren<BottomPanelProps>) {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
+  const { sizes, spacing } = useTheme();
+  const maxContent = windowHeight * MAX_PANEL_HEIGHT_RATIO;
+  // Seeded with a typical footer (one large button) so the first measure doesn't jump.
+  const [footerHeight, setFooterHeight] = useState(
+    sizes.button.lg + spacing.md * 2 + insets.bottom,
+  );
+  const bottomPadding = (footer ? footerHeight : insets.bottom) + styles.content.paddingTop;
 
-  const onLayout = (e: LayoutChangeEvent) =>
-    onHeightChange?.(e.nativeEvent.layout.height + styles.handleArea.height);
+  const report = useCallback(
+    (contentHeight: number) =>
+      // Same clamp as gorhom: content + handle, capped at maxDynamicContentSize.
+      onHeightChange?.(Math.min(contentHeight + styles.handleArea.height, maxContent)),
+    [onHeightChange, maxContent, styles.handleArea.height],
+  );
+
+  const renderFooter = useCallback(
+    (props: BottomSheetFooterProps) => (
+      <BottomSheetFooter {...props}>
+        <View
+          style={[styles.footer, { paddingBottom: insets.bottom + styles.footer.paddingTop }]}
+          onLayout={(e: LayoutChangeEvent) => setFooterHeight(e.nativeEvent.layout.height)}
+        >
+          {footer}
+        </View>
+      </BottomSheetFooter>
+    ),
+    [footer, insets.bottom, styles.footer],
+  );
+
+  const contentStyle = [styles.content, { paddingBottom: bottomPadding }];
 
   return (
     <BottomSheet
       index={0}
       enableDynamicSizing
       enablePanDownToClose={false}
-      // Large Dynamic Type on small phones must not bury the map.
-      maxDynamicContentSize={windowHeight * MAX_PANEL_HEIGHT_RATIO}
+      // Large Dynamic Type / long lists on small phones must not bury the map.
+      maxDynamicContentSize={maxContent}
+      footerComponent={footer ? renderFooter : undefined}
       backgroundStyle={styles.background}
       handleIndicatorStyle={styles.handle}
       style={styles.shadow}
     >
-      <BottomSheetView
-        testID={testID}
-        onLayout={onLayout}
-        style={[styles.content, { paddingBottom: insets.bottom + styles.content.paddingTop }]}
-      >
-        {children}
-      </BottomSheetView>
+      {scrollable ? (
+        <BottomSheetScrollView
+          testID={testID}
+          contentContainerStyle={contentStyle}
+          onContentSizeChange={(_w, h) => report(h)}
+          showsVerticalScrollIndicator={false}
+        >
+          {children}
+        </BottomSheetScrollView>
+      ) : (
+        <BottomSheetView
+          testID={testID}
+          onLayout={(e: LayoutChangeEvent) => report(e.nativeEvent.layout.height)}
+          style={contentStyle}
+        >
+          {children}
+        </BottomSheetView>
+      )}
     </BottomSheet>
   );
 }
-
-/** The panel never takes more than this share of the screen. */
-const MAX_PANEL_HEIGHT_RATIO = 0.55;
 
 const useStyles = makeStyles((t) => ({
   background: {
@@ -71,4 +121,11 @@ const useStyles = makeStyles((t) => ({
       }
     : { ...t.shadows.lg },
   content: { paddingHorizontal: t.spacing.xl, paddingTop: t.spacing.sm, gap: t.spacing.lg },
+  footer: {
+    paddingHorizontal: t.spacing.xl,
+    paddingTop: t.spacing.md,
+    backgroundColor: t.colors.surfaceElevated,
+    borderTopWidth: t.sizes.border,
+    borderTopColor: t.colors.border,
+  },
 }));

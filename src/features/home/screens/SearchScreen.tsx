@@ -37,6 +37,7 @@ export function SearchScreen() {
           pickupQuery={search.queries.pickup}
           destinationQuery={search.queries.destination}
           pickupPlaceholder={search.pickupPlaceholder}
+          initialField={search.initialField}
           onChange={search.setQuery}
           onFocus={search.setActive}
         />
