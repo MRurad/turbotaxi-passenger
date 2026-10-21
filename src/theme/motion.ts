@@ -6,6 +6,8 @@ export const motion = {
   shimmerDuration: 1200,
   disabledOpacity: 0.5,
   pressedOpacity: 0.85,
+  /** Purely decorative shapes (hero rings). */
+  decorativeOpacity: 0.08,
 } as const;
 
 export type Motion = typeof motion;

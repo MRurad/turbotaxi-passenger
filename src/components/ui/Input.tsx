@@ -1,16 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { forwardRef, useState } from 'react';
-import {
-  Pressable,
-  TextInput,
-  View,
-  type StyleProp,
-  type TextInputProps,
-  type ViewStyle,
-} from 'react-native';
+import { TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
 
 import { MAX_FONT_SCALE, makeStyles, useTheme } from '@/theme';
 
+import { PasswordToggle } from './PasswordToggle';
 import { Text } from './Text';
 import type { IconName } from './types';
 
@@ -23,6 +17,8 @@ export interface InputProps extends Omit<TextInputProps, 'style' | 'secureTextEn
   helper?: string;
   leftIcon?: IconName;
   rightIcon?: IconName;
+  /** Fixed text before the value, e.g. "+994" (not part of the value). */
+  prefix?: string;
   /** Enables password masking with a show/hide toggle. Labels are required for a11y. */
   secureToggle?: { showLabel: string; hideLabel: string };
   containerStyle?: StyleProp<ViewStyle>;
@@ -36,6 +32,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
     helper,
     leftIcon,
     rightIcon,
+    prefix,
     secureToggle,
     containerStyle,
     testID,
@@ -69,11 +66,16 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
       ) : null}
       <View style={[styles.field, focused && styles.focused, error ? styles.errored : null]}>
         {leftIcon ? <Ionicons name={leftIcon} size={sizes.icon.md} color={iconColor} /> : null}
+        {prefix ? (
+          <Text variant="body" color="textSecondary" importantForAccessibility="no">
+            {prefix}
+          </Text>
+        ) : null}
         <TextInput
           ref={ref}
           testID={testID}
           {...rest}
-          accessibilityLabel={rest.accessibilityLabel ?? label}
+          accessibilityLabel={rest.accessibilityLabel ?? [label, prefix].filter(Boolean).join(', ')}
           accessibilityHint={error || rest.accessibilityHint}
           secureTextEntry={secureToggle ? hidden : false}
           onFocus={handleFocus}
@@ -85,20 +87,14 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
           style={styles.input}
         />
         {secureToggle ? (
-          <Pressable
-            onPress={() => setHidden((h) => !h)}
-            hitSlop={sizes.icon.md / 2}
-            style={styles.trailing}
-            accessibilityRole="button"
-            accessibilityLabel={hidden ? secureToggle.showLabel : secureToggle.hideLabel}
+          <PasswordToggle
+            hidden={hidden}
+            onToggle={() => setHidden((h) => !h)}
+            showLabel={secureToggle.showLabel}
+            hideLabel={secureToggle.hideLabel}
+            color={iconColor}
             testID={testID && `${testID}-toggle`}
-          >
-            <Ionicons
-              name={hidden ? 'eye-outline' : 'eye-off-outline'}
-              size={sizes.icon.md}
-              color={iconColor}
-            />
-          </Pressable>
+          />
         ) : rightIcon ? (
           <Ionicons name={rightIcon} size={sizes.icon.md} color={iconColor} />
         ) : null}
@@ -135,12 +131,6 @@ const useStyles = makeStyles((t) => ({
     fontSize: t.typography.body.fontSize,
     color: t.colors.textPrimary,
     paddingVertical: t.spacing.md,
-  },
-  trailing: {
-    minWidth: t.sizes.touchTarget / 2,
-    minHeight: t.sizes.touchTarget,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   message: { marginLeft: t.spacing.xxs },
 }));

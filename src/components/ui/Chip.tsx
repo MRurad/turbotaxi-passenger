@@ -15,6 +15,8 @@ export interface ChipProps {
   disabled?: boolean;
   /** Use 'radio' inside single-select groups (container gets role="radiogroup"). */
   role?: 'button' | 'radio';
+  /** Defaults to label; set when the label is an abbreviation (e.g. "AZ"). */
+  accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -26,6 +28,7 @@ export function Chip({
   icon,
   disabled = false,
   role = 'button',
+  accessibilityLabel,
   style,
   testID,
 }: ChipProps) {
@@ -41,7 +44,7 @@ export function Chip({
       haptic="selection"
       hitSlop={sizes.chipHitSlop}
       accessibilityRole={role}
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={
         role === 'radio' ? { checked: selected, disabled } : { selected, disabled }
       }

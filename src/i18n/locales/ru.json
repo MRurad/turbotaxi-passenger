@@ -122,7 +122,11 @@
       "confirmPassword": "Повторите пароль",
       "submit": "Создать аккаунт",
       "haveAccount": "Уже есть аккаунт?",
-      "signIn": "Войдите"
+      "signIn": "Войдите",
+      "passwordHint_one": "Минимум {{count}} символ",
+      "passwordHint_few": "Минимум {{count}} символа",
+      "passwordHint_many": "Минимум {{count}} символов",
+      "passwordHint_other": "Минимум {{count}} символа"
     },
     "logout": {
       "title": "Выйти из аккаунта?",
@@ -132,6 +136,7 @@
   },
   "home": {
     "whereTo": "Куда поедем?",
+    "greeting": "Здравствуйте, {{name}}!",
     "pickup": "Откуда: {{address}}",
     "pickupLoading": "Определяем адрес…",
     "pickupUnknown": "Точка на карте",
@@ -319,6 +324,11 @@
       "az": "Azərbaycanca",
       "ru": "Русский",
       "en": "English"
+    },
+    "languageShort": {
+      "az": "AZ",
+      "ru": "RU",
+      "en": "EN"
     },
     "theme": "Оформление",
     "themes": {

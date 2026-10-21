@@ -7,7 +7,8 @@ import { IconButton } from './IconButton';
 import { Text } from './Text';
 
 interface HeaderBaseProps {
-  title: string;
+  /** Omit for a bare back bar (the screen renders its own large title). */
+  title?: string;
   subtitle?: string;
   right?: ReactNode;
   /** Large title (screen landing) vs compact centered title (pushed screen). */
@@ -46,7 +47,9 @@ export function Header({
             />
           ) : null}
         </View>
-        {large ? null : (
+        {large || !title ? (
+          <View style={styles.title} />
+        ) : (
           <Text
             variant="heading"
             numberOfLines={1}

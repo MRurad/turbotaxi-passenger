@@ -10,6 +10,8 @@ export const sizes = {
   input: 52,
   emptyIcon: 72,
   dialogMaxWidth: 360,
+  /** Welcome hero: car mark tile, its icon, and the decorative rings. */
+  hero: { mark: 96, icon: 56, ringLarge: 320, ringSmall: 180, ringStroke: 24 },
   chipHeight: 36,
   /** Extends 36pt chips to the 44pt touch target. */
   chipHitSlop: 4,

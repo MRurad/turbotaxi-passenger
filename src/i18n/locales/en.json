@@ -120,7 +120,9 @@
       "confirmPassword": "Confirm password",
       "submit": "Create account",
       "haveAccount": "Already have an account?",
-      "signIn": "Log in"
+      "signIn": "Log in",
+      "passwordHint_one": "At least {{count}} character",
+      "passwordHint_other": "At least {{count}} characters"
     },
     "logout": {
       "title": "Log out?",
@@ -130,6 +132,7 @@
   },
   "home": {
     "whereTo": "Where to?",
+    "greeting": "Hi, {{name}}!",
     "pickup": "Pickup: {{address}}",
     "pickupLoading": "Finding your address…",
     "pickupUnknown": "Pinned location",
@@ -311,6 +314,11 @@
       "az": "Azərbaycanca",
       "ru": "Русский",
       "en": "English"
+    },
+    "languageShort": {
+      "az": "AZ",
+      "ru": "RU",
+      "en": "EN"
     },
     "theme": "Appearance",
     "themes": {

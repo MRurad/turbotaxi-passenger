@@ -41,6 +41,11 @@ interface ApiErrorInit {
   serverMessage?: string;
   /** Field errors from ASP.NET ProblemDetails, if any. */
   details?: Readonly<Record<string, string[]>>;
+  /**
+   * `message` of a `{ success: false, message }` envelope (any HTTP status). Unlike ProblemDetails
+   * titles, this is written for end users, so auth screens show it verbatim.
+   */
+  envelopeMessage?: string;
   cause?: unknown;
 }
 
@@ -50,15 +55,17 @@ export class ApiError extends Error {
   readonly status?: number;
   readonly serverMessage?: string;
   readonly details?: Readonly<Record<string, string[]>>;
+  readonly envelopeMessage?: string;
   readonly messageKey: TranslationKey;
 
-  constructor({ code, status, serverMessage, details, cause }: ApiErrorInit) {
+  constructor({ code, status, serverMessage, details, envelopeMessage, cause }: ApiErrorInit) {
     super(serverMessage ?? code, { cause });
     this.name = 'ApiError';
     this.code = code;
     this.status = status;
     this.serverMessage = serverMessage;
     this.details = details;
+    this.envelopeMessage = envelopeMessage;
     this.messageKey = API_ERROR_MESSAGE_KEYS[code];
   }
 }
@@ -91,6 +98,12 @@ function extractServerMessage(data: unknown): string | undefined {
   return undefined;
 }
 
+/** `message` of a `{ success: false, message }` body, if that's what the server sent. */
+function extractEnvelopeMessage(data: unknown): string | undefined {
+  if (!isRecord(data) || data.success !== false) return undefined;
+  return typeof data.message === 'string' && data.message.trim() ? data.message.trim() : undefined;
+}
+
 function extractFieldErrors(data: unknown): FieldErrors | undefined {
   if (!isRecord(data) || !isRecord(data.errors)) return undefined;
   const entries = Object.entries(data.errors).filter(
@@ -118,6 +131,11 @@ export function toApiError(error: unknown): ApiError {
       status: response.status,
       serverMessage: extractServerMessage(response.data),
       details: extractFieldErrors(response.data),
+      // 4xx only: a 5xx "message" is usually an internal exception text, not for end users.
+      envelopeMessage:
+        response.status >= 400 && response.status < 500
+          ? extractEnvelopeMessage(response.data)
+          : undefined,
       cause: error,
     });
   }
@@ -144,10 +162,8 @@ export function unwrapEnvelope<T>(envelope: Envelope<T> | null | undefined): T {
   ) {
     const message =
       typeof envelope === 'object' && envelope !== null ? envelope.message : undefined;
-    throw new ApiError({
-      code: 'envelope',
-      serverMessage: typeof message === 'string' && message.trim() ? message.trim() : undefined,
-    });
+    const text = typeof message === 'string' && message.trim() ? message.trim() : undefined;
+    throw new ApiError({ code: 'envelope', serverMessage: text, envelopeMessage: text });
   }
   return envelope.data;
 }

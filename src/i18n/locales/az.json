@@ -120,7 +120,9 @@
       "confirmPassword": "Şifrəni təkrarlayın",
       "submit": "Hesab yarat",
       "haveAccount": "Artıq hesabınız var?",
-      "signIn": "Daxil olun"
+      "signIn": "Daxil olun",
+      "passwordHint_one": "Ən azı {{count}} simvol",
+      "passwordHint_other": "Ən azı {{count}} simvol"
     },
     "logout": {
       "title": "Hesabdan çıxılsın?",
@@ -130,6 +132,7 @@
   },
   "home": {
     "whereTo": "Hara gedirik?",
+    "greeting": "Salam, {{name}}!",
     "pickup": "Minmə yeri: {{address}}",
     "pickupLoading": "Ünvan müəyyənləşdirilir…",
     "pickupUnknown": "Xəritədəki nöqtə",
@@ -311,6 +314,11 @@
       "az": "Azərbaycanca",
       "ru": "Русский",
       "en": "English"
+    },
+    "languageShort": {
+      "az": "AZ",
+      "ru": "RU",
+      "en": "EN"
     },
     "theme": "Görünüş",
     "themes": {

@@ -51,7 +51,10 @@ describe('auth store', () => {
     const s = session();
     await useAuthStore.getState().setSession(s);
 
-    expect(useAuthStore.getState()).toMatchObject({ status: 'authenticated', accessToken: 'token' });
+    expect(useAuthStore.getState()).toMatchObject({
+      status: 'authenticated',
+      accessToken: 'token',
+    });
     expect(await SecureStore.getItemAsync(SECURE_KEYS.accessToken)).toBe('token');
     expect(await SecureStore.getItemAsync(SECURE_KEYS.refreshToken)).toBe('refresh');
     expect(await SecureStore.getItemAsync(SECURE_KEYS.tokenExpiresAt)).toBe(

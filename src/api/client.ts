@@ -64,6 +64,7 @@ apiClient.interceptors.response.use(
           code: 'invalidCredentials',
           status: apiError.status,
           serverMessage: apiError.serverMessage,
+          envelopeMessage: apiError.envelopeMessage,
           cause: error,
         }),
       );
