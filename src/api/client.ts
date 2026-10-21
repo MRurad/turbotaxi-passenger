@@ -6,6 +6,7 @@ import { expireSession } from '@/features/auth/session';
 import { useAuthStore } from '@/features/auth/store';
 import { getAcceptLanguage } from '@/i18n';
 
+import type { attachNetworkLogger as AttachNetworkLogger } from './devNetworkLog';
 import { ENDPOINTS } from './endpoints';
 import { ApiError, toApiError } from './errors';
 
@@ -15,6 +16,14 @@ export const apiClient = create({
   timeout: API_TIMEOUT_MS,
   headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
 });
+
+// Dev-only HTTP log (/dev/realtime → Network + one Console line per request). Must be attached
+// before the interceptors below; the branch and its require are stripped from release bundles.
+if (__DEV__) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const devLog = require('./devNetworkLog') as { attachNetworkLogger: typeof AttachNetworkLogger };
+  devLog.attachNetworkLogger(apiClient, 'api');
+}
 
 /** Public endpoints: never send a (possibly stale) token, so a 401 means wrong credentials. */
 const PUBLIC_PATHS: ReadonlySet<string> = new Set([ENDPOINTS.auth.login, ENDPOINTS.auth.register]);
