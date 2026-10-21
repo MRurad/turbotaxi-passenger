@@ -9,7 +9,7 @@ Backend: ASP.NET API at `https://api.turbotaxi.deepcode.az` (Swagger: `/swagger/
 - Server state: TanStack Query · Client state: Zustand · HTTP: axios · Realtime: `@microsoft/signalr`
 - Forms: react-hook-form + zod · Maps: react-native-maps (Google provider) + expo-location
 - i18n: i18next + react-i18next + expo-localization (az default, ru, en)
-- Storage: expo-secure-store (tokens), AsyncStorage (prefs, active ride snapshot)
+- Storage: expo-secure-store (tokens + cached signed-in user, zod-validated), AsyncStorage (prefs, active ride snapshot — never PII)
 - UI: StyleSheet + our theme tokens, @gorhom/bottom-sheet, react-native-reanimated, gesture-handler, expo-haptics, @expo/vector-icons
 - Tests: jest-expo + @testing-library/react-native
 - API types: generated with `openapi-typescript` into `src/api/generated/schema.ts`

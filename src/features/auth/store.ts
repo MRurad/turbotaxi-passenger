@@ -2,8 +2,14 @@ import { create } from 'zustand';
 
 import { ApiError } from '@/api/errors';
 import { SECURE_KEYS, STORAGE_KEYS } from '@/constants/storageKeys';
-import { getSecureItem, removeSecureItem, setSecureItem } from '@/lib/secureStorage';
-import { getJSON, removeItem, setJSON } from '@/lib/storage';
+import {
+  getSecureItem,
+  getSecureJSON,
+  removeSecureItem,
+  setSecureItem,
+  setSecureJSON,
+} from '@/lib/secureStorage';
+import { removeItem } from '@/lib/storage';
 import { userSchema, type User } from '@/types/user';
 
 import type { AuthSession, AuthStatus, LogoutReason } from './types';
@@ -19,7 +25,7 @@ interface AuthState {
 }
 
 interface AuthActions {
-  /** Restores the session from SecureStore (tokens) + AsyncStorage (user). Call once at startup. */
+  /** Restores the session (tokens + user) from SecureStore. Call once at startup. */
   hydrate: () => Promise<void>;
   setSession: (session: AuthSession) => Promise<void>;
   /** Replaces the cached user (e.g. after a profile update). */
@@ -42,7 +48,8 @@ async function clearPersistedSession(): Promise<void> {
     removeSecureItem(SECURE_KEYS.accessToken),
     removeSecureItem(SECURE_KEYS.refreshToken),
     removeSecureItem(SECURE_KEYS.tokenExpiresAt),
-    removeItem(STORAGE_KEYS.user),
+    removeSecureItem(SECURE_KEYS.user),
+    removeItem(STORAGE_KEYS.legacyUser),
   ]);
 }
 
@@ -77,13 +84,16 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
       getSecureItem(SECURE_KEYS.accessToken),
       getSecureItem(SECURE_KEYS.refreshToken),
       getSecureItem(SECURE_KEYS.tokenExpiresAt),
-      getJSON(STORAGE_KEYS.user, userSchema),
+      getSecureJSON(SECURE_KEYS.user, userSchema),
     ]);
     const expiresAt = parseExpiresAt(expiresAtRaw);
     // No refresh endpoint yet: an expired token means logging in again.
     const expired = expiresAt !== null && expiresAt <= Date.now();
     // The user logged in/out while we were reading: their action wins.
     if (generation !== sessionGeneration) return;
+
+    // One-time PII cleanup: the user used to be cached in plain AsyncStorage.
+    await enqueuePersist(() => removeItem(STORAGE_KEYS.legacyUser));
 
     if (!accessToken || !user || expired) {
       set({ ...SIGNED_OUT, lastLogoutReason: expired ? 'expired' : null });
@@ -114,7 +124,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
         tokens.expiresAt !== null
           ? setSecureItem(SECURE_KEYS.tokenExpiresAt, String(tokens.expiresAt))
           : removeSecureItem(SECURE_KEYS.tokenExpiresAt),
-        setJSON(STORAGE_KEYS.user, user),
+        setSecureJSON(SECURE_KEYS.user, user),
       ]),
     );
   },
@@ -122,7 +132,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   updateUser: async (user) => {
     if (get().status !== 'authenticated') return;
     set({ user });
-    await enqueuePersist(() => setJSON(STORAGE_KEYS.user, user));
+    await enqueuePersist(() => setSecureJSON(SECURE_KEYS.user, user));
   },
 
   logout: async (reason = 'user') => {

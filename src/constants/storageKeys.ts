@@ -1,13 +1,15 @@
-/** SecureStore keys (tokens only). SecureStore allows [A-Za-z0-9._-]. */
+/** SecureStore keys (session tokens + the signed-in user's PII). Allowed chars: [A-Za-z0-9._-]. */
 export const SECURE_KEYS = {
   accessToken: 'turbotaxi.accessToken',
   refreshToken: 'turbotaxi.refreshToken',
   tokenExpiresAt: 'turbotaxi.tokenExpiresAt',
+  user: 'turbotaxi.session.user',
 } as const;
 
 /** AsyncStorage keys (non-secret data). */
 export const STORAGE_KEYS = {
-  user: 'turbotaxi.user',
+  /** Pre-SecureStore location of the cached user. Only read to delete it (PII cleanup). */
+  legacyUser: 'turbotaxi.user',
   themeMode: 'turbotaxi.themeMode',
   language: 'turbotaxi.language',
   recentPlaces: 'turbotaxi.recentPlaces',

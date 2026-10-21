@@ -29,6 +29,11 @@ function session(overrides: Partial<AuthSession['tokens']> = {}): AuthSession {
   };
 }
 
+async function storedUser(): Promise<unknown> {
+  const raw = await SecureStore.getItemAsync(SECURE_KEYS.user);
+  return raw === null ? null : JSON.parse(raw);
+}
+
 beforeEach(async () => {
   secureStoreMock.__reset();
   await AsyncStorage.clear();
@@ -42,23 +47,19 @@ describe('auth store', () => {
     expect(useAuthStore.getState()).toMatchObject({ status: 'unauthenticated', user: null });
   });
 
-  it('setSession puts tokens in SecureStore and the user in AsyncStorage only', async () => {
+  it('setSession puts tokens and the user in SecureStore and nothing in AsyncStorage', async () => {
     const s = session();
     await useAuthStore.getState().setSession(s);
 
-    expect(useAuthStore.getState()).toMatchObject({
-      status: 'authenticated',
-      accessToken: 'token',
-    });
+    expect(useAuthStore.getState()).toMatchObject({ status: 'authenticated', accessToken: 'token' });
     expect(await SecureStore.getItemAsync(SECURE_KEYS.accessToken)).toBe('token');
     expect(await SecureStore.getItemAsync(SECURE_KEYS.refreshToken)).toBe('refresh');
     expect(await SecureStore.getItemAsync(SECURE_KEYS.tokenExpiresAt)).toBe(
       String(s.tokens.expiresAt),
     );
-
-    const storedUser = await AsyncStorage.getItem(STORAGE_KEYS.user);
-    expect(JSON.parse(storedUser ?? '{}')).toEqual(s.user);
-    expect(storedUser).not.toContain('token');
+    expect(await storedUser()).toEqual(s.user);
+    // No PII or tokens in plain AsyncStorage.
+    expect(await AsyncStorage.getAllKeys()).toEqual([]);
   });
 
   it('hydrates a stored session', async () => {
@@ -83,6 +84,7 @@ describe('auth store', () => {
       lastLogoutReason: 'expired',
     });
     expect(await SecureStore.getItemAsync(SECURE_KEYS.accessToken)).toBeNull();
+    expect(await storedUser()).toBeNull();
   });
 
   it('keeps a session with unknown expiry', async () => {
@@ -91,16 +93,35 @@ describe('auth store', () => {
     expect(useAuthStore.getState().status).toBe('authenticated');
   });
 
-  it('rejects a corrupt stored user', async () => {
+  it('rejects a corrupt stored user (zod) and deletes it', async () => {
     await useAuthStore.getState().setSession(session());
-    await AsyncStorage.setItem(STORAGE_KEYS.user, JSON.stringify({ id: 'nope' }));
+    await SecureStore.setItemAsync(SECURE_KEYS.user, JSON.stringify({ id: 'nope' }));
+    await useAuthStore.getState().hydrate();
+
+    expect(useAuthStore.getState().status).toBe('unauthenticated');
+    expect(await storedUser()).toBeNull();
+  });
+
+  it('rejects a stored user that is not JSON', async () => {
+    await useAuthStore.getState().setSession(session());
+    await SecureStore.setItemAsync(SECURE_KEYS.user, '{not json');
     await useAuthStore.getState().hydrate();
     expect(useAuthStore.getState().status).toBe('unauthenticated');
-    expect(await AsyncStorage.getItem(STORAGE_KEYS.user)).toBeNull();
+  });
+
+  it('removes the legacy AsyncStorage user copy on hydrate', async () => {
+    await useAuthStore.getState().setSession(session());
+    await AsyncStorage.setItem(STORAGE_KEYS.legacyUser, JSON.stringify(session().user));
+    useAuthStore.setState(initialState, true);
+
+    await useAuthStore.getState().hydrate();
+    expect(useAuthStore.getState().status).toBe('authenticated');
+    expect(await AsyncStorage.getItem(STORAGE_KEYS.legacyUser)).toBeNull();
   });
 
   it('logout clears memory and storage and records the reason', async () => {
     await useAuthStore.getState().setSession(session());
+    await AsyncStorage.setItem(STORAGE_KEYS.legacyUser, '{}');
     await useAuthStore.getState().logout('expired');
 
     expect(useAuthStore.getState()).toMatchObject({
@@ -110,7 +131,8 @@ describe('auth store', () => {
       lastLogoutReason: 'expired',
     });
     expect(await SecureStore.getItemAsync(SECURE_KEYS.accessToken)).toBeNull();
-    expect(await AsyncStorage.getItem(STORAGE_KEYS.user)).toBeNull();
+    expect(await storedUser()).toBeNull();
+    expect(await AsyncStorage.getItem(STORAGE_KEYS.legacyUser)).toBeNull();
     expect(() => requireUserId()).toThrow(expect.objectContaining({ code: 'sessionExpired' }));
   });
 
@@ -122,19 +144,27 @@ describe('auth store', () => {
     await useAuthStore.getState().setSession(s);
     await useAuthStore.getState().updateUser({ ...s.user, name: 'Rəşad' });
     expect(useAuthStore.getState().user?.name).toBe('Rəşad');
-    expect(await AsyncStorage.getItem(STORAGE_KEYS.user)).toContain('Rəşad');
+    expect(await storedUser()).toMatchObject({ name: 'Rəşad' });
   });
 });
 
 describe('auth store ordering', () => {
   it('a logout right after setSession leaves storage empty', async () => {
-    const s = session();
-    const writing = useAuthStore.getState().setSession(s);
+    const writing = useAuthStore.getState().setSession(session());
     const clearing = useAuthStore.getState().logout('user');
     await Promise.all([writing, clearing]);
 
     expect(await SecureStore.getItemAsync(SECURE_KEYS.accessToken)).toBeNull();
-    expect(await AsyncStorage.getItem(STORAGE_KEYS.user)).toBeNull();
+    expect(await storedUser()).toBeNull();
+  });
+
+  it('an updateUser queued before logout cannot re-create the user after it', async () => {
+    await useAuthStore.getState().setSession(session());
+    const updating = useAuthStore.getState().updateUser({ ...session().user, name: 'Late' });
+    const clearing = useAuthStore.getState().logout('user');
+    await Promise.all([updating, clearing]);
+
+    expect(await storedUser()).toBeNull();
   });
 
   it('hydrate does not override a login that happened while it was reading', async () => {
@@ -144,5 +174,6 @@ describe('auth store ordering', () => {
 
     expect(useAuthStore.getState().status).toBe('authenticated');
     expect(await SecureStore.getItemAsync(SECURE_KEYS.accessToken)).toBe('token');
+    expect(await storedUser()).toMatchObject({ id: 7 });
   });
 });
