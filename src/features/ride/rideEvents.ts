@@ -39,8 +39,16 @@ export function handleRideUpdate(evt: RideStatusUpdatedEvent): void {
     case 'no_driver':
       store.noDriverFound();
       return;
+    case 'searching':
+      // After an accept: the driver cancelled and the backend searches again.
+      if (store.phase === 'driver_assigned' || store.phase === 'driver_arrived') {
+        store.driverLost();
+        return;
+      }
+      store.updateRoute(info);
+      return;
     default:
-      // Searching / unknown status: keep the phase, take any route info.
+      // Unknown status: keep the phase, take any route info.
       store.updateRoute(info);
   }
 }

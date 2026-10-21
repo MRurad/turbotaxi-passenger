@@ -57,6 +57,11 @@ interface RideActions {
    * sends for it) are ignored from now on, and Retry orders a new ride.
    */
   noDriverFound: () => void;
+  /**
+   * The assigned driver dropped out and the backend is searching again (a Searching update
+   * after an accept): forget that driver, restart the search clock.
+   */
+  driverLost: () => void;
   /** Route info for the current phase (ETA, polylines…) without a phase change. */
   updateRoute: (info: RideRouteInfo) => void;
   updateDriverLocation: (location: LatLng) => void;
@@ -89,8 +94,9 @@ export const ALLOWED_TRANSITIONS: Readonly<Record<RidePhase, readonly RidePhase[
     'cancelled',
     'no_driver',
   ],
-  driver_assigned: ['driver_arrived', 'in_progress', 'completed', 'cancelled'],
-  driver_arrived: ['in_progress', 'completed', 'cancelled'],
+  // → searching: the driver cancelled and the backend looks for another one (driverLost).
+  driver_assigned: ['driver_arrived', 'in_progress', 'completed', 'cancelled', 'searching'],
+  driver_arrived: ['in_progress', 'completed', 'cancelled', 'searching'],
   in_progress: ['completed', 'cancelled'],
   // The ride is let go of (and cancelled when the app timed out): only a new search or giving up.
   no_driver: ['searching', 'cancelled'],
@@ -150,7 +156,9 @@ function routePatch(s: RideState, info: RideRouteInfo): Partial<RideState> {
     },
     etaMinutes: info.etaMinutes ?? s.etaMinutes,
     remainingKm: info.remainingKm ?? s.remainingKm,
-    driver: info.driver ?? s.driver,
+    driver:
+      info.driver ??
+      (info.driverId !== undefined && info.driverId !== s.driverId ? null : s.driver),
   };
 }
 
@@ -234,6 +242,20 @@ export const useRideStore = create<RideStore>()((set, get) => {
     },
     rideCancelled: (reason) => {
       advance('cancelled', {}, { cancelReason: reason });
+    },
+    driverLost: () => {
+      if (!TRACKING_PHASES.has(get().phase) || get().phase === 'in_progress') return;
+      advance(
+        'searching',
+        {},
+        {
+          driverId: null,
+          driver: null,
+          driverLocation: null,
+          polylines: { toPickup: null, trip: get().polylines.trip },
+          searchStartedAt: Date.now(),
+        },
+      );
     },
     noDriverFound: () => {
       advance('no_driver', {}, { rideId: null, driverId: null });

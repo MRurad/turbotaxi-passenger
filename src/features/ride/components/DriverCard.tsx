@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { Avatar, Card, Text } from '@/components/ui';
+import { Avatar, Card, Skeleton, Text } from '@/components/ui';
 import { VEHICLES, type VehicleType } from '@/constants/vehicles';
 import { makeStyles, useTheme } from '@/theme';
 
@@ -12,6 +12,8 @@ export interface DriverCardProps {
   /** Null until the backend sends driver details (docs/BACKEND_REQUESTS.md #1). */
   driver: RideDriver | null;
   vehicleType: VehicleType;
+  /** The driver's name / car are being fetched: placeholders instead of the fallback. */
+  loading?: boolean;
 }
 
 const WHITESPACE = /\s+/g;
@@ -19,7 +21,7 @@ const WHITESPACE = /\s+/g;
 const DANGLING_SEPARATORS = /^[\s,]+|[\s,]+$/g;
 
 /** Driver: avatar initials, name, car and a big plate number. Falls back gracefully. */
-export function DriverCard({ driver, vehicleType }: DriverCardProps) {
+export function DriverCard({ driver, vehicleType, loading = false }: DriverCardProps) {
   const styles = useStyles();
   const { t } = useTranslation();
   const { colors, sizes } = useTheme();
@@ -35,6 +37,20 @@ export function DriverCard({ driver, vehicleType }: DriverCardProps) {
         .replace(DANGLING_SEPARATORS, '')
     : t(VEHICLES[vehicleType].labelKey);
   const plate = driver?.plateNumber ?? null;
+
+  if (loading) {
+    return (
+      <Card variant="outlined" padding="lg" testID="driver-card-loading">
+        <View style={styles.row} accessible accessibilityLabel={t('common.labels.loading')}>
+          <Skeleton circle={sizes.avatar.md} />
+          <View style={styles.text}>
+            <Skeleton width="60%" height={sizes.icon.md} />
+            <Skeleton width="40%" height={sizes.icon.sm} />
+          </View>
+        </View>
+      </Card>
+    );
+  }
 
   return (
     <Card variant="outlined" padding="lg" testID="driver-card">

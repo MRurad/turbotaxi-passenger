@@ -30,6 +30,9 @@ const SENSITIVE_FIELDS = new Set([
   'idtoken',
   'jwt',
   'apikey',
+  // Personal data (e.g. the assigned driver's user record).
+  'phonenumber',
+  'email',
 ]);
 /** Query params: the above plus Google's `key`. */
 const SENSITIVE_PARAMS = new Set([...SENSITIVE_FIELDS, 'key']);

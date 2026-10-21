@@ -36,16 +36,20 @@ const entry = (overrides: Partial<Omit<NetworkLogEntry, 'id'>> = {}) => ({
 beforeEach(() => networkLog.clear());
 
 describe('masking', () => {
-  it('masks password and token fields at any depth, case-insensitively', () => {
+  it('masks passwords, tokens and personal data at any depth, case-insensitively', () => {
     expect(
       maskBody({
+        name: 'Ali',
         email: 'a@b.c',
+        phoneNumber: '+994501234567',
         Password: 'secret',
         data: { tokens: [{ accessToken: 'jwt', refreshToken: 'r', expiresIn: 3600 }] },
         token: 't',
       }),
     ).toEqual({
-      email: 'a@b.c',
+      name: 'Ali',
+      email: MASKED,
+      phoneNumber: MASKED,
       Password: MASKED,
       data: { tokens: [{ accessToken: MASKED, refreshToken: MASKED, expiresIn: 3600 }] },
       token: MASKED,
@@ -80,8 +84,8 @@ describe('masking', () => {
   });
 
   it('pretty-prints JSON strings with secrets masked and truncates long bodies', () => {
-    expect(formatBody('{"email":"a","password":"p"}')).toBe(
-      `{\n  "email": "a",\n  "password": "${MASKED}"\n}`,
+    expect(formatBody('{"name":"a","password":"p"}')).toBe(
+      `{\n  "name": "a",\n  "password": "${MASKED}"\n}`,
     );
     expect(formatBody('')).toBeNull();
     expect(formatBody('not json')).toBe('not json');

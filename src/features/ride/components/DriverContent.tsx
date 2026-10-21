@@ -8,7 +8,9 @@ import { formatDuration } from '@/lib/format';
 import { makeStyles } from '@/theme';
 
 import { TEL_URL_SCHEME } from '../constants';
+import { useDriverProfile } from '../hooks/useDriverProfile';
 import { useRideStore } from '../store';
+import { mergeDriver } from '../utils';
 import { DriverCard } from './DriverCard';
 import { RideCancelButton } from './RideCancelButton';
 
@@ -18,14 +20,17 @@ export function DriverContent() {
   const { t } = useTranslation();
   const { language } = useChangeLanguage();
   const toast = useToast();
-  const { phase, driver, vehicleType, etaMinutes } = useRideStore(
+  const { phase, driverId, eventDriver, vehicleType, etaMinutes } = useRideStore(
     useShallow((s) => ({
       phase: s.phase,
-      driver: s.driver,
+      driverId: s.driverId,
+      eventDriver: s.driver,
       vehicleType: s.vehicleType,
       etaMinutes: s.etaMinutes,
     })),
   );
+  const profile = useDriverProfile(driverId);
+  const driver = mergeDriver(eventDriver, profile.data ?? null);
   const arrived = phase === 'driver_arrived';
   const phone = driver?.phoneNumber ?? null;
 
@@ -61,7 +66,11 @@ export function DriverContent() {
           ) : null}
         </View>
       )}
-      <DriverCard driver={driver} vehicleType={vehicleType} />
+      <DriverCard
+        driver={driver}
+        vehicleType={vehicleType}
+        loading={profile.isLoading && !eventDriver}
+      />
       <View style={styles.actions}>
         {phone ? (
           <Button

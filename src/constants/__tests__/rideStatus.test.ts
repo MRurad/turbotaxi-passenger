@@ -14,6 +14,20 @@ describe('mapBackendStatus', () => {
     expect(mapBackendStatus('in-progress')).toBe('in_progress');
   });
 
+  it('treats every spelling of a cancellation as cancelled', () => {
+    expect(mapBackendStatus('Canceled')).toBe('cancelled');
+    expect(mapBackendStatus('DriverCanceled')).toBe('cancelled');
+    expect(mapBackendStatus('Ride_Cancelled_By_Driver')).toBe('cancelled');
+    expect(mapBackendStatus('CanceledByPassenger')).toBe('cancelled');
+  });
+
+  it('never ends a ride on in-between cancel states', () => {
+    expect(mapBackendStatus('CancelRequested')).toBe('unknown');
+    expect(mapBackendStatus('CancellationPending')).toBe('unknown');
+    expect(mapBackendStatus('CancellationFailed')).toBe('unknown');
+    expect(mapBackendStatus('NotCancelled')).toBe('unknown');
+  });
+
   it('returns unknown for an unrecognized status', () => {
     expect(mapBackendStatus('Teleported')).toBe('unknown');
   });

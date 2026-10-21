@@ -26,6 +26,9 @@ export const queryKeys = {
   tripDetail: (tripId: number) => ['tripHistory', 'detail', tripId] as const,
 
   chatMessages: (rideId: number) => ['chat', 'messages', rideId] as const,
+  rideDriver: (driverId: number) => ['ride', 'driver', driverId] as const,
+  /** Placeholder key while no driver is assigned (the query is skipped). */
+  rideDriverIdle: () => ['ride', 'driver', 'idle'] as const,
   chatConversations: () => ['chat', 'conversations'] as const,
 
   places: {

@@ -25,6 +25,22 @@ export const sizes = {
   route: { line: 5, outline: 9 },
   /** Floating map controls (top bar, my-location button). */
   mapControl: 48,
+  /** Driver car on the map, seen from above (rotates with the direction of travel). */
+  car: {
+    width: 20,
+    height: 40,
+    radius: 6,
+    /** Bonnet in front of the windshield: what makes the shape read as a car. */
+    hood: 10,
+    windshield: 8,
+    rearWindow: 5,
+    trunk: 4,
+    glassInset: 3,
+    glassRadius: 2,
+    outline: 2,
+    /** Above the pickup / destination pins (the car ends up on the pickup). */
+    zIndex: 10,
+  },
   /** Searching: pulse ring diameter around the pickup. */
   searchPulse: 160,
   /** Driver card: plate number badge border. */

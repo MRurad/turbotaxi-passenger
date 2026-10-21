@@ -8,3 +8,13 @@ export type RidePhase =
   | 'completed' // show summary, then reset to idle
   | 'cancelled' // by user or driver
   | 'no_driver'; // timeout / nobody accepted
+
+/** The assigned driver as the passenger sees it. Every field may be missing (docs/BACKEND_REQUESTS.md #1). */
+export interface RideDriver {
+  name: string | null;
+  phoneNumber: string | null;
+  plateNumber: string | null;
+  brand: string | null;
+  model: string | null;
+  color: string | null;
+}

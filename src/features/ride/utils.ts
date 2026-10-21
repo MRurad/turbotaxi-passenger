@@ -30,11 +30,13 @@ export function phaseFromUpdate(evt: RideStatusUpdatedEvent): RidePhase | null {
   return mapped;
 }
 
-/** "CancelledByDriver" → driver, "CancelledByUser" → user, plain "Cancelled" → unknown. */
+const USER_WORDS = ['user', 'passenger', 'rider'] as const;
+
+/** "CancelledByDriver" → driver, "CancelledByUser" / "…Passenger" → user, "Cancelled" → unknown. */
 export function cancelReasonFromStatus(status: string): CancelReason {
   const key = status.toLowerCase();
   if (key.includes('driver')) return 'driver';
-  if (key.includes('user')) return 'user';
+  if (USER_WORDS.some((word) => key.includes(word))) return 'user';
   return 'unknown';
 }
 
@@ -71,6 +73,23 @@ export function routeInfoFromUpdate(evt: RideStatusUpdatedEvent): RideRouteInfo 
   set('remainingKm', evt.distanceKm ?? null);
   set('driver', driverOf(evt) ?? null);
   return info;
+}
+
+/** Driver details from the hub win field by field; the fetched profile fills the gaps. */
+export function mergeDriver(
+  fromEvents: RideDriver | null,
+  fromProfile: RideDriver | null,
+): RideDriver | null {
+  if (!fromEvents) return fromProfile;
+  if (!fromProfile) return fromEvents;
+  return {
+    name: fromEvents.name ?? fromProfile.name,
+    phoneNumber: fromEvents.phoneNumber ?? fromProfile.phoneNumber,
+    plateNumber: fromEvents.plateNumber ?? fromProfile.plateNumber,
+    brand: fromEvents.brand ?? fromProfile.brand,
+    model: fromEvents.model ?? fromProfile.model,
+    color: fromEvents.color ?? fromProfile.color,
+  };
 }
 
 /** The encoded route to draw in this phase: driver → pickup, then the trip. */

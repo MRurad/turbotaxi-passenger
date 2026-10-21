@@ -227,3 +227,76 @@ describe('updates before hydration', () => {
     expect(store()).toMatchObject({ phase: 'driver_assigned', driverId: 4, hydrated: true });
   });
 });
+
+describe('driver changes', () => {
+  const store = () => useRideStore.getState();
+  beforeEach(() => {
+    store().reset();
+    store().markHydrated(true);
+    store().startSearching(
+      {
+        rideId: 2,
+        status: 'searching',
+        rawStatus: 'Searching',
+        estimatedFare: 5,
+        originalEstimatedFare: 5,
+        discountAmount: 0,
+        promo: null,
+        distanceKm: 4,
+        durationMinutes: 9,
+      },
+      {
+        pickup: {
+          placeId: null,
+          title: 'A',
+          subtitle: '',
+          location: { latitude: 1, longitude: 1 },
+        },
+        destination: {
+          placeId: null,
+          title: 'B',
+          subtitle: '',
+          location: { latitude: 2, longitude: 2 },
+        },
+        vehicleType: 0,
+      },
+    );
+  });
+
+  it('a Searching update after an accept means the driver dropped out: search again', () => {
+    handleRideUpdate(APPROACH);
+    handleDriverLocation({ driverId: 4, latitude: 40.4, longitude: 49.8 });
+    const firstSearch = store().searchStartedAt;
+    handleRideUpdate(SEARCHING);
+    expect(store()).toMatchObject({
+      phase: 'searching',
+      driverId: null,
+      driver: null,
+      driverLocation: null,
+      polylines: { toPickup: null },
+    });
+    expect(store().searchStartedAt).toBeGreaterThanOrEqual(firstSearch ?? 0);
+  });
+
+  it('a driver cancel in another spelling ends the ride, naming the driver', () => {
+    handleRideUpdate(APPROACH);
+    handleRideUpdate(update({ status: 'CanceledByDriver' }));
+    expect(store()).toMatchObject({ phase: 'cancelled', cancelReason: 'driver' });
+  });
+
+  it("a new driver doesn't inherit the previous driver's details", () => {
+    store().driverAssigned({
+      driverId: 4,
+      driver: {
+        name: 'Old',
+        phoneNumber: null,
+        plateNumber: null,
+        brand: null,
+        model: null,
+        color: null,
+      },
+    });
+    store().driverAssigned({ driverId: 9 });
+    expect(store()).toMatchObject({ driverId: 9, driver: null });
+  });
+});

@@ -1,4 +1,3 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, useState } from 'react';
 import { Easing, View } from 'react-native';
 import { AnimatedRegion, MarkerAnimated } from 'react-native-maps';
@@ -19,18 +18,20 @@ export interface CarMarkerProps {
 }
 
 /**
- * Driver car that glides between location updates (~1 s) and rotates to the direction of
- * travel. Not used until live tracking (Prompt 9).
+ * Driver car seen from above: glides between location updates (~1 s) and points in the
+ * direction of travel (flat marker, rotation 0 = north = the car's nose up). Dark car on
+ * the light map, light car on the dark map — always apart from the route it drives on.
  */
 export function CarMarker({ coordinate, heading, title }: CarMarkerProps) {
   const styles = useStyles();
-  const { colors, sizes } = useTheme();
+  const { isDark, sizes } = useTheme();
   const [region] = useState(
     () => new AnimatedRegion({ ...coordinate, latitudeDelta: 0, longitudeDelta: 0 }),
   );
   const previous = useRef<LatLng>(coordinate);
   const [rotation, setRotation] = useState(heading ?? 0);
-  const [tracksViewChanges, setTracksViewChanges] = useState(true);
+  // The native marker is a snapshot of the view: retake it once per color scheme.
+  const [snapshotScheme, setSnapshotScheme] = useState<boolean | null>(null);
 
   useEffect(() => {
     const from = previous.current;
@@ -65,29 +66,57 @@ export function CarMarker({ coordinate, heading, title }: CarMarkerProps) {
       anchor={{ x: 0.5, y: 0.5 }}
       flat
       rotation={rotation}
-      // Snapshot once rendered; the native marker handles position/rotation from here.
-      tracksViewChanges={tracksViewChanges}
+      zIndex={sizes.car.zIndex}
+      tracksViewChanges={snapshotScheme !== isDark}
     >
-      {/* Wait a frame after layout so the icon glyph is drawn before the snapshot. */}
+      {/* Re-mounts on a scheme switch so onLayout fires again; wait a frame so the car is
+          drawn before the snapshot. The padded frame keeps the shadow inside the snapshot. */}
       <View
-        style={styles.car}
-        onLayout={() => requestAnimationFrame(() => setTracksViewChanges(false))}
+        key={isDark ? 'dark' : 'light'}
+        style={styles.frame}
+        onLayout={() => {
+          const scheme = isDark;
+          requestAnimationFrame(() => setSnapshotScheme(scheme));
+        }}
       >
-        <Ionicons name="car-sport" size={sizes.icon.lg} color={colors.textOnPrimary} />
+        <View style={styles.car}>
+          <View style={styles.windshield} />
+          <View style={styles.rearWindow} />
+        </View>
       </View>
     </MarkerAnimated>
   );
 }
 
-const useStyles = makeStyles((t) => ({
-  car: {
-    width: t.sizes.pin.head + t.spacing.sm,
-    height: t.sizes.pin.head + t.spacing.sm,
-    borderRadius: t.radii.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: t.colors.primaryFillStrong,
-    borderWidth: t.sizes.focusBorder * 2,
-    borderColor: t.colors.surfaceElevated,
-  },
-}));
+const useStyles = makeStyles((t) => {
+  const glassWidth = t.sizes.car.width - t.sizes.car.glassInset * 2;
+  return {
+    frame: { padding: t.spacing.xs },
+    car: {
+      width: t.sizes.car.width,
+      height: t.sizes.car.height,
+      borderRadius: t.sizes.car.radius,
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      // Bonnet in front (top = direction of travel), short boot behind.
+      paddingTop: t.sizes.car.hood,
+      paddingBottom: t.sizes.car.trunk,
+      backgroundColor: t.colors.mapCar,
+      borderWidth: t.sizes.car.outline,
+      borderColor: t.colors.mapCarOutline,
+      ...t.shadows.sm,
+    },
+    windshield: {
+      width: glassWidth,
+      height: t.sizes.car.windshield,
+      borderRadius: t.sizes.car.glassRadius,
+      backgroundColor: t.colors.mapCarGlass,
+    },
+    rearWindow: {
+      width: glassWidth,
+      height: t.sizes.car.rearWindow,
+      borderRadius: t.sizes.car.glassRadius,
+      backgroundColor: t.colors.mapCarGlass,
+    },
+  };
+});

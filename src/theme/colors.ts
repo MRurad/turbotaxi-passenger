@@ -32,6 +32,10 @@ export interface ColorTokens {
   dangerSoft: string;
   overlay: string;
   mapRoute: string;
+  /** Driver car on the map: contrasts with the route it drives on and with the map tiles. */
+  mapCar: string;
+  mapCarGlass: string;
+  mapCarOutline: string;
   skeleton: string;
   skeletonHighlight: string;
   shadow: string;
@@ -69,6 +73,10 @@ export const lightColors: ColorTokens = {
   dangerSoft: palette.status.dangerSoftLight,
   overlay: palette.overlayLight,
   mapRoute: palette.steel[500],
+  // Dark car on the light map, clearly apart from the steel route line.
+  mapCar: palette.steel[800],
+  mapCarGlass: palette.steel[200],
+  mapCarOutline: palette.neutral[0],
   skeleton: palette.neutral[100],
   skeletonHighlight: palette.neutral[50],
   shadow: palette.shadow,
@@ -104,6 +112,10 @@ export const darkColors: ColorTokens = {
   dangerSoft: palette.status.dangerSoftDark,
   overlay: palette.overlayDark,
   mapRoute: palette.steel[300],
+  // Light car on the dark map (like Uber / Bolt at night).
+  mapCar: palette.neutral[50],
+  mapCarGlass: palette.steel[700],
+  mapCarOutline: palette.neutral[900],
   // Lighter than surfaceElevated (the sheet) so skeletons stay visible on it.
   skeleton: palette.navy.border,
   skeletonHighlight: palette.neutral[700],

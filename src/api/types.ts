@@ -14,6 +14,8 @@ export type AuthTokensDto = Schemas['AuthTokensDto'];
 export type UserDto = Schemas['UserDto'];
 export type UserListItemDto = Schemas['UserListItemDto'];
 export type UserUpdateRequest = Schemas['UserUpdateRequest'];
+export type DriverDto = Schemas['DriverDto'];
+export type VehicleDto = Schemas['VehicleDto'];
 
 // Rides
 export type VehicleTypeDto = Schemas['VehicleType'];

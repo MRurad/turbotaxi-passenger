@@ -26,9 +26,20 @@ export const BACKEND_STATUS_MAP: Readonly<Record<string, RidePhase>> = {
   timeout: 'no_driver',
 };
 
+/**
+ * Final cancellations in any spelling: "Canceled", "Cancelled", "DriverCanceled",
+ * "RideCancelledByDriver", "CanceledByPassenger"… (key is lower-case, separators removed).
+ * Anchored, so in-between states like "CancelRequested" / "CancellationFailed" don't end a ride.
+ */
+const CANCELLED_STATUS =
+  /^(ride)?(driver|user|passenger|rider|system)?cancell?ed(by(driver|user|passenger|rider|system))?$/;
+
 /** Normalizes a backend ride status string. Unknown or empty values map to 'unknown'. */
 export function mapBackendStatus(status: string | null | undefined): MappedRideStatus {
   if (!status) return 'unknown';
   const key = status.replace(/[\s_-]/g, '').toLowerCase();
-  return BACKEND_STATUS_MAP[key] ?? 'unknown';
+  const mapped = BACKEND_STATUS_MAP[key];
+  if (mapped) return mapped;
+  if (CANCELLED_STATUS.test(key)) return 'cancelled';
+  return 'unknown';
 }

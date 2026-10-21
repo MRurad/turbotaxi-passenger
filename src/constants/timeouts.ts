@@ -25,6 +25,9 @@ export const QUERY_STALE_TIME_MS = 30_000;
 /** A route price is reused this long for the same route + class + promo (no re-POST on remount). */
 export const ROUTE_ESTIMATE_STALE_TIME_MS = 2 * 60_000;
 
+/** A driver's name / car doesn't change during a ride. */
+export const DRIVER_PROFILE_STALE_TIME_MS = 30 * 60_000;
+
 /** A persisted active ride older than this is discarded on app start. */
 export const ACTIVE_RIDE_STALE_MS = 3 * 60 * 60_000;
 
