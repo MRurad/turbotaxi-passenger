@@ -5,7 +5,7 @@ React Native (Expo) app for **passengers only** (no driver features). Users regi
 Backend: ASP.NET API at `https://api.turbotaxi.deepcode.az` (Swagger: `/swagger/v1/swagger.json`) + SignalR hubs. The backend is written by a teammate and is still evolving — never invent endpoints; if something is missing, isolate it behind an adapter and add it to `docs/BACKEND_REQUESTS.md`.
 
 ## Stack
-- Expo (latest SDK), TypeScript strict, Expo Router (routes in `src/app`)
+- Expo SDK 57 (pinned to match the App Store Expo Go; don't upgrade the SDK unless I ask), TypeScript strict, Expo Router (routes in `src/app`)
 - Server state: TanStack Query · Client state: Zustand · HTTP: axios · Realtime: `@microsoft/signalr`
 - Forms: react-hook-form + zod · Maps: react-native-maps (Google provider) + expo-location
 - i18n: i18next + react-i18next + expo-localization (az default, ru, en)
