@@ -179,41 +179,37 @@ describe('HubConnectionManager — basics', () => {
     const off = hub.on(USER_HUB_EVENTS.driverLocationUpdated, handler);
     await hub.start();
 
-    last().emit(USER_HUB_EVENTS.driverLocationUpdated, {
-      driverId: 3,
-      latitude: 40.4,
-      longitude: 49.8,
-      extra: 'kept',
-    });
-    last().emit(USER_HUB_EVENTS.driverLocationUpdated, { driverId: 'x' });
+    // Positional arguments, as the server sends them.
+    last().emit(USER_HUB_EVENTS.driverLocationUpdated, 3, 40.4, 49.8);
+    last().emit(USER_HUB_EVENTS.driverLocationUpdated, { driverId: 3, latitude: 1, longitude: 2 });
     expect(handler).toHaveBeenCalledTimes(1);
-    expect(handler).toHaveBeenCalledWith(expect.objectContaining({ driverId: 3, extra: 'kept' }));
+    expect(handler).toHaveBeenCalledWith({ driverId: 3, latitude: 40.4, longitude: 49.8 });
 
     off();
-    last().emit(USER_HUB_EVENTS.driverLocationUpdated, { driverId: 3, latitude: 1, longitude: 2 });
+    last().emit(USER_HUB_EVENTS.driverLocationUpdated, 3, 1, 2);
     expect(handler).toHaveBeenCalledTimes(1);
   });
 
   it('one throwing handler does not stop the others', async () => {
     const { hub } = makeHub();
     const good = jest.fn();
-    hub.on(USER_HUB_EVENTS.noDriverFound, () => {
+    hub.on(USER_HUB_EVENTS.rideStatusUpdated, () => {
       throw new Error('boom');
     });
-    hub.on(USER_HUB_EVENTS.noDriverFound, good);
+    hub.on(USER_HUB_EVENTS.rideStatusUpdated, good);
     await hub.start();
-    last().emit(USER_HUB_EVENTS.noDriverFound, { rideId: 1 });
+    last().emit(USER_HUB_EVENTS.rideStatusUpdated, 1, 'ride_update', { status: 'Searching' });
     expect(good).toHaveBeenCalledTimes(1);
   });
 
   it('the same function registered twice needs two unsubscribes', async () => {
     const { hub } = makeHub();
     const handler = jest.fn();
-    const offA = hub.on(USER_HUB_EVENTS.noDriverFound, handler);
-    hub.on(USER_HUB_EVENTS.noDriverFound, handler);
+    const offA = hub.on(USER_HUB_EVENTS.rideStatusUpdated, handler);
+    hub.on(USER_HUB_EVENTS.rideStatusUpdated, handler);
     await hub.start();
     offA();
-    last().emit(USER_HUB_EVENTS.noDriverFound, { rideId: 1 });
+    last().emit(USER_HUB_EVENTS.rideStatusUpdated, 1, 'ride_update', { status: 'Searching' });
     expect(handler).toHaveBeenCalledTimes(1);
   });
 
@@ -373,7 +369,7 @@ describe('catch-all + retry table', () => {
       `${JSON.stringify({ type: 1, target, arguments: [{ rideId: 5 }] })}\u001e`;
 
     last().protocol?.parseMessages(frame('MysteryEvent'), NullLogger.instance);
-    last().protocol?.parseMessages(frame('rideaccepted'), NullLogger.instance);
+    last().protocol?.parseMessages(frame('ridestatusupdated'), NullLogger.instance);
 
     const [second, first] = useRealtimeDebug.getState().events;
     expect(first).toMatchObject({
@@ -383,7 +379,7 @@ describe('catch-all + retry table', () => {
       args: [{ rideId: 5 }],
     });
     // SignalR matches names case-insensitively; so does the catch-all.
-    expect(second).toMatchObject({ name: 'rideaccepted', known: true });
+    expect(second).toMatchObject({ name: 'ridestatusupdated', known: true });
   });
 
   it('retryDelay follows the table and then stays at the last delay forever', () => {

@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 /**
  * The ONLY place hub paths, hub method names and event names appear (mirrors
- * docs/REALTIME_CONTRACT.md). Server → client names are placeholders until the backend
- * confirms them — unknown events are logged in dev and shown on /dev/realtime.
+ * docs/REALTIME_CONTRACT.md). User-hub events are captured from real traffic; the chat event
+ * is still a placeholder. Unknown events are logged in dev and shown on /dev/realtime.
  */
 
 export const HUBS = {
@@ -25,14 +25,12 @@ export const USER_HUB_METHODS = {
   ping: 'Ping',
 } as const;
 
-/** Server → client. TODO confirm every name with the backend (docs/BACKEND_REQUESTS.md #1). */
+/**
+ * Server → client, as captured on /dev/realtime (2026-10-22). Every ride change arrives as
+ * one RideStatusUpdated with a status string; there are no per-phase events.
+ */
 export const USER_HUB_EVENTS = {
-  rideAccepted: 'RideAccepted',
-  driverArrived: 'DriverArrived',
-  rideStarted: 'RideStarted',
-  rideFinished: 'RideFinished',
-  rideCancelled: 'RideCancelled',
-  noDriverFound: 'NoDriverFound',
+  rideStatusUpdated: 'RideStatusUpdated',
   driverLocationUpdated: 'DriverLocationUpdated',
 } as const;
 
@@ -50,26 +48,42 @@ export const CHAT_HUB_EVENTS = {
 
 // ── Payloads ─────────────────────────────────────────────────────────────────────────────────
 // Loose objects: unknown extra fields are kept (useful while the contract is in flux), the
-// fields the app relies on are validated. Shapes follow the matching Swagger DTOs.
+// fields the app relies on are validated. Shapes follow the payloads captured on /dev/realtime.
 
 const id = z.number().int();
 const optionalString = z.string().nullish();
 const optionalNumber = z.number().nullish();
 
-export const rideAcceptedSchema = z.looseObject({
-  rideId: id,
-  driverId: id,
-  status: optionalString,
-  encodedPolyline: optionalString,
-  tripEncodedPolyline: optionalString,
-  polylinePhase: optionalString,
-  distanceKm: optionalNumber,
-  durationMinutes: optionalNumber,
+/** Third argument of RideStatusUpdated. Fields depend on the status (see REALTIME_CONTRACT.md). */
+const rideUpdatePayloadSchema = z.looseObject({
+  rideId: id.nullish(),
+  status: z.string(),
+  message: optionalString,
+  /**
+   * On `Searching` this is only the driver the request was OFFERED to — not an assigned
+   * driver; don't subscribe to their location until the ride is accepted.
+   */
+  driverId: id.nullish(),
+  distance: optionalNumber,
+  driverLat: optionalNumber,
+  driverLng: optionalNumber,
   pickupLat: optionalNumber,
   pickupLng: optionalNumber,
   destinationLat: optionalNumber,
   destinationLng: optionalNumber,
-  // Driver/vehicle info: not in RideAcceptedResponse yet (docs/BACKEND_REQUESTS.md #1).
+  /** The line to draw now: driver → pickup (Approach) or the trip (EnRoute). */
+  encodedPolyline: optionalString,
+  tripEncodedPolyline: optionalString,
+  /** "Approach" | "EnRoute" (null once completed). */
+  polylinePhase: optionalString,
+  distanceKm: optionalNumber,
+  durationMinutes: optionalNumber,
+  startedAt: optionalString,
+  completedAtUtc: optionalString,
+  finalPrice: optionalNumber,
+  /** Completed: remove route + car from the map. */
+  clearMap: z.boolean().nullish(),
+  // Not sent yet (docs/BACKEND_REQUESTS.md #1).
   driverName: optionalString,
   driverSurname: optionalString,
   driverPhoneNumber: optionalString,
@@ -79,42 +93,26 @@ export const rideAcceptedSchema = z.looseObject({
   vehicleColor: optionalString,
 });
 
-export const rideRefSchema = z.looseObject({ rideId: id });
+/**
+ * RideStatusUpdated(rideId: int, type: string, payload). Schemas describe the whole argument
+ * list (the server sends positional arguments) and turn it into one object. The first
+ * argument is the ride the server routed on; a payload naming another ride is rejected.
+ */
+export const rideStatusUpdatedSchema = z
+  .tuple([id, z.string(), rideUpdatePayloadSchema])
+  .rest(z.unknown())
+  .refine(([rideId, , payload]) => payload.rideId == null || payload.rideId === rideId, {
+    message: 'payload rideId differs from the routed rideId',
+  })
+  .transform(([rideId, type, payload]) => ({ ...payload, rideId, type }));
 
-export const rideStartedSchema = z.looseObject({
-  rideId: id,
-  status: optionalString,
-  startedAtUtc: optionalString,
-});
+/** DriverLocationUpdated(driverId: int, latitude: number, longitude: number). */
+export const driverLocationSchema = z
+  .tuple([id, z.number(), z.number()])
+  .rest(z.unknown())
+  .transform(([driverId, latitude, longitude]) => ({ driverId, latitude, longitude }));
 
-export const rideFinishedSchema = z.looseObject({
-  rideId: id,
-  status: optionalString,
-  finalPrice: optionalNumber,
-  originalFare: optionalNumber,
-  discountAmount: optionalNumber,
-  promoApplied: z.boolean().nullish(),
-  promoCode: optionalString,
-  promoRemainingRides: optionalNumber,
-  finishedAtUtc: optionalString,
-});
-
-export const rideCancelledSchema = z.looseObject({
-  rideId: id,
-  status: optionalString,
-  reason: optionalString,
-  /** TODO confirm: who cancelled ("User" / "Driver" / "System"). */
-  cancelledBy: optionalString,
-});
-
-export const driverLocationSchema = z.looseObject({
-  driverId: id,
-  latitude: z.number(),
-  longitude: z.number(),
-  heading: optionalNumber,
-});
-
-export const chatMessageSchema = z.looseObject({
+const chatMessageObjectSchema = z.looseObject({
   id,
   rideId: id,
   senderRole: optionalString,
@@ -123,22 +121,19 @@ export const chatMessageSchema = z.looseObject({
   sentAtUtc: optionalString,
 });
 
-export type RideAcceptedEvent = z.infer<typeof rideAcceptedSchema>;
-export type RideRefEvent = z.infer<typeof rideRefSchema>;
-export type RideStartedEvent = z.infer<typeof rideStartedSchema>;
-export type RideFinishedEvent = z.infer<typeof rideFinishedSchema>;
-export type RideCancelledEvent = z.infer<typeof rideCancelledSchema>;
-export type DriverLocationEvent = z.infer<typeof driverLocationSchema>;
-export type ChatMessageEvent = z.infer<typeof chatMessageSchema>;
+/** ReceiveMessage(message) — TODO confirm name and shape (not captured yet). */
+export const chatMessageSchema = z
+  .tuple([chatMessageObjectSchema])
+  .rest(z.unknown())
+  .transform(([message]) => message);
 
-/** Event name → zod schema of its (first) argument. */
+export type RideStatusUpdatedEvent = z.output<typeof rideStatusUpdatedSchema>;
+export type DriverLocationEvent = z.output<typeof driverLocationSchema>;
+export type ChatMessageEvent = z.output<typeof chatMessageSchema>;
+
+/** Event name → zod schema of its argument list. */
 export const USER_HUB_SCHEMAS = {
-  [USER_HUB_EVENTS.rideAccepted]: rideAcceptedSchema,
-  [USER_HUB_EVENTS.driverArrived]: rideRefSchema,
-  [USER_HUB_EVENTS.rideStarted]: rideStartedSchema,
-  [USER_HUB_EVENTS.rideFinished]: rideFinishedSchema,
-  [USER_HUB_EVENTS.rideCancelled]: rideCancelledSchema,
-  [USER_HUB_EVENTS.noDriverFound]: rideRefSchema,
+  [USER_HUB_EVENTS.rideStatusUpdated]: rideStatusUpdatedSchema,
   [USER_HUB_EVENTS.driverLocationUpdated]: driverLocationSchema,
 } as const;
 
@@ -148,8 +143,8 @@ export const CHAT_HUB_SCHEMAS = {
 
 /** Event name → payload type, derived from the schemas so they can never drift. */
 export type UserHubEventMap = {
-  [K in keyof typeof USER_HUB_SCHEMAS]: z.infer<(typeof USER_HUB_SCHEMAS)[K]>;
+  [K in keyof typeof USER_HUB_SCHEMAS]: z.output<(typeof USER_HUB_SCHEMAS)[K]>;
 };
 export type ChatHubEventMap = {
-  [K in keyof typeof CHAT_HUB_SCHEMAS]: z.infer<(typeof CHAT_HUB_SCHEMAS)[K]>;
+  [K in keyof typeof CHAT_HUB_SCHEMAS]: z.output<(typeof CHAT_HUB_SCHEMAS)[K]>;
 };

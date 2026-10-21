@@ -35,7 +35,7 @@ export interface HubManagerOptions<M> {
   hub: HubName;
   /** Absolute hub URL. */
   url: string;
-  /** Known server → client events and their payload schemas. */
+  /** Known server → client events and schemas of their argument lists. */
   schemas: Schemas<M>;
   /** Current JWT (read on every (re)connect); should throw when there is none. */
   accessTokenFactory: () => string;
@@ -343,10 +343,13 @@ export class HubConnectionManager<M extends Record<string, unknown>> {
       });
   }
 
-  /** Validates the (first) argument and fans out; invalid payloads are logged and dropped. */
+  /**
+   * Validates the whole argument list (the server sends positional arguments, e.g.
+   * DriverLocationUpdated(driverId, lat, lng)) and fans out; invalid payloads are dropped.
+   */
   private dispatch(event: string, args: unknown[]): void {
     const key = event as keyof M;
-    const parsed = this.options.schemas[key].safeParse(args[0]);
+    const parsed = this.options.schemas[key].safeParse(args);
     if (!parsed.success) {
       logger.warn(`realtime: invalid ${event} payload`, { issues: parsed.error.issues.length });
       return;

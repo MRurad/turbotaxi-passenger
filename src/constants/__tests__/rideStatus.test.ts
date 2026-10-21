@@ -3,6 +3,10 @@ import { mapBackendStatus } from '@/constants/rideStatus';
 describe('mapBackendStatus', () => {
   it('maps a known status to its phase', () => {
     expect(mapBackendStatus('Accepted')).toBe('driver_assigned');
+    // Seen on the hub.
+    expect(mapBackendStatus('Searching')).toBe('searching');
+    expect(mapBackendStatus('OnWay')).toBe('in_progress');
+    expect(mapBackendStatus('Completed')).toBe('completed');
   });
 
   it('is case- and separator-insensitive', () => {

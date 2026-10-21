@@ -17,16 +17,26 @@ Base URL: `${EXPO_PUBLIC_API_URL}/hubs/...`
 | `UnsubscribeFromDriverLocation` | `(driverId: int)` | ride finished/cancelled |
 | `Ping` | `()` | every 30 s keep-alive |
 
-### Server → client (ALL TODO, placeholder names)
-| Placeholder name | Payload (expected) | App reaction |
+### Server → client (captured on `/dev/realtime`, 2026-10-22)
+Arguments are **positional**. The app validates the whole argument list and turns it into one object.
+
+| Event | Arguments | App reaction |
 |---|---|---|
-| `RideAccepted` | `RideAcceptedResponse` shape + driver & vehicle info | status → driver_assigned, subscribe to driver location |
-| `DriverArrived` | `{ rideId }` | status → driver_arrived |
-| `RideStarted` | `StartRideResponse` | status → in_progress |
-| `RideFinished` | `RideFinishedResponse` | status → completed, show summary |
-| `RideCancelled` | `CancelRideResponse` (+ reason / by whom) | status → cancelled |
-| `NoDriverFound` | `{ rideId }` | status → no_driver |
-| `DriverLocationUpdated` | `{ driverId, latitude, longitude, heading? }` | move car marker |
+| `RideStatusUpdated` | `(rideId: int, type: "ride_update", payload)` | `payload.status` → phase via `src/constants/rideStatus.ts` |
+| `DriverLocationUpdated` | `(driverId: int, latitude: number, longitude: number)` | move car marker |
+
+`RideStatusUpdated` payloads seen, by `status`:
+
+| `status` | Fields | Meaning |
+|---|---|---|
+| `Searching` | `rideId, message, driverId, distance` | request offered to a nearby driver ("Driver #4 is 3.7km away"). `driverId` is NOT assigned yet: don't subscribe to its location |
+| *(not captured)* | `…pickup/destination/driver lat-lng, encodedPolyline, tripEncodedPolyline, polylinePhase: "Approach", distanceKm, durationMinutes, message` | driver accepted and is coming ("Driver is coming! ETA: 8 min") |
+| `OnWay` | `startedAt, driverLat/Lng, pickupLat/Lng, destinationLat/Lng, encodedPolyline, tripEncodedPolyline, polylinePhase: "EnRoute", distanceKm, durationMinutes, message` | trip started |
+| `Completed` | `finalPrice, completedAtUtc, clearMap: true, userType, message`; polylines and distance null | trip finished |
+
+`polylinePhase` says which line `encodedPolyline` is: `Approach` = driver → pickup, `EnRoute` = the trip.
+
+**Still TODO** (docs/BACKEND_REQUESTS.md #1, #5): the status strings for accepted, arrived at pickup, cancelled and no driver; driver/vehicle info; heading.
 
 ## /hubs/chat
 
@@ -51,7 +61,7 @@ Open the avatar menu → **Open realtime inspector** (`/dev/realtime`). It shows
 
 - Transport: WebSockets with `skipNegotiation: true`; if the server rejects that, the app falls back once to normal negotiation (still WebSockets).
 - Reconnect: 0 s, 2 s, 5 s, 10 s, 20 s, 30 s, then every 30 s forever. After every reconnect the app re-runs `SubscribeUser` (and `SubscribeToDriverLocation` / `JoinRideChat` when active), because group membership is lost.
-- Payloads are validated with zod; an event whose first argument doesn't match its schema is logged (dev) and ignored. Extra fields are kept.
-- Expected-but-unconfirmed fields: `RideAccepted` driver/vehicle info (`driverName`, `driverSurname`, `driverPhoneNumber`, `vehiclePlateNumber`, `vehicleBrand`, `vehicleModel`, `vehicleColor`); `RideCancelled.cancelledBy` and `reason`.
+- Payloads are validated with zod; an event whose argument list doesn't match its schema is logged (dev) and ignored. Extra fields are kept.
+- Expected-but-unconfirmed fields in the `RideStatusUpdated` payload: driver/vehicle info (`driverName`, `driverSurname`, `driverPhoneNumber`, `vehiclePlateNumber`, `vehicleBrand`, `vehicleModel`, `vehicleColor`).
 - Auth on the socket: the React Native client sends the JWT as an `Authorization: Bearer …` header on the WebSocket upgrade (browsers can't, and use `?access_token=`). The backend should accept both for `/hubs/*`. A 401 / expired token ends the session (logout) instead of retrying.
 - Lifecycle: the user hub runs while signed in; it is stopped 30 s after the app goes to the background (kept alive during an active ride) and restored on foreground. The chat hub runs only while a ride chat is open. On logout every hub is stopped and its on-connect actions are cleared.

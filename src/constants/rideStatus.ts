@@ -2,7 +2,8 @@ import type { RidePhase } from '@/types/ride';
 
 export type MappedRideStatus = RidePhase | 'unknown';
 
-// TODO confirm with backend (docs/BACKEND_REQUESTS.md #5): placeholder status strings.
+// Seen on the hub: Searching, OnWay, Completed. The rest are still guesses until the backend
+// sends the full list (docs/BACKEND_REQUESTS.md #5).
 // Keys are lowercase; lookups are case-insensitive.
 export const BACKEND_STATUS_MAP: Readonly<Record<string, RidePhase>> = {
   pending: 'searching',
@@ -12,6 +13,9 @@ export const BACKEND_STATUS_MAP: Readonly<Record<string, RidePhase>> = {
   arrived: 'driver_arrived',
   driverarrived: 'driver_arrived',
   inprogress: 'in_progress',
+  // Captured with startedAt + polylinePhase "EnRoute" ("Trip started!"). TODO confirm
+  // (BACKEND_REQUESTS #5); the ride store should use polylinePhase as a tie-breaker.
+  onway: 'in_progress',
   started: 'in_progress',
   completed: 'completed',
   finished: 'completed',

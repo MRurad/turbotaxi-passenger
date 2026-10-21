@@ -44,7 +44,7 @@ export const pingUserHub = (): Promise<unknown> => userHub.invoke(USER_HUB_METHO
 type UserEvent = keyof typeof USER_HUB_EVENTS;
 
 /**
- * Typed subscription by friendly name, e.g. `onUserHubEvent('rideAccepted', handler)`.
+ * Typed subscription by friendly name, e.g. `onUserHubEvent('rideStatusUpdated', handler)`.
  * Returns the unsubscribe function — return it from your useEffect.
  */
 export function onUserHubEvent<K extends UserEvent>(
