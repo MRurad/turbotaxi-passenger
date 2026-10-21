@@ -1,0 +1,56 @@
+/**
+ * Raw color values. This is the ONLY file allowed to contain hex/rgba.
+ * Components never import the palette directly — use semantic tokens from `colors.ts`.
+ */
+export const palette = {
+  steel: {
+    50: '#EEF4FA',
+    100: '#D6E4F1',
+    200: '#ADC9E3',
+    300: '#84AED5',
+    400: '#5B93C7',
+    500: '#4682B4',
+    600: '#386890',
+    700: '#2A4E6C',
+    800: '#1C3448',
+    900: '#0E1A24',
+  },
+  neutral: {
+    0: '#FFFFFF',
+    50: '#F7F9FC',
+    100: '#EEF1F6',
+    200: '#DDE3EC',
+    300: '#C3CCD9',
+    400: '#94A0B4',
+    500: '#6B778C',
+    600: '#4A5568',
+    700: '#2D3748',
+    800: '#1A2233',
+    900: '#0B1220',
+  },
+  navy: {
+    surface: '#121A2A',
+    elevated: '#18233A',
+    border: '#24314B',
+    skeletonHighlight: '#22304A',
+  },
+  status: {
+    success: '#22A06B',
+    warning: '#E5A000',
+    danger: '#E5484D',
+    successStrong: '#167A51',
+    warningStrong: '#8A5E00',
+    dangerStrong: '#C73A3F',
+    successSoftLight: '#E3F5EC',
+    warningSoftLight: '#FDF3DC',
+    dangerSoftLight: '#FDE8E8',
+    successSoftDark: '#12322A',
+    warningSoftDark: '#3A2E10',
+    dangerSoftDark: '#3D1A1E',
+  },
+  shadow: '#0B1220',
+  overlayLight: 'rgba(11, 18, 32, 0.45)',
+  overlayDark: 'rgba(0, 0, 0, 0.6)',
+  primarySoftDark: 'rgba(91, 147, 199, 0.16)',
+  transparent: 'transparent',
+} as const;

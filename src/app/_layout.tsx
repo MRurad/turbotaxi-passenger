@@ -3,24 +3,25 @@ import 'react-native-get-random-values';
 // Validates env vars at startup; throws a readable error if .env is incomplete.
 import '@/constants/config';
 
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native';
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 
-// Theme, i18n and query providers are added in later prompts (src/providers/AppProviders.tsx).
+import { AppProviders } from '@/providers/AppProviders';
+import { RootStack } from '@/providers/RootStack';
+import { SplashGate } from '@/providers/SplashGate';
+import { INTER_FONTS } from '@/theme';
+
+SplashScreen.preventAutoHideAsync().catch(() => undefined);
+
 export default function RootLayout() {
+  // On font error we still render (system font fallback) rather than hang on the splash.
+  const [fontsLoaded, fontError] = useFonts(INTER_FONTS);
+
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <SafeAreaProvider>
-        <Stack screenOptions={{ headerShown: false }} />
-        <StatusBar style="auto" />
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <AppProviders>
+      <SplashGate fontsReady={fontsLoaded || fontError !== null}>
+        <RootStack />
+      </SplashGate>
+    </AppProviders>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1 },
-});

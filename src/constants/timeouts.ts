@@ -10,5 +10,11 @@ export const PING_INTERVAL_MS = 30_000;
 /** Debounce for Google Places autocomplete input. */
 export const AUTOCOMPLETE_DEBOUNCE_MS = 300;
 
+/** Default on-screen time for a toast. */
+export const TOAST_DURATION_MS = 3_500;
+
+/** TanStack Query staleTime default. */
+export const QUERY_STALE_TIME_MS = 30_000;
+
 /** A persisted active ride older than this is discarded on app start. */
 export const ACTIVE_RIDE_STALE_MS = 3 * 60 * 60_000;

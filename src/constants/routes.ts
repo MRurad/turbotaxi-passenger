@@ -4,6 +4,8 @@
  */
 export const ROUTES = {
   home: '/',
+  /** Dev-only design-system showcase. */
+  devUiKit: '/dev/ui-kit',
 } as const;
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];
