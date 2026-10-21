@@ -59,8 +59,9 @@ export function useHomeMap(
   const touched = useRef(false);
   const framePadding = useRef(layout.framePadding);
   const routeCoords = useRef(layout.routeCoords);
-  // While picking the pickup: where the pin should sit (current pickup, then the user's moves).
-  const pickTarget = useRef<LatLng | null>(null);
+  // While picking a point: where the pin should sit — the point's current place, then wherever
+  // the user moves it (tagged with the pick it belongs to).
+  const pickTarget = useRef<{ target: PinTarget; point: LatLng } | null>(null);
   const { mapPick, pickup, destination, pickupLocked } = useBookingDraft(
     useShallow((s) => ({
       mapPick: s.mapPick,
@@ -79,7 +80,7 @@ export function useHomeMap(
   }, [layout.framePadding, layout.routeCoords]);
 
   useEffect(() => {
-    if (mapPick !== 'pickup') pickTarget.current = null;
+    if (pickTarget.current?.target !== mapPick) pickTarget.current = null;
   }, [mapPick]);
 
   const pinMode = pinModeOf({ mapPick, destination });
@@ -128,15 +129,22 @@ export function useHomeMap(
   const route = layout.routeCoords;
   const routeKey = route.length > 1 ? `${coordKey(route[0])}>${coordKey(route.at(-1))}` : '';
   const frameDetail = destination && mapPick === null ? `|${routeKey}|${paddingBucket}` : '';
-  const pickDetail = mapPick === 'pickup' ? `|${paddingBucket}` : '';
+  const pickDetail = mapPick ? `|${paddingBucket}` : '';
   const focusKey = `${mapPick}|${coordKey(destination?.location)}|${
     pickupLocked ? coordKey(pickup?.location) : ''
   }${frameDetail}${pickDetail}`;
   const focusPickup = pickup?.location;
   const focusDestination = destination?.location;
   useEffect(() => {
-    if (mapPick === 'pickup') {
-      const target = pickTarget.current ?? focusPickup;
+    if (mapPick) {
+      // Start on the point being changed (e.g. the current destination), not where the
+      // route framing left the camera. Choosing a first destination leaves the camera be.
+      const target =
+        pickTarget.current?.target === mapPick
+          ? pickTarget.current.point
+          : mapPick === 'pickup'
+            ? focusPickup
+            : focusDestination;
       if (target) mapRef.current?.animateTo(target);
       return;
     }
@@ -183,7 +191,9 @@ export function useHomeMap(
       const settle = (c: LatLng) => {
         const mode = pinModeOf(useBookingDraft.getState());
         setCenter({ point: c, mode });
-        if (byUser && mode === 'pickup') pickTarget.current = c;
+        if (byUser && (mode === 'pickup' || mode === 'destination')) {
+          pickTarget.current = { target: mode, point: c };
+        }
       };
       const fallback = toLatLng(region);
       if (!layout.pinPoint) {
@@ -214,7 +224,7 @@ export function useHomeMap(
       if (myLocationStartsPick) {
         // Away from the pickup: "pick me up here?" — pin on the user, confirm in the sheet.
         triggerHaptic('light');
-        pickTarget.current = location.coords;
+        pickTarget.current = { target: 'pickup', point: location.coords };
         startPinPicking('pickup');
       } else {
         // Already picked up here: just show the whole trip again.
@@ -226,7 +236,7 @@ export function useHomeMap(
       }
       return;
     }
-    if (mapPick === 'pickup') pickTarget.current = location.coords;
+    if (mapPick) pickTarget.current = { target: mapPick, point: location.coords };
     unlockPickup();
     mapRef.current?.animateTo(location.coords);
   }, [location, mapRef, destination, mapPick, myLocationStartsPick, unlockPickup, startPinPicking]);
