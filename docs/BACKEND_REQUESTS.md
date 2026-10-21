@@ -32,3 +32,9 @@ Send this to the backend developer. Items are ordered by priority. Claude Code a
 13. Add `pickupAddress` / `destinationAddress` text to `CreateRideRequest`. The app already knows the address from Google, so the backend doesn't need to reverse-geocode.
 14. Add `promoCode` (or `promoCodeId`) to `CreateRideRequest` so the user's chosen promo applies explicitly.
 15. Later: rating and tip after a ride, push device token registration, saved places.
+
+## Added while building the API layer
+
+16. **`PromoDiscountType` 0 / 1 meaning.** Swagger exposes it as a bare int enum. The app assumes `0 = percentage`, `1 = fixed amount` (`src/constants/api.ts`). Please confirm, or return string enums.
+17. **Trip history query params are PascalCase** (`PageNumber`, `PageSize`) while every other paged endpoint uses camelCase (`pageNumber`, `pageSize`). ASP.NET binds both case-insensitively, but aligning Swagger would keep the generated types consistent.
+18. **Vehicle color as a stable key** (e.g. `white`, `black`, `silver`) in ride-accepted / trip payloads, so the app can translate it instead of showing a raw backend string inside az/ru text.

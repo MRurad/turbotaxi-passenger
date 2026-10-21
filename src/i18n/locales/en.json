@@ -76,6 +76,8 @@
     "forbidden": "You don't have access to this.",
     "notFound": "We couldn't find what you were looking for.",
     "server": "Our server is having trouble. Please try again in a moment.",
+    "badRequest": "Please check the details you entered and try again.",
+    "notSupported": "This feature isn't available yet.",
     "unknown": "Something went wrong. Please try again.",
     "validation": {
       "required": "This field is required",

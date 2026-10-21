@@ -10,9 +10,11 @@ import { ThemeProvider } from '@/theme';
 
 import { NavigationThemeProvider } from './NavigationThemeProvider';
 import { createQueryClient } from './queryClient';
+import { useClearCacheOnLogout } from './useClearCacheOnLogout';
 
 export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(createQueryClient);
+  useClearCacheOnLogout(queryClient);
 
   return (
     <GestureHandlerRootView style={styles.root}>

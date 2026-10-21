@@ -76,6 +76,8 @@
     "forbidden": "Bu əməliyyat üçün icazəniz yoxdur.",
     "notFound": "Axtardığınız məlumat tapılmadı.",
     "server": "Serverdə problem yaranıb. Bir azdan yenidən cəhd edin.",
+    "badRequest": "Daxil etdiyiniz məlumatları yoxlayıb yenidən cəhd edin.",
+    "notSupported": "Bu funksiya hələ əlçatan deyil.",
     "unknown": "Nəsə alınmadı. Yenidən cəhd edin.",
     "validation": {
       "required": "Bu xananı doldurun",

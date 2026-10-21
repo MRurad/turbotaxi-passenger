@@ -1,9 +1,6 @@
-import type { VehicleType } from './vehicles';
+import type { LatLng } from '@/types/geo';
 
-interface LatLng {
-  latitude: number;
-  longitude: number;
-}
+import type { VehicleType } from './vehicles';
 
 export interface RouteEstimateKeyParams {
   origin: LatLng;
