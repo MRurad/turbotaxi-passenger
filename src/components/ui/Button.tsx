@@ -19,9 +19,11 @@ export interface ButtonProps {
   disabled?: boolean;
   leftIcon?: IconName;
   rightIcon?: IconName;
+  /** Trailing value that never truncates (e.g. a price); the label shrinks first. */
+  value?: string;
   fullWidth?: boolean;
   haptic?: HapticKind;
-  /** Defaults to `label`. */
+  /** Defaults to `label` (plus `value`). */
   accessibilityLabel?: string;
   accessibilityHint?: string;
   style?: StyleProp<ViewStyle>;
@@ -44,6 +46,7 @@ export function Button({
   disabled = false,
   leftIcon,
   rightIcon,
+  value,
   fullWidth = false,
   haptic = 'light',
   accessibilityLabel,
@@ -64,7 +67,7 @@ export function Button({
       disabled={inactive}
       haptic={haptic}
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityLabel={accessibilityLabel ?? (value ? `${label}, ${value}` : label)}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: inactive, busy: loading }}
       style={({ pressed }) => [
@@ -88,6 +91,11 @@ export function Button({
         >
           {label}
         </Text>
+        {value ? (
+          <Text variant="bodyStrong" color={fg} style={styles.value}>
+            {value}
+          </Text>
+        ) : null}
         {rightIcon ? <Ionicons name={rightIcon} size={iconSize} color={colors[fg]} /> : null}
       </View>
       {loading ? (
@@ -128,5 +136,6 @@ const useStyles = makeStyles((t) => ({
   hidden: { opacity: 0 },
   spinner: { position: 'absolute' },
   label: { flexShrink: 1 },
+  value: { flexShrink: 0, marginLeft: t.spacing.sm },
   smLabel: { fontSize: t.typography.caption.fontSize, lineHeight: t.typography.caption.lineHeight },
 }));

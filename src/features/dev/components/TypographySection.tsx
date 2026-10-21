@@ -1,7 +1,8 @@
+import { useTranslation } from 'react-i18next';
+
 import { Text } from '@/components/ui';
 import type { TypographyVariant } from '@/theme';
 
-import { UI_KIT_COPY } from '../uiKitCopy';
 import { Section } from './Section';
 
 const VARIANTS: TypographyVariant[] = [
@@ -15,18 +16,19 @@ const VARIANTS: TypographyVariant[] = [
 ];
 
 export function TypographySection() {
+  const { t } = useTranslation();
   return (
-    <Section title={UI_KIT_COPY.sections.typography}>
+    <Section title={t('dev.uiKit.sections.typography')}>
       {VARIANTS.map((v) => (
         <Text key={v} variant={v}>
-          {UI_KIT_COPY.typography[v]}
+          {t(`dev.uiKit.typography.${v}`)}
         </Text>
       ))}
       <Text variant="body" color="textSecondary">
-        {UI_KIT_COPY.typography.body}
+        {t('dev.uiKit.typography.body')}
       </Text>
       <Text variant="caption" color="textMuted">
-        {UI_KIT_COPY.typography.caption}
+        {t('dev.uiKit.typography.caption')}
       </Text>
     </Section>
   );

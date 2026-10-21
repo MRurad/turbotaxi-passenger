@@ -1,6 +1,8 @@
 import type { ComponentProps } from 'react';
 import type Ionicons from '@expo/vector-icons/Ionicons';
 
+import type { TranslationKey } from '@/i18n/types';
+
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
 /** Backend `VehicleType` is an int 0–3. */
@@ -16,7 +18,7 @@ export type VehicleType = (typeof VEHICLE_TYPE)[keyof typeof VEHICLE_TYPE];
 export interface VehicleInfo {
   type: VehicleType;
   /** i18n key, e.g. t(vehicle.labelKey) */
-  labelKey: string;
+  labelKey: TranslationKey;
   icon: IoniconName;
   seats: number;
 }

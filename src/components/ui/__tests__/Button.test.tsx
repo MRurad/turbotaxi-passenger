@@ -29,3 +29,11 @@ describe('Button', () => {
     expect(screen.getByTestId('btn')).toBeBusy();
   });
 });
+
+describe('Button value', () => {
+  it('renders a trailing value and includes it in the a11y label', async () => {
+    await renderWithTheme(<Button label="Order Comfort" value="8.40 ₼" onPress={jest.fn()} />);
+    expect(screen.getByText('8.40 ₼')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Order Comfort, 8.40 ₼' })).toBeTruthy();
+  });
+});

@@ -1,54 +1,56 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button, Chip, ConfirmDialog, Sheet, Text, useToast, type SheetRef } from '@/components/ui';
 
-import { UI_KIT_COPY } from '../uiKitCopy';
 import { Section } from './Section';
 
 export function OverlaysSection() {
+  const { t } = useTranslation();
   const sheetRef = useRef<SheetRef>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const toast = useToast();
-  const c = UI_KIT_COPY.overlays;
 
   return (
-    <Section title={UI_KIT_COPY.sections.overlays}>
+    <Section title={t('dev.uiKit.sections.overlays')}>
       <Button
-        label={c.openSheet}
+        label={t('dev.uiKit.overlays.openSheet')}
         variant="secondary"
         leftIcon="layers-outline"
         onPress={() => sheetRef.current?.present()}
       />
       <Button
-        label={c.openDialog}
+        label={t('dev.uiKit.overlays.openDialog')}
         variant="secondary"
         leftIcon="alert-circle-outline"
         onPress={() => setDialogOpen(true)}
       />
       <Button
-        label={c.toastInfo}
+        label={t('dev.uiKit.overlays.toastInfo')}
         variant="ghost"
-        onPress={() => toast.show({ message: c.toastInfoMessage })}
+        onPress={() => toast.show({ message: t('dev.uiKit.overlays.toastInfoMessage') })}
       />
       <Button
-        label={c.toastSuccess}
+        label={t('dev.uiKit.overlays.toastSuccess')}
         variant="ghost"
-        onPress={() => toast.show({ message: c.toastSuccessMessage, tone: 'success' })}
+        onPress={() =>
+          toast.show({ message: t('dev.uiKit.overlays.toastSuccessMessage'), tone: 'success' })
+        }
       />
       <Button
-        label={c.toastDanger}
+        label={t('dev.uiKit.overlays.toastDanger')}
         variant="ghost"
-        onPress={() => toast.show({ message: c.toastDangerMessage, tone: 'danger' })}
+        onPress={() => toast.show({ message: t('errors.server'), tone: 'danger' })}
       />
 
       <Sheet ref={sheetRef}>
-        <Text variant="title">{c.sheetTitle}</Text>
+        <Text variant="title">{t('booking.title')}</Text>
         <Text variant="body" color="textSecondary">
-          {c.sheetBody}
+          {t('dev.uiKit.overlays.sheetBody')}
         </Text>
-        <Chip label={UI_KIT_COPY.chips.comfort} selected onPress={() => undefined} />
+        <Chip label={t('booking.vehicle.comfort')} selected onPress={() => undefined} />
         <Button
-          label={c.sheetClose}
+          label={t('common.actions.done')}
           fullWidth
           size="lg"
           onPress={() => sheetRef.current?.dismiss()}
@@ -58,10 +60,10 @@ export function OverlaysSection() {
       <ConfirmDialog
         visible={dialogOpen}
         destructive
-        title={c.dialogTitle}
-        message={c.dialogMessage}
-        confirmLabel={c.dialogConfirm}
-        cancelLabel={c.dialogCancel}
+        title={t('ride.cancel.title')}
+        message={t('ride.cancel.message')}
+        confirmLabel={t('ride.cancel.confirm')}
+        cancelLabel={t('ride.cancel.keep')}
         onConfirm={() => setDialogOpen(false)}
         onCancel={() => setDialogOpen(false)}
       />

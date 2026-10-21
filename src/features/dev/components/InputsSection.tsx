@@ -1,35 +1,51 @@
+import { useTranslation } from 'react-i18next';
+
 import { Input } from '@/components/ui';
 
-import { UI_KIT_COPY } from '../uiKitCopy';
 import { Section } from './Section';
 
 export function InputsSection() {
-  const c = UI_KIT_COPY.inputs;
+  const { t } = useTranslation();
+  const secureToggle = {
+    showLabel: t('common.a11y.showPassword'),
+    hideLabel: t('common.a11y.hidePassword'),
+  };
+
   return (
-    <Section title={UI_KIT_COPY.sections.inputs}>
+    <Section title={t('dev.uiKit.sections.inputs')}>
       <Input
-        label={c.email}
-        placeholder={c.emailPlaceholder}
+        label={t('auth.login.email')}
+        placeholder={t('auth.login.emailPlaceholder')}
         leftIcon="mail-outline"
         keyboardType="email-address"
         autoCapitalize="none"
         autoComplete="email"
       />
       <Input
-        label={c.password}
+        label={t('auth.login.password')}
         leftIcon="lock-closed-outline"
-        secureToggle={{ showLabel: c.showPassword, hideLabel: c.hidePassword }}
+        secureToggle={secureToggle}
         autoComplete="password"
       />
-      <Input placeholder={c.search} leftIcon="search" accessibilityLabel={c.search} />
       <Input
-        label={c.error}
+        placeholder={t('home.whereTo')}
+        leftIcon="search"
+        accessibilityLabel={t('home.whereTo')}
+      />
+      <Input
+        label={t('auth.register.phone')}
+        placeholder={t('auth.register.phonePlaceholder')}
         leftIcon="call-outline"
-        defaultValue="+994 50"
-        error={c.errorMessage}
+        error={t('errors.validation.phone')}
         keyboardType="phone-pad"
       />
-      <Input label={c.error} leftIcon="call-outline" helper={c.helper} keyboardType="phone-pad" />
+      <Input
+        label={t('auth.register.phone')}
+        placeholder={t('auth.register.phonePlaceholder')}
+        leftIcon="call-outline"
+        helper={t('dev.uiKit.phoneHelper')}
+        keyboardType="phone-pad"
+      />
     </Section>
   );
 }

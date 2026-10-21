@@ -1,95 +1,102 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { Avatar, Badge, Card, Chip, Divider, ListItem, Text } from '@/components/ui';
+import { VEHICLE_TYPE, VEHICLE_TYPES, VEHICLES, type VehicleType } from '@/constants/vehicles';
+import { formatMoney, formatRelative } from '@/lib/format';
 import { makeStyles, useTheme } from '@/theme';
 
-import { UI_KIT_COPY } from '../uiKitCopy';
 import { Section } from './Section';
 
-type ChipKey = keyof typeof UI_KIT_COPY.chips;
-const CHIP_KEYS: ChipKey[] = ['economy', 'comfort', 'business', 'minivan'];
+const SAMPLE_PRICE = 8.4;
+const SAMPLE_TRIP_PRICE = 24;
+// Fixed dates keep the demo deterministic (shows "yesterday at …").
+const SAMPLE_TRIP_UTC = '2026-01-15T14:40:00Z';
+const SAMPLE_NOW = new Date('2026-01-16T09:00:00Z');
 const noop = () => undefined;
 
 export function SurfacesSection() {
   const styles = useStyles();
+  const { t } = useTranslation();
   const { sizes, spacing } = useTheme();
+  const [vehicle, setVehicle] = useState<VehicleType>(VEHICLE_TYPE.Comfort);
   // Align dividers with the text column after the 44pt icon.
   const listInset = sizes.avatar.md + spacing.md + spacing.sm;
-  const [chip, setChip] = useState<ChipKey>('comfort');
-  const c = UI_KIT_COPY;
+  const tripDate = formatRelative(SAMPLE_TRIP_UTC, SAMPLE_NOW);
 
   return (
     <>
-      <Section title={c.sections.cards}>
+      <Section title={t('dev.uiKit.sections.cards')}>
         <Card animated>
           <View style={styles.cardRow}>
             <View style={styles.flex}>
-              <Text variant="heading">{c.card.title}</Text>
+              <Text variant="heading">{t('booking.vehicle.comfort')}</Text>
               <Text variant="caption" color="textSecondary">
-                {c.card.subtitle}
+                {t('dev.uiKit.card.subtitle')}
               </Text>
             </View>
             <Text variant="heading" color="primary">
-              {c.card.price}
+              {formatMoney(SAMPLE_PRICE)}
             </Text>
           </View>
         </Card>
-        <Card variant="outlined" onPress={noop} accessibilityLabel={c.card.pressable}>
-          <Text variant="bodyStrong">{c.card.pressable}</Text>
+        <Card variant="outlined" onPress={noop} accessibilityLabel={t('dev.uiKit.card.pressable')}>
+          <Text variant="bodyStrong">{t('dev.uiKit.card.pressable')}</Text>
         </Card>
         <Card variant="soft">
           <Text variant="bodyStrong" color="primary">
-            {c.card.soft}
+            {t('dev.uiKit.card.soft')}
           </Text>
         </Card>
       </Section>
-      <Section title={c.sections.list}>
+      <Section title={t('dev.uiKit.sections.list')}>
         <Card padding="xs">
           <ListItem
             icon="home-outline"
-            title={c.list.home}
-            subtitle={c.list.homeAddress}
+            title={t('dev.uiKit.list.home')}
+            subtitle={t('dev.uiKit.list.homeAddress')}
             onPress={noop}
           />
           <Divider spacing="xxs" inset={listInset} />
           <ListItem
             icon="briefcase-outline"
-            title={c.list.work}
-            subtitle={c.list.workAddress}
+            title={t('dev.uiKit.list.work')}
+            subtitle={t('dev.uiKit.list.workAddress')}
             onPress={noop}
           />
           <Divider spacing="xxs" inset={listInset} />
           <ListItem
-            left={<Avatar name={c.avatarName} size="md" />}
-            title={c.list.trip}
-            subtitle={c.list.tripDate}
-            value={c.list.tripPrice}
+            left={<Avatar name={t('dev.uiKit.avatarName')} size="md" />}
+            title={t('dev.uiKit.list.trip')}
+            subtitle={tripDate}
+            value={formatMoney(SAMPLE_TRIP_PRICE)}
           />
         </Card>
       </Section>
-      <Section title={c.sections.badges} row>
-        <Badge label={c.badges.neutral} />
-        <Badge label={c.badges.primary} tone="primary" icon="car" />
-        <Badge label={c.badges.success} tone="success" icon="checkmark" />
-        <Badge label={c.badges.warning} tone="warning" />
-        <Badge label={c.badges.danger} tone="danger" />
+      <Section title={t('dev.uiKit.sections.badges')} row>
+        <Badge label={t('dev.uiKit.badges.scheduled')} />
+        <Badge label={t('ride.status.driver_assigned')} tone="primary" icon="car" />
+        <Badge label={t('ride.status.completed')} tone="success" icon="checkmark" />
+        <Badge label={t('dev.uiKit.badges.waiting')} tone="warning" />
+        <Badge label={t('ride.status.cancelled')} tone="danger" />
       </Section>
-      <Section title={c.sections.chips} row>
-        {CHIP_KEYS.map((key) => (
+      <Section title={t('dev.uiKit.sections.chips')} row>
+        {VEHICLE_TYPES.map((type) => (
           <Chip
-            key={key}
-            label={c.chips[key]}
-            selected={chip === key}
-            onPress={() => setChip(key)}
+            key={type}
+            icon={VEHICLES[type].icon}
+            label={t(VEHICLES[type].labelKey)}
+            selected={vehicle === type}
+            onPress={() => setVehicle(type)}
           />
         ))}
-        <Chip label={c.buttons.disabled} disabled onPress={noop} />
+        <Chip label={t('dev.uiKit.buttons.disabled')} disabled onPress={noop} />
       </Section>
-      <Section title={c.sections.avatars} row>
-        <Avatar name={c.avatarName} size="sm" />
-        <Avatar name={c.avatarName} size="md" />
-        <Avatar name={c.avatarName} size="lg" />
+      <Section title={t('dev.uiKit.sections.avatars')} row>
+        <Avatar name={t('dev.uiKit.avatarName')} size="sm" />
+        <Avatar name={t('dev.uiKit.avatarName')} size="md" />
+        <Avatar name={t('dev.uiKit.avatarName')} size="lg" />
       </Section>
     </>
   );

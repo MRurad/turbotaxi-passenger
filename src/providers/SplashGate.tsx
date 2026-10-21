@@ -1,6 +1,7 @@
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, type PropsWithChildren } from 'react';
 
+import { useLanguageReady } from '@/i18n/useLanguageReady';
 import { useThemeMode } from '@/theme';
 
 interface SplashGateProps {
@@ -8,10 +9,11 @@ interface SplashGateProps {
   fontsReady: boolean;
 }
 
-/** Keeps the native splash up until fonts and the persisted theme mode are ready. */
+/** Keeps the native splash up until fonts, the saved theme mode and the saved language are ready. */
 export function SplashGate({ fontsReady, children }: PropsWithChildren<SplashGateProps>) {
   const { isReady: themeReady } = useThemeMode();
-  const ready = fontsReady && themeReady;
+  const languageReady = useLanguageReady();
+  const ready = fontsReady && themeReady && languageReady;
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync().catch(() => undefined);

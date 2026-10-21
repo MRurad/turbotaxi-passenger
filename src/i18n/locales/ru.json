@@ -1,0 +1,409 @@
+{
+  "common": {
+    "appName": "TurboTaxi",
+    "actions": {
+      "ok": "ОК",
+      "cancel": "Отмена",
+      "confirm": "Подтвердить",
+      "save": "Сохранить",
+      "retry": "Повторить",
+      "done": "Готово",
+      "back": "Назад",
+      "close": "Закрыть",
+      "next": "Далее",
+      "continue": "Продолжить",
+      "edit": "Изменить",
+      "delete": "Удалить",
+      "copy": "Скопировать",
+      "call": "Позвонить",
+      "chat": "Написать",
+      "send": "Отправить",
+      "search": "Поиск",
+      "clear": "Очистить",
+      "apply": "Применить",
+      "change": "Изменить",
+      "logout": "Выйти",
+      "login": "Войти",
+      "register": "Зарегистрироваться",
+      "skip": "Пропустить",
+      "openSettings": "Открыть настройки",
+      "bookRide": "Заказать поездку",
+      "seeAll": "Смотреть все"
+    },
+    "labels": {
+      "loading": "Загрузка…",
+      "optional": "Необязательно",
+      "yes": "Да",
+      "no": "Нет",
+      "pickup": "Откуда",
+      "destination": "Куда",
+      "price": "Стоимость",
+      "total": "Итого",
+      "discount": "Скидка",
+      "distance": "Расстояние",
+      "duration": "Время в пути",
+      "today": "Сегодня",
+      "yesterday": "Вчера",
+      "comingSoon": "Скоро",
+      "copied": "Скопировано"
+    },
+    "a11y": {
+      "back": "Вернуться назад",
+      "close": "Закрыть",
+      "showPassword": "Показать пароль",
+      "hidePassword": "Скрыть пароль",
+      "clearInput": "Очистить поле",
+      "dismissNotification": "Закрыть уведомление"
+    },
+    "units": {
+      "meters": "{{value}} м",
+      "kilometers": "{{value}} км",
+      "minutes": "{{value}} мин",
+      "hours": "{{value}} ч",
+      "hoursMinutes": "{{hours}} ч {{minutes}} мин"
+    },
+    "connection": {
+      "connecting": "Переподключение…",
+      "offline": "Нет подключения к интернету"
+    }
+  },
+  "errors": {
+    "title": "Что-то пошло не так",
+    "network": "Нет подключения к интернету. Проверьте сеть и попробуйте снова.",
+    "timeout": "Сервер долго не отвечает. Попробуйте ещё раз.",
+    "invalidCredentials": "Неверный e-mail или пароль.",
+    "sessionExpired": "Сессия истекла. Войдите снова.",
+    "forbidden": "У вас нет доступа к этому разделу.",
+    "notFound": "Ничего не найдено.",
+    "server": "На сервере возникла проблема. Попробуйте чуть позже.",
+    "unknown": "Что-то пошло не так. Попробуйте ещё раз.",
+    "validation": {
+      "required": "Заполните это поле",
+      "email": "Введите корректный e-mail",
+      "minLength_one": "Не менее {{count}} символа",
+      "minLength_few": "Не менее {{count}} символов",
+      "minLength_many": "Не менее {{count}} символов",
+      "minLength_other": "Не менее {{count}} символа",
+      "passwordsMismatch": "Пароли не совпадают",
+      "phone": "Введите корректный номер, например 50 123 45 67",
+      "name": "Используйте только буквы",
+      "promoCode": "Промокод недействителен"
+    }
+  },
+  "auth": {
+    "welcome": {
+      "title": "TurboTaxi",
+      "tagline": "Быстрые и комфортные поездки по городу",
+      "login": "Войти",
+      "createAccount": "Создать аккаунт",
+      "language": "Язык"
+    },
+    "login": {
+      "title": "С возвращением",
+      "subtitle": "Войдите, чтобы заказать поездку",
+      "email": "E-mail",
+      "emailPlaceholder": "you@example.com",
+      "password": "Пароль",
+      "submit": "Войти",
+      "noAccount": "Нет аккаунта?",
+      "signUp": "Зарегистрируйтесь"
+    },
+    "register": {
+      "title": "Создайте аккаунт",
+      "subtitle": "Это займёт всего минуту",
+      "name": "Имя",
+      "surname": "Фамилия",
+      "phone": "Номер телефона",
+      "phonePlaceholder": "50 123 45 67",
+      "email": "E-mail",
+      "password": "Пароль",
+      "confirmPassword": "Повторите пароль",
+      "submit": "Создать аккаунт",
+      "haveAccount": "Уже есть аккаунт?",
+      "signIn": "Войдите"
+    },
+    "logout": {
+      "title": "Выйти из аккаунта?",
+      "message": "Чтобы заказать поездку, нужно будет войти снова.",
+      "confirm": "Выйти"
+    }
+  },
+  "home": {
+    "whereTo": "Куда поедем?",
+    "pickup": "Откуда: {{address}}",
+    "pickupLoading": "Определяем адрес…",
+    "pickupUnknown": "Точка на карте",
+    "myLocation": "Показать моё местоположение",
+    "menu": "Открыть меню",
+    "recentPlaces": "Недавние адреса",
+    "noRecent": "Здесь появятся ваши недавние адреса"
+  },
+  "search": {
+    "title": "Ваш маршрут",
+    "pickupPlaceholder": "Откуда?",
+    "destinationPlaceholder": "Куда?",
+    "chooseOnMap": "Указать на карте",
+    "recent": "Недавние",
+    "noResults": "Ничего не найдено",
+    "noResultsHint": "Попробуйте другой адрес или укажите точку на карте",
+    "error": "Не удалось загрузить подсказки",
+    "map": {
+      "confirmPickup": "Подтвердить место посадки",
+      "confirmDestination": "Подтвердить адрес",
+      "hint": "Передвиньте карту, чтобы поставить точку"
+    }
+  },
+  "booking": {
+    "title": "Выберите тариф",
+    "vehicle": {
+      "economy": "Эконом",
+      "comfort": "Комфорт",
+      "business": "Бизнес",
+      "minivan": "Минивэн"
+    },
+    "seats_one": "{{count}} место",
+    "seats_few": "{{count}} места",
+    "seats_many": "{{count}} мест",
+    "seats_other": "{{count}} места",
+    "tripDuration": "Примерно {{duration}}",
+    "estimateError": "Не удалось рассчитать стоимость",
+    "promo": {
+      "add": "Добавить промокод",
+      "applied": "Промокод {{code}} применён",
+      "remove": "Удалить промокод",
+      "sheetTitle": "Ваши промокоды",
+      "empty": "У вас нет активных промокодов"
+    },
+    "payment": {
+      "title": "Оплата",
+      "cash": "Наличные"
+    },
+    "order": "Заказать {{vehicle}}",
+    "editRoute": "Изменить маршрут",
+    "clearDestination": "Убрать адрес назначения"
+  },
+  "ride": {
+    "status": {
+      "idle": "Нет активной поездки",
+      "searching": "Поиск",
+      "driver_assigned": "Водитель едет",
+      "driver_arrived": "Водитель на месте",
+      "in_progress": "В пути",
+      "completed": "Завершена",
+      "cancelled": "Отменена",
+      "no_driver": "Водитель не найден",
+      "unknown": "Неизвестно"
+    },
+    "searching": {
+      "title": "Ищем водителя…",
+      "subtitle": "Обычно это занимает меньше минуты",
+      "elapsed": "Поиск: {{time}}"
+    },
+    "noDriver": {
+      "title": "Рядом нет свободных водителей",
+      "message": "Сейчас все водители заняты. Попробуйте чуть позже.",
+      "retry": "Искать снова"
+    },
+    "driverOnTheWay": {
+      "title": "Водитель уже едет",
+      "eta": "Приедет через {{duration}}"
+    },
+    "driverArrived": {
+      "title": "Водитель ожидает вас",
+      "message": "Пожалуйста, подойдите к месту посадки"
+    },
+    "inProgress": {
+      "title": "Приятной поездки!",
+      "eta": "Прибытие через {{duration}}",
+      "shareTrip": "Поделиться поездкой"
+    },
+    "completed": {
+      "title": "Вы приехали",
+      "fare": "Стоимость поездки",
+      "originalPrice": "Цена без скидки",
+      "discount": "Скидка",
+      "promo": "Промокод",
+      "done": "Готово"
+    },
+    "cancelled": {
+      "title": "Поездка отменена",
+      "byDriver": "Водитель отменил поездку",
+      "byUser": "Вы отменили поездку",
+      "reason": "Причина: {{reason}}",
+      "bookAgain": "Заказать снова"
+    },
+    "cancel": {
+      "action": "Отменить поездку",
+      "title": "Отменить поездку?",
+      "message": "Возможно, водитель уже в пути.",
+      "confirm": "Да, отменить",
+      "keep": "Не отменять"
+    },
+    "driver": {
+      "car": "{{brand}} {{model}}, {{color}}",
+      "plate": "Госномер {{plate}}",
+      "call": "Позвонить водителю",
+      "chat": "Написать водителю"
+    },
+    "restoring": "Восстанавливаем поездку…"
+  },
+  "chat": {
+    "title": "Чат · {{name}}",
+    "placeholder": "Сообщение",
+    "send": "Отправить сообщение",
+    "empty": "Сообщений пока нет",
+    "emptyHint": "Напишите водителю, если что-то нужно",
+    "sending": "Отправляется…",
+    "failed": "Не отправлено. Нажмите, чтобы повторить",
+    "loadError": "Не удалось загрузить сообщения",
+    "unread_one": "{{count}} новое сообщение",
+    "unread_few": "{{count}} новых сообщения",
+    "unread_many": "{{count}} новых сообщений",
+    "unread_other": "{{count}} новых сообщения",
+    "quickReplies": {
+      "coming": "Уже иду",
+      "here": "Я на месте",
+      "wait": "Подождите, пожалуйста, 2 минуты"
+    }
+  },
+  "history": {
+    "title": "Мои поездки",
+    "emptyTitle": "Поездок пока нет",
+    "emptyMessage": "Здесь появятся ваши завершённые поездки.",
+    "loadError": "Не удалось загрузить поездки",
+    "detail": {
+      "title": "Детали поездки",
+      "driver": "Водитель",
+      "vehicle": "Автомобиль",
+      "date": "Дата"
+    }
+  },
+  "promo": {
+    "title": "Мои промокоды",
+    "tabs": {
+      "active": "Активные",
+      "used": "Использованные"
+    },
+    "empty": "У вас пока нет промокодов",
+    "emptyUsed": "Вы ещё не использовали промокоды",
+    "discountPercent": "Скидка {{value}}%",
+    "discountAmount": "Скидка {{amount}}",
+    "ridesLeft_one": "Осталась {{count}} поездка",
+    "ridesLeft_few": "Осталось {{count}} поездки",
+    "ridesLeft_many": "Осталось {{count}} поездок",
+    "ridesLeft_other": "Осталось {{count}} поездки",
+    "expires": "Действует до {{date}}",
+    "copy": "Скопировать код {{code}}",
+    "copied": "Код скопирован"
+  },
+  "profile": {
+    "title": "Профиль",
+    "edit": "Редактировать профиль",
+    "name": "Имя",
+    "surname": "Фамилия",
+    "phone": "Номер телефона",
+    "email": "E-mail",
+    "saved": "Профиль обновлён",
+    "menu": {
+      "trips": "Мои поездки",
+      "promos": "Промокоды",
+      "settings": "Настройки"
+    }
+  },
+  "settings": {
+    "title": "Настройки",
+    "language": "Язык",
+    "languages": {
+      "az": "Azərbaycanca",
+      "ru": "Русский",
+      "en": "English"
+    },
+    "theme": "Оформление",
+    "themes": {
+      "system": "Как в системе",
+      "light": "Светлое",
+      "dark": "Тёмное"
+    },
+    "about": "О приложении",
+    "version": "Версия {{version}}",
+    "logout": "Выйти из аккаунта",
+    "deleteAccount": "Удалить аккаунт"
+  },
+  "permissions": {
+    "location": {
+      "title": "Разрешите доступ к геолокации",
+      "message": "Мы используем ваше местоположение, чтобы определить место посадки и показать водителя на карте.",
+      "allow": "Разрешить",
+      "denied": "Доступ к геолокации выключен. Его можно включить в настройках.",
+      "openSettings": "Открыть настройки"
+    }
+  },
+  "dev": {
+    "uiKit": {
+      "title": "UI kit",
+      "subtitle": "Дизайн-система TurboTaxi",
+      "open": "Открыть UI kit",
+      "theme": "Тема",
+      "language": "Язык",
+      "sections": {
+        "typography": "Типографика",
+        "buttons": "Кнопки",
+        "iconButtons": "Кнопки-иконки",
+        "inputs": "Поля ввода",
+        "cards": "Карточки",
+        "list": "Элементы списка",
+        "badges": "Бейджи",
+        "chips": "Чипы",
+        "avatars": "Аватары",
+        "skeleton": "Скелетон",
+        "states": "Пустые и ошибочные состояния",
+        "banner": "Баннер подключения",
+        "overlays": "Шторка, диалог и уведомление",
+        "formats": "Форматирование"
+      },
+      "typography": {
+        "display": "Display 32",
+        "title": "Заголовок 24",
+        "heading": "Подзаголовок 18",
+        "body": "Текст 16 — куда поедем сегодня?",
+        "bodyStrong": "Жирный текст 16",
+        "caption": "Подпись 13 · в 3 мин от вас",
+        "label": "Метка 12"
+      },
+      "buttons": {
+        "secondary": "Добавить остановку",
+        "loading": "Загрузка",
+        "disabled": "Недоступно",
+        "small": "Маленькая"
+      },
+      "card": {
+        "subtitle": "4 места · 5 мин",
+        "pressable": "Нажмите — интерактивная карточка",
+        "soft": "Промо: скидка 20% на следующую поездку"
+      },
+      "list": {
+        "home": "Дом",
+        "homeAddress": "ул. 28 Мая, 12, Баку",
+        "work": "Работа",
+        "workAddress": "Port Baku Towers",
+        "trip": "Поездка в аэропорт"
+      },
+      "badges": {
+        "scheduled": "Запланирована",
+        "waiting": "Ожидание"
+      },
+      "avatarName": "Рашад Мамедов",
+      "phoneHelper": "Мы отправим код подтверждения по SMS",
+      "overlays": {
+        "openSheet": "Открыть шторку",
+        "sheetBody": "Во время заказа и поездки шторки открываются поверх карты.",
+        "openDialog": "Диалог отмены",
+        "toastInfo": "Инфо-уведомление",
+        "toastSuccess": "Успешное уведомление",
+        "toastDanger": "Уведомление об ошибке",
+        "toastInfoMessage": "Водитель будет через 2 минуты",
+        "toastSuccessMessage": "Поездка заказана"
+      }
+    }
+  }
+}

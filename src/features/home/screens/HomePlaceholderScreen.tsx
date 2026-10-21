@@ -1,27 +1,27 @@
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { Button, Screen, Text } from '@/components/ui';
 import { ROUTES } from '@/constants/routes';
-import { UI_KIT_COPY } from '@/features/dev/uiKitCopy';
 import { makeStyles } from '@/theme';
 
 /** Temporary placeholder until the home map screen is built (Prompt 6). */
 export function HomePlaceholderScreen() {
   const styles = useStyles();
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <Screen contentStyle={styles.container}>
       <View style={styles.center}>
-        {/* TODO(i18n): replaced by translated UI in Prompt 3 */}
         <Text variant="display" color="primary">
-          {UI_KIT_COPY.appName}
+          {t('common.appName')}
         </Text>
       </View>
       {__DEV__ ? (
         <Button
-          label={UI_KIT_COPY.openUiKit}
+          label={t('dev.uiKit.open')}
           leftIcon="color-palette-outline"
           variant="secondary"
           fullWidth

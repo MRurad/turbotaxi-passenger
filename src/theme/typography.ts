@@ -21,10 +21,7 @@ export const fontFamily = {
   bold: 'Inter_700Bold',
 } as const;
 
-type TypographyStyle = Pick<
-  TextStyle,
-  'fontFamily' | 'fontSize' | 'lineHeight' | 'letterSpacing' | 'textTransform'
->;
+type TypographyStyle = Pick<TextStyle, 'fontFamily' | 'fontSize' | 'lineHeight' | 'letterSpacing'>;
 
 export const typography = {
   display: { fontFamily: fontFamily.bold, fontSize: 32, lineHeight: 40, letterSpacing: -0.5 },
@@ -38,7 +35,6 @@ export const typography = {
     fontSize: 12,
     lineHeight: 16,
     letterSpacing: 0.5,
-    textTransform: 'uppercase',
   },
 } as const satisfies Record<string, TypographyStyle>;
 
@@ -47,3 +43,9 @@ export type TypographyVariant = keyof Typography;
 
 /** Caps Dynamic Type scaling so layouts don't break at accessibility sizes. */
 export const MAX_FONT_SCALE = 1.4;
+
+/**
+ * Variants rendered in capitals. Done in <Text> with toLocaleUpperCase (not textTransform),
+ * so Azerbaijani "i" becomes "İ".
+ */
+export const UPPERCASE_VARIANTS: ReadonlySet<TypographyVariant> = new Set(['label']);

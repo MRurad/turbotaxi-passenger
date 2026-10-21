@@ -1,32 +1,32 @@
+import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { Chip } from '@/components/ui';
-import { makeStyles, THEME_MODES, useThemeMode } from '@/theme';
+import { Chip, type IconName } from '@/components/ui';
+import { makeStyles, THEME_MODES, useThemeMode, type ThemeMode } from '@/theme';
 
-import { UI_KIT_COPY } from '../uiKitCopy';
+const ICONS: Record<ThemeMode, IconName> = {
+  system: 'phone-portrait-outline',
+  light: 'sunny-outline',
+  dark: 'moon-outline',
+};
 
 export function ThemeModeSwitch() {
   const styles = useStyles();
+  const { t } = useTranslation();
   const { mode, setMode } = useThemeMode();
 
   return (
     <View
       style={styles.row}
       accessibilityRole="radiogroup"
-      accessibilityLabel={UI_KIT_COPY.themeMode.label}
+      accessibilityLabel={t('dev.uiKit.theme')}
     >
       {THEME_MODES.map((m) => (
         <Chip
           key={m}
-          label={UI_KIT_COPY.themeMode[m]}
-          icon={
-            m === 'system'
-              ? 'phone-portrait-outline'
-              : m === 'light'
-                ? 'sunny-outline'
-                : 'moon-outline'
-          }
           role="radio"
+          label={t(`settings.themes.${m}`)}
+          icon={ICONS[m]}
           selected={mode === m}
           onPress={() => setMode(m)}
           testID={`theme-${m}`}
@@ -37,5 +37,5 @@ export function ThemeModeSwitch() {
 }
 
 const useStyles = makeStyles((t) => ({
-  row: { flexDirection: 'row', gap: t.spacing.sm, paddingVertical: t.spacing.sm },
+  row: { flexDirection: 'row', flexWrap: 'wrap', gap: t.spacing.sm, paddingVertical: t.spacing.xs },
 }));

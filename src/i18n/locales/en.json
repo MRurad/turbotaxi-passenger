@@ -1,0 +1,401 @@
+{
+  "common": {
+    "appName": "TurboTaxi",
+    "actions": {
+      "ok": "OK",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "save": "Save",
+      "retry": "Try again",
+      "done": "Done",
+      "back": "Back",
+      "close": "Close",
+      "next": "Next",
+      "continue": "Continue",
+      "edit": "Edit",
+      "delete": "Delete",
+      "copy": "Copy",
+      "call": "Call",
+      "chat": "Message",
+      "send": "Send",
+      "search": "Search",
+      "clear": "Clear",
+      "apply": "Apply",
+      "change": "Change",
+      "logout": "Log out",
+      "login": "Log in",
+      "register": "Sign up",
+      "skip": "Skip",
+      "openSettings": "Open Settings",
+      "bookRide": "Book a ride",
+      "seeAll": "See all"
+    },
+    "labels": {
+      "loading": "Loading…",
+      "optional": "Optional",
+      "yes": "Yes",
+      "no": "No",
+      "pickup": "Pickup",
+      "destination": "Destination",
+      "price": "Price",
+      "total": "Total",
+      "discount": "Discount",
+      "distance": "Distance",
+      "duration": "Duration",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "comingSoon": "Coming soon",
+      "copied": "Copied"
+    },
+    "a11y": {
+      "back": "Go back",
+      "close": "Close",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "clearInput": "Clear text",
+      "dismissNotification": "Dismiss notification"
+    },
+    "units": {
+      "meters": "{{value}} m",
+      "kilometers": "{{value}} km",
+      "minutes": "{{value}} min",
+      "hours": "{{value}} h",
+      "hoursMinutes": "{{hours}} h {{minutes}} min"
+    },
+    "connection": {
+      "connecting": "Reconnecting…",
+      "offline": "No internet connection"
+    }
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "network": "No internet connection. Check your network and try again.",
+    "timeout": "The server is taking too long to respond. Please try again.",
+    "invalidCredentials": "Wrong email or password.",
+    "sessionExpired": "Your session has expired. Please log in again.",
+    "forbidden": "You don't have access to this.",
+    "notFound": "We couldn't find what you were looking for.",
+    "server": "Our server is having trouble. Please try again in a moment.",
+    "unknown": "Something went wrong. Please try again.",
+    "validation": {
+      "required": "This field is required",
+      "email": "Enter a valid email address",
+      "minLength_one": "Must be at least {{count}} character",
+      "minLength_other": "Must be at least {{count}} characters",
+      "passwordsMismatch": "Passwords don't match",
+      "phone": "Enter a valid phone number, e.g. 50 123 45 67",
+      "name": "Use letters only",
+      "promoCode": "This promo code isn't valid"
+    }
+  },
+  "auth": {
+    "welcome": {
+      "title": "TurboTaxi",
+      "tagline": "Fast, comfortable rides across the city",
+      "login": "Log in",
+      "createAccount": "Create account",
+      "language": "Language"
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Log in to book your next ride",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "submit": "Log in",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "It only takes a minute",
+      "name": "First name",
+      "surname": "Last name",
+      "phone": "Phone number",
+      "phonePlaceholder": "50 123 45 67",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Log in"
+    },
+    "logout": {
+      "title": "Log out?",
+      "message": "You'll need to log in again to book a ride.",
+      "confirm": "Log out"
+    }
+  },
+  "home": {
+    "whereTo": "Where to?",
+    "pickup": "Pickup: {{address}}",
+    "pickupLoading": "Finding your address…",
+    "pickupUnknown": "Pinned location",
+    "myLocation": "Show my location",
+    "menu": "Open menu",
+    "recentPlaces": "Recent places",
+    "noRecent": "Your recent destinations will appear here"
+  },
+  "search": {
+    "title": "Your route",
+    "pickupPlaceholder": "Pickup location",
+    "destinationPlaceholder": "Where to?",
+    "chooseOnMap": "Choose on map",
+    "recent": "Recent",
+    "noResults": "Nothing found",
+    "noResultsHint": "Try a different address or choose a point on the map",
+    "error": "Couldn't load suggestions",
+    "map": {
+      "confirmPickup": "Confirm pickup",
+      "confirmDestination": "Confirm destination",
+      "hint": "Move the map to place the pin"
+    }
+  },
+  "booking": {
+    "title": "Choose a ride",
+    "vehicle": {
+      "economy": "Economy",
+      "comfort": "Comfort",
+      "business": "Business",
+      "minivan": "Minivan"
+    },
+    "seats_one": "{{count}} seat",
+    "seats_other": "{{count}} seats",
+    "tripDuration": "About {{duration}}",
+    "estimateError": "Couldn't get a price",
+    "promo": {
+      "add": "Add promo code",
+      "applied": "Promo {{code}} applied",
+      "remove": "Remove promo code",
+      "sheetTitle": "Your promo codes",
+      "empty": "You have no active promo codes"
+    },
+    "payment": {
+      "title": "Payment",
+      "cash": "Cash"
+    },
+    "order": "Order {{vehicle}}",
+    "editRoute": "Edit route",
+    "clearDestination": "Clear destination"
+  },
+  "ride": {
+    "status": {
+      "idle": "No active ride",
+      "searching": "Searching",
+      "driver_assigned": "Driver on the way",
+      "driver_arrived": "Driver arrived",
+      "in_progress": "Trip in progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_driver": "No driver found",
+      "unknown": "Unknown"
+    },
+    "searching": {
+      "title": "Looking for a driver…",
+      "subtitle": "This usually takes less than a minute",
+      "elapsed": "Searching for {{time}}"
+    },
+    "noDriver": {
+      "title": "No drivers nearby",
+      "message": "All drivers are busy right now. Please try again in a moment.",
+      "retry": "Search again"
+    },
+    "driverOnTheWay": {
+      "title": "Your driver is on the way",
+      "eta": "Arriving in {{duration}}"
+    },
+    "driverArrived": {
+      "title": "Your driver has arrived",
+      "message": "Please head to the pickup point"
+    },
+    "inProgress": {
+      "title": "Enjoy your ride",
+      "eta": "Arriving at your destination in {{duration}}",
+      "shareTrip": "Share trip"
+    },
+    "completed": {
+      "title": "You've arrived",
+      "fare": "Fare",
+      "originalPrice": "Original price",
+      "discount": "Discount",
+      "promo": "Promo code",
+      "done": "Done"
+    },
+    "cancelled": {
+      "title": "Ride cancelled",
+      "byDriver": "The driver cancelled the ride",
+      "byUser": "You cancelled the ride",
+      "reason": "Reason: {{reason}}",
+      "bookAgain": "Book again"
+    },
+    "cancel": {
+      "action": "Cancel ride",
+      "title": "Cancel this ride?",
+      "message": "Your driver may already be on the way.",
+      "confirm": "Yes, cancel",
+      "keep": "Keep ride"
+    },
+    "driver": {
+      "car": "{{color}} {{brand}} {{model}}",
+      "plate": "Plate number {{plate}}",
+      "call": "Call driver",
+      "chat": "Message driver"
+    },
+    "restoring": "Restoring your ride…"
+  },
+  "chat": {
+    "title": "Chat with {{name}}",
+    "placeholder": "Message",
+    "send": "Send message",
+    "empty": "No messages yet",
+    "emptyHint": "Write to your driver if you need anything",
+    "sending": "Sending…",
+    "failed": "Not sent. Tap to retry",
+    "loadError": "Couldn't load messages",
+    "unread_one": "{{count}} new message",
+    "unread_other": "{{count}} new messages",
+    "quickReplies": {
+      "coming": "I'm coming",
+      "here": "I'm here",
+      "wait": "Please wait 2 minutes"
+    }
+  },
+  "history": {
+    "title": "My trips",
+    "emptyTitle": "No trips yet",
+    "emptyMessage": "Your completed rides will show up here.",
+    "loadError": "Couldn't load your trips",
+    "detail": {
+      "title": "Trip details",
+      "driver": "Driver",
+      "vehicle": "Vehicle",
+      "date": "Date"
+    }
+  },
+  "promo": {
+    "title": "My promo codes",
+    "tabs": {
+      "active": "Active",
+      "used": "Used"
+    },
+    "empty": "You have no promo codes yet",
+    "emptyUsed": "You haven't used any promo codes yet",
+    "discountPercent": "{{value}}% off",
+    "discountAmount": "{{amount}} off",
+    "ridesLeft_one": "{{count}} ride left",
+    "ridesLeft_other": "{{count}} rides left",
+    "expires": "Valid until {{date}}",
+    "copy": "Copy code {{code}}",
+    "copied": "Code copied"
+  },
+  "profile": {
+    "title": "Profile",
+    "edit": "Edit profile",
+    "name": "First name",
+    "surname": "Last name",
+    "phone": "Phone number",
+    "email": "Email",
+    "saved": "Profile updated",
+    "menu": {
+      "trips": "My trips",
+      "promos": "Promo codes",
+      "settings": "Settings"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "languages": {
+      "az": "Azərbaycanca",
+      "ru": "Русский",
+      "en": "English"
+    },
+    "theme": "Appearance",
+    "themes": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "about": "About",
+    "version": "Version {{version}}",
+    "logout": "Log out",
+    "deleteAccount": "Delete account"
+  },
+  "permissions": {
+    "location": {
+      "title": "Allow location access",
+      "message": "We use your location to set the pickup point and show your driver on the map.",
+      "allow": "Allow",
+      "denied": "Location access is turned off. You can turn it on in Settings.",
+      "openSettings": "Open Settings"
+    }
+  },
+  "dev": {
+    "uiKit": {
+      "title": "UI kit",
+      "subtitle": "TurboTaxi design system",
+      "open": "Open UI kit",
+      "theme": "Theme",
+      "language": "Language",
+      "sections": {
+        "typography": "Typography",
+        "buttons": "Buttons",
+        "iconButtons": "Icon buttons",
+        "inputs": "Inputs",
+        "cards": "Cards",
+        "list": "List items",
+        "badges": "Badges",
+        "chips": "Chips",
+        "avatars": "Avatars",
+        "skeleton": "Skeleton",
+        "states": "Empty & error states",
+        "banner": "Connection banner",
+        "overlays": "Sheet, dialog & toast",
+        "formats": "Formatting"
+      },
+      "typography": {
+        "display": "Display 32",
+        "title": "Title 24",
+        "heading": "Heading 18",
+        "body": "Body 16 — where are you going today?",
+        "bodyStrong": "Body strong 16",
+        "caption": "Caption 13 · 3 min away",
+        "label": "Label 12"
+      },
+      "buttons": {
+        "secondary": "Add stop",
+        "loading": "Loading",
+        "disabled": "Disabled",
+        "small": "Small"
+      },
+      "card": {
+        "subtitle": "4 seats · 5 min",
+        "pressable": "Tap me — pressable card",
+        "soft": "Promo: 20% off your next ride"
+      },
+      "list": {
+        "home": "Home",
+        "homeAddress": "12 28 May St, Baku",
+        "work": "Work",
+        "workAddress": "Port Baku Towers",
+        "trip": "Trip to the airport"
+      },
+      "badges": {
+        "scheduled": "Scheduled",
+        "waiting": "Waiting"
+      },
+      "avatarName": "Rashad Mammadov",
+      "phoneHelper": "We'll text you a confirmation code",
+      "overlays": {
+        "openSheet": "Open sheet",
+        "sheetBody": "Bottom sheets sit over the map during booking and the live ride.",
+        "openDialog": "Cancel ride dialog",
+        "toastInfo": "Info toast",
+        "toastSuccess": "Success toast",
+        "toastDanger": "Error toast",
+        "toastInfoMessage": "Your driver is 2 minutes away",
+        "toastSuccessMessage": "Ride requested"
+      }
+    }
+  }
+}

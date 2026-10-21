@@ -1,0 +1,401 @@
+{
+  "common": {
+    "appName": "TurboTaxi",
+    "actions": {
+      "ok": "OK",
+      "cancel": "İmtina",
+      "confirm": "Təsdiqlə",
+      "save": "Yadda saxla",
+      "retry": "Yenidən cəhd et",
+      "done": "Hazırdır",
+      "back": "Geri",
+      "close": "Bağla",
+      "next": "Növbəti",
+      "continue": "Davam et",
+      "edit": "Redaktə et",
+      "delete": "Sil",
+      "copy": "Kopyala",
+      "call": "Zəng et",
+      "chat": "Yaz",
+      "send": "Göndər",
+      "search": "Axtar",
+      "clear": "Təmizlə",
+      "apply": "Tətbiq et",
+      "change": "Dəyiş",
+      "logout": "Çıxış",
+      "login": "Daxil ol",
+      "register": "Qeydiyyatdan keç",
+      "skip": "Ötür",
+      "openSettings": "Ayarları aç",
+      "bookRide": "Taksi sifariş et",
+      "seeAll": "Hamısına bax"
+    },
+    "labels": {
+      "loading": "Yüklənir…",
+      "optional": "İstəyə bağlı",
+      "yes": "Bəli",
+      "no": "Xeyr",
+      "pickup": "Minmə yeri",
+      "destination": "Təyinat yeri",
+      "price": "Qiymət",
+      "total": "Cəmi",
+      "discount": "Endirim",
+      "distance": "Məsafə",
+      "duration": "Müddət",
+      "today": "Bu gün",
+      "yesterday": "Dünən",
+      "comingSoon": "Tezliklə",
+      "copied": "Kopyalandı"
+    },
+    "a11y": {
+      "back": "Geri qayıt",
+      "close": "Bağla",
+      "showPassword": "Şifrəni göstər",
+      "hidePassword": "Şifrəni gizlət",
+      "clearInput": "Mətni təmizlə",
+      "dismissNotification": "Bildirişi bağla"
+    },
+    "units": {
+      "meters": "{{value}} m",
+      "kilometers": "{{value}} km",
+      "minutes": "{{value}} dəq",
+      "hours": "{{value}} saat",
+      "hoursMinutes": "{{hours}} saat {{minutes}} dəq"
+    },
+    "connection": {
+      "connecting": "Yenidən qoşulur…",
+      "offline": "İnternet bağlantısı yoxdur"
+    }
+  },
+  "errors": {
+    "title": "Xəta baş verdi",
+    "network": "İnternet bağlantısı yoxdur. Şəbəkəni yoxlayıb yenidən cəhd edin.",
+    "timeout": "Server çox gec cavab verir. Bir az sonra yenidən cəhd edin.",
+    "invalidCredentials": "E-poçt və ya şifrə yanlışdır.",
+    "sessionExpired": "Sessiyanızın vaxtı bitib. Zəhmət olmasa, yenidən daxil olun.",
+    "forbidden": "Bu əməliyyat üçün icazəniz yoxdur.",
+    "notFound": "Axtardığınız məlumat tapılmadı.",
+    "server": "Serverdə problem yaranıb. Bir azdan yenidən cəhd edin.",
+    "unknown": "Nəsə alınmadı. Yenidən cəhd edin.",
+    "validation": {
+      "required": "Bu xananı doldurun",
+      "email": "Düzgün e-poçt ünvanı daxil edin",
+      "minLength_one": "Ən azı {{count}} simvol olmalıdır",
+      "minLength_other": "Ən azı {{count}} simvol olmalıdır",
+      "passwordsMismatch": "Şifrələr eyni deyil",
+      "phone": "Düzgün nömrə daxil edin, məsələn: 50 123 45 67",
+      "name": "Yalnız hərflərdən istifadə edin",
+      "promoCode": "Bu promokod etibarlı deyil"
+    }
+  },
+  "auth": {
+    "welcome": {
+      "title": "TurboTaxi",
+      "tagline": "Şəhərdə sürətli və rahat gediş",
+      "login": "Daxil ol",
+      "createAccount": "Hesab yarat",
+      "language": "Dil"
+    },
+    "login": {
+      "title": "Yenidən xoş gəlmisiniz",
+      "subtitle": "Sifariş vermək üçün hesabınıza daxil olun",
+      "email": "E-poçt",
+      "emailPlaceholder": "siz@example.com",
+      "password": "Şifrə",
+      "submit": "Daxil ol",
+      "noAccount": "Hesabınız yoxdur?",
+      "signUp": "Qeydiyyatdan keçin"
+    },
+    "register": {
+      "title": "Hesab yaradın",
+      "subtitle": "Cəmi bir dəqiqənizi alacaq",
+      "name": "Ad",
+      "surname": "Soyad",
+      "phone": "Telefon nömrəsi",
+      "phonePlaceholder": "50 123 45 67",
+      "email": "E-poçt",
+      "password": "Şifrə",
+      "confirmPassword": "Şifrəni təkrarlayın",
+      "submit": "Hesab yarat",
+      "haveAccount": "Artıq hesabınız var?",
+      "signIn": "Daxil olun"
+    },
+    "logout": {
+      "title": "Hesabdan çıxılsın?",
+      "message": "Sifariş vermək üçün yenidən daxil olmalısınız.",
+      "confirm": "Çıxış"
+    }
+  },
+  "home": {
+    "whereTo": "Hara gedirik?",
+    "pickup": "Minmə yeri: {{address}}",
+    "pickupLoading": "Ünvan müəyyənləşdirilir…",
+    "pickupUnknown": "Xəritədəki nöqtə",
+    "myLocation": "Yerimi göstər",
+    "menu": "Menyunu aç",
+    "recentPlaces": "Son ünvanlar",
+    "noRecent": "Son getdiyiniz ünvanlar burada görünəcək"
+  },
+  "search": {
+    "title": "Marşrutunuz",
+    "pickupPlaceholder": "Haradan?",
+    "destinationPlaceholder": "Hara?",
+    "chooseOnMap": "Xəritədə seçin",
+    "recent": "Son axtarışlar",
+    "noResults": "Heç nə tapılmadı",
+    "noResultsHint": "Başqa ünvan yazın və ya nöqtəni xəritədə seçin",
+    "error": "Təkliflər yüklənmədi",
+    "map": {
+      "confirmPickup": "Minmə yerini təsdiqlə",
+      "confirmDestination": "Təyinat yerini təsdiqlə",
+      "hint": "Nöqtəni seçmək üçün xəritəni sürüşdürün"
+    }
+  },
+  "booking": {
+    "title": "Tarif seçin",
+    "vehicle": {
+      "economy": "Ekonom",
+      "comfort": "Komfort",
+      "business": "Biznes",
+      "minivan": "Miniven"
+    },
+    "seats_one": "{{count}} yer",
+    "seats_other": "{{count}} yer",
+    "tripDuration": "Təxminən {{duration}}",
+    "estimateError": "Qiyməti hesablamaq mümkün olmadı",
+    "promo": {
+      "add": "Promokod əlavə et",
+      "applied": "{{code}} promokodu tətbiq edildi",
+      "remove": "Promokodu sil",
+      "sheetTitle": "Promokodlarınız",
+      "empty": "Aktiv promokodunuz yoxdur"
+    },
+    "payment": {
+      "title": "Ödəniş",
+      "cash": "Nağd"
+    },
+    "order": "{{vehicle}} sifariş et",
+    "editRoute": "Marşrutu dəyiş",
+    "clearDestination": "Təyinat yerini sil"
+  },
+  "ride": {
+    "status": {
+      "idle": "Aktiv gediş yoxdur",
+      "searching": "Axtarılır",
+      "driver_assigned": "Sürücü yoldadır",
+      "driver_arrived": "Sürücü çatıb",
+      "in_progress": "Yoldayıq",
+      "completed": "Tamamlandı",
+      "cancelled": "Ləğv edildi",
+      "no_driver": "Sürücü tapılmadı",
+      "unknown": "Naməlum"
+    },
+    "searching": {
+      "title": "Sürücü axtarılır…",
+      "subtitle": "Adətən bir dəqiqədən az çəkir",
+      "elapsed": "Axtarış: {{time}}"
+    },
+    "noDriver": {
+      "title": "Yaxınlıqda sürücü yoxdur",
+      "message": "Hazırda bütün sürücülər məşğuldur. Bir azdan yenidən cəhd edin.",
+      "retry": "Yenidən axtar"
+    },
+    "driverOnTheWay": {
+      "title": "Sürücü yoldadır",
+      "eta": "{{duration}} sonra çatacaq"
+    },
+    "driverArrived": {
+      "title": "Sürücü sizi gözləyir",
+      "message": "Zəhmət olmasa, minmə yerinə yaxınlaşın"
+    },
+    "inProgress": {
+      "title": "Xoş yol!",
+      "eta": "{{duration}} sonra təyinat yerində olacaqsınız",
+      "shareTrip": "Gedişi paylaş"
+    },
+    "completed": {
+      "title": "Gəlib çatdınız",
+      "fare": "Gedişin qiyməti",
+      "originalPrice": "İlkin qiymət",
+      "discount": "Endirim",
+      "promo": "Promokod",
+      "done": "Hazırdır"
+    },
+    "cancelled": {
+      "title": "Sifariş ləğv edildi",
+      "byDriver": "Sürücü sifarişi ləğv etdi",
+      "byUser": "Sifarişi ləğv etdiniz",
+      "reason": "Səbəb: {{reason}}",
+      "bookAgain": "Yenidən sifariş et"
+    },
+    "cancel": {
+      "action": "Sifarişi ləğv et",
+      "title": "Sifariş ləğv edilsin?",
+      "message": "Sürücü artıq yola çıxmış ola bilər.",
+      "confirm": "Bəli, ləğv et",
+      "keep": "Sifarişi saxla"
+    },
+    "driver": {
+      "car": "{{brand}} {{model}}, {{color}}",
+      "plate": "Dövlət nömrəsi {{plate}}",
+      "call": "Sürücüyə zəng et",
+      "chat": "Sürücüyə yaz"
+    },
+    "restoring": "Gedişiniz bərpa olunur…"
+  },
+  "chat": {
+    "title": "{{name}} ilə yazışma",
+    "placeholder": "Mesaj",
+    "send": "Mesajı göndər",
+    "empty": "Hələ mesaj yoxdur",
+    "emptyHint": "Nəsə lazım olsa, sürücüyə yazın",
+    "sending": "Göndərilir…",
+    "failed": "Göndərilmədi. Təkrar cəhd üçün toxunun",
+    "loadError": "Mesajlar yüklənmədi",
+    "unread_one": "{{count}} yeni mesaj",
+    "unread_other": "{{count}} yeni mesaj",
+    "quickReplies": {
+      "coming": "Gəlirəm",
+      "here": "Buradayam",
+      "wait": "Zəhmət olmasa, 2 dəqiqə gözləyin"
+    }
+  },
+  "history": {
+    "title": "Gedişlərim",
+    "emptyTitle": "Hələ gedişiniz yoxdur",
+    "emptyMessage": "Tamamlanmış gedişləriniz burada görünəcək.",
+    "loadError": "Gedişlər yüklənmədi",
+    "detail": {
+      "title": "Gediş haqqında",
+      "driver": "Sürücü",
+      "vehicle": "Avtomobil",
+      "date": "Tarix"
+    }
+  },
+  "promo": {
+    "title": "Promokodlarım",
+    "tabs": {
+      "active": "Aktiv",
+      "used": "İstifadə olunmuş"
+    },
+    "empty": "Hələ promokodunuz yoxdur",
+    "emptyUsed": "Hələ heç bir promokoddan istifadə etməmisiniz",
+    "discountPercent": "{{value}}% endirim",
+    "discountAmount": "{{amount}} endirim",
+    "ridesLeft_one": "{{count}} gediş qalıb",
+    "ridesLeft_other": "{{count}} gediş qalıb",
+    "expires": "Bitmə tarixi: {{date}}",
+    "copy": "{{code}} kodunu kopyala",
+    "copied": "Kod kopyalandı"
+  },
+  "profile": {
+    "title": "Profil",
+    "edit": "Profili redaktə et",
+    "name": "Ad",
+    "surname": "Soyad",
+    "phone": "Telefon nömrəsi",
+    "email": "E-poçt",
+    "saved": "Profil yeniləndi",
+    "menu": {
+      "trips": "Gedişlərim",
+      "promos": "Promokodlar",
+      "settings": "Ayarlar"
+    }
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "language": "Dil",
+    "languages": {
+      "az": "Azərbaycanca",
+      "ru": "Русский",
+      "en": "English"
+    },
+    "theme": "Görünüş",
+    "themes": {
+      "system": "Sistem",
+      "light": "İşıqlı",
+      "dark": "Qaranlıq"
+    },
+    "about": "Tətbiq haqqında",
+    "version": "Versiya {{version}}",
+    "logout": "Hesabdan çıx",
+    "deleteAccount": "Hesabı sil"
+  },
+  "permissions": {
+    "location": {
+      "title": "Məkana giriş icazəsi verin",
+      "message": "Minmə yerini müəyyən etmək və sürücünü xəritədə göstərmək üçün məkanınızdan istifadə edirik.",
+      "allow": "İcazə ver",
+      "denied": "Məkana giriş söndürülüb. Onu Ayarlardan aktiv edə bilərsiniz.",
+      "openSettings": "Ayarları aç"
+    }
+  },
+  "dev": {
+    "uiKit": {
+      "title": "UI kit",
+      "subtitle": "TurboTaxi dizayn sistemi",
+      "open": "UI kit-i aç",
+      "theme": "Mövzu",
+      "language": "Dil",
+      "sections": {
+        "typography": "Tipoqrafiya",
+        "buttons": "Düymələr",
+        "iconButtons": "İkon düymələri",
+        "inputs": "Daxiletmə xanaları",
+        "cards": "Kartlar",
+        "list": "Siyahı elementləri",
+        "badges": "Nişanlar",
+        "chips": "Seçim çipləri",
+        "avatars": "Avatarlar",
+        "skeleton": "Skelet",
+        "states": "Boş və xəta halları",
+        "banner": "Bağlantı banneri",
+        "overlays": "Pəncərə, dialoq və bildiriş",
+        "formats": "Formatlama"
+      },
+      "typography": {
+        "display": "Display 32",
+        "title": "Başlıq 24",
+        "heading": "Alt başlıq 18",
+        "body": "Mətn 16 — bu gün hara gedirsiniz?",
+        "bodyStrong": "Qalın mətn 16",
+        "caption": "Qeyd 13 · 3 dəq uzaqlıqda",
+        "label": "Etiket 12"
+      },
+      "buttons": {
+        "secondary": "Dayanacaq əlavə et",
+        "loading": "Yüklənir",
+        "disabled": "Deaktiv",
+        "small": "Kiçik"
+      },
+      "card": {
+        "subtitle": "4 yer · 5 dəq",
+        "pressable": "Toxunun — basıla bilən kart",
+        "soft": "Promo: növbəti gedişə 20% endirim"
+      },
+      "list": {
+        "home": "Ev",
+        "homeAddress": "28 May küç. 12, Bakı",
+        "work": "İş",
+        "workAddress": "Port Baku Towers",
+        "trip": "Hava limanına gediş"
+      },
+      "badges": {
+        "scheduled": "Planlaşdırılıb",
+        "waiting": "Gözləyir"
+      },
+      "avatarName": "Rəşad Məmmədov",
+      "phoneHelper": "Təsdiq kodunu SMS ilə göndərəcəyik",
+      "overlays": {
+        "openSheet": "Pəncərəni aç",
+        "sheetBody": "Sifariş və gediş zamanı aşağı pəncərələr xəritənin üzərində açılır.",
+        "openDialog": "Ləğv dialoqu",
+        "toastInfo": "Məlumat bildirişi",
+        "toastSuccess": "Uğur bildirişi",
+        "toastDanger": "Xəta bildirişi",
+        "toastInfoMessage": "Sürücü 2 dəqiqəyə çatacaq",
+        "toastSuccessMessage": "Sifariş göndərildi"
+      }
+    }
+  }
+}

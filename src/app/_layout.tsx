@@ -2,6 +2,8 @@
 import 'react-native-get-random-values';
 // Validates env vars at startup; throws a readable error if .env is incomplete.
 import '@/constants/config';
+// Initializes i18next synchronously with bundled resources.
+import '@/i18n';
 
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
