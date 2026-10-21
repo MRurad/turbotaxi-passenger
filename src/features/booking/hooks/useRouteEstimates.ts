@@ -3,7 +3,9 @@ import { keepPreviousData, queryOptions, skipToken, useQueries } from '@tanstack
 import type { ApiError } from '@/api/errors';
 import { estimateRoute } from '@/api/services/routes';
 import { queryKeys } from '@/constants/queryKeys';
+import { ROUTE_ESTIMATE_STALE_TIME_MS } from '@/constants/timeouts';
 import { VEHICLE_TYPES, type VehicleType } from '@/constants/vehicles';
+import { roundCoords } from '@/lib/geo';
 
 import { useBookingDraft } from '../store';
 import type { RouteEstimate } from '../types';
@@ -31,13 +33,24 @@ export function useRouteEstimates(): VehicleEstimate[] {
 
   const results = useQueries({
     queries: VEHICLE_TYPES.map((vehicleType) => {
+      // ≈1 m: float noise from the map pin doesn't create a new key (and a new POST).
       const params =
-        pickup && destination ? { origin: pickup, destination, vehicleType, promoCode } : null;
+        pickup && destination
+          ? {
+              origin: roundCoords(pickup),
+              destination: roundCoords(destination),
+              vehicleType,
+              promoCode,
+            }
+          : null;
       return queryOptions<RouteEstimate, ApiError>({
         queryKey: params
           ? queryKeys.routeEstimate(params)
           : queryKeys.routeEstimateIdle(vehicleType),
         queryFn: params ? ({ signal }) => estimateRoute(params, { signal }) : skipToken,
+        // Several components observe these queries and the sheet remounts on mode changes:
+        // a fresh observer must reuse the price instead of POSTing the same payload again.
+        staleTime: ROUTE_ESTIMATE_STALE_TIME_MS,
         // Promo change / pickup tweak: keep showing the old prices while the new ones load
         // (no skeleton flash, no disabled Order button, no vanishing route).
         placeholderData: keepPreviousData,

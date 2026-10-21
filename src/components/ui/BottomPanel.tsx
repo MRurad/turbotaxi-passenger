@@ -1,14 +1,11 @@
-import BottomSheet, {
-  BottomSheetFooter,
-  BottomSheetScrollView,
-  BottomSheetView,
-  type BottomSheetFooterProps,
-} from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import { useCallback, useState, type PropsWithChildren, type ReactNode } from 'react';
-import { View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
+import { useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { makeStyles, useTheme } from '@/theme';
+
+import { BottomPanelFooter, BottomPanelFooterContext } from './BottomPanelFooter';
 
 export interface BottomPanelProps {
   /** Reports the panel's visible height (content + handle), e.g. to pad the map above it. */
@@ -52,53 +49,54 @@ export function BottomPanel({
     [onHeightChange, maxContent, styles.handleArea.height],
   );
 
-  const renderFooter = useCallback(
-    (props: BottomSheetFooterProps) => (
-      <BottomSheetFooter {...props}>
-        <View
-          style={[styles.footer, { paddingBottom: insets.bottom + styles.footer.paddingTop }]}
-          onLayout={(e: LayoutChangeEvent) => setFooterHeight(e.nativeEvent.layout.height)}
-        >
-          {footer}
-        </View>
-      </BottomSheetFooter>
-    ),
-    [footer, insets.bottom, styles.footer],
+  const onFooterLayout = useCallback(
+    (e: LayoutChangeEvent) => setFooterHeight(e.nativeEvent.layout.height),
+    [],
   );
+  // A new value on every render on purpose (`footer` is a fresh element): it only re-renders
+  // the footer's content — the footer component itself stays mounted.
+  const footerValue = {
+    content: footer,
+    paddingBottom: insets.bottom + spacing.md,
+    onLayout: onFooterLayout,
+  };
 
   const contentStyle = [styles.content, { paddingBottom: bottomPadding }];
 
   return (
-    <BottomSheet
-      index={0}
-      enableDynamicSizing
-      enablePanDownToClose={false}
-      // Large Dynamic Type / long lists on small phones must not bury the map.
-      maxDynamicContentSize={maxContent}
-      footerComponent={footer ? renderFooter : undefined}
-      backgroundStyle={styles.background}
-      handleIndicatorStyle={styles.handle}
-      style={styles.shadow}
-    >
-      {scrollable ? (
-        <BottomSheetScrollView
-          testID={testID}
-          contentContainerStyle={contentStyle}
-          onContentSizeChange={(_w, h) => report(h)}
-          showsVerticalScrollIndicator={false}
-        >
-          {children}
-        </BottomSheetScrollView>
-      ) : (
-        <BottomSheetView
-          testID={testID}
-          onLayout={(e: LayoutChangeEvent) => report(e.nativeEvent.layout.height)}
-          style={contentStyle}
-        >
-          {children}
-        </BottomSheetView>
-      )}
-    </BottomSheet>
+    <BottomPanelFooterContext.Provider value={footerValue}>
+      <BottomSheet
+        index={0}
+        enableDynamicSizing
+        enablePanDownToClose={false}
+        // Large Dynamic Type / long lists on small phones must not bury the map.
+        maxDynamicContentSize={maxContent}
+        // A stable component type: see BottomPanelFooter.
+        footerComponent={footer ? BottomPanelFooter : undefined}
+        backgroundStyle={styles.background}
+        handleIndicatorStyle={styles.handle}
+        style={styles.shadow}
+      >
+        {scrollable ? (
+          <BottomSheetScrollView
+            testID={testID}
+            contentContainerStyle={contentStyle}
+            onContentSizeChange={(_w, h) => report(h)}
+            showsVerticalScrollIndicator={false}
+          >
+            {children}
+          </BottomSheetScrollView>
+        ) : (
+          <BottomSheetView
+            testID={testID}
+            onLayout={(e: LayoutChangeEvent) => report(e.nativeEvent.layout.height)}
+            style={contentStyle}
+          >
+            {children}
+          </BottomSheetView>
+        )}
+      </BottomSheet>
+    </BottomPanelFooterContext.Provider>
   );
 }
 
@@ -121,11 +119,4 @@ const useStyles = makeStyles((t) => ({
       }
     : { ...t.shadows.lg },
   content: { paddingHorizontal: t.spacing.xl, paddingTop: t.spacing.sm, gap: t.spacing.lg },
-  footer: {
-    paddingHorizontal: t.spacing.xl,
-    paddingTop: t.spacing.md,
-    backgroundColor: t.colors.surfaceElevated,
-    borderTopWidth: t.sizes.border,
-    borderTopColor: t.colors.border,
-  },
 }));
