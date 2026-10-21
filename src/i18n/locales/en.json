@@ -140,7 +140,8 @@
     "myLocation": "Show my location",
     "menu": "Open menu",
     "recentPlaces": "Recent places",
-    "noRecent": "Your recent destinations will appear here"
+    "noRecent": "Your recent destinations will appear here",
+    "pickupAtMyLocation": "Pick me up where I am"
   },
   "search": {
     "title": "Your route",
@@ -154,7 +155,8 @@
     "map": {
       "confirmPickup": "Confirm pickup",
       "confirmDestination": "Confirm destination",
-      "hint": "Move the map to place the pin"
+      "hint": "Move the map to place the pin",
+      "loading": "Finding the address…"
     },
     "poweredByGoogle": "Powered by Google"
   },

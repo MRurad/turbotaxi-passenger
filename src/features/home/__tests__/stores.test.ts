@@ -105,7 +105,7 @@ describe('booking draft', () => {
     s.setDestination(place(5));
     s.setPickupFromPin(place(5));
     expect(useBookingDraft.getState()).toMatchObject({
-      pinTarget: 'pickup',
+      mapPick: null,
       pickup: { placeId: 'p1' },
       destination: { placeId: 'p5' },
     });
@@ -131,5 +131,41 @@ describe('booking draft', () => {
     s.startPinPicking('destination');
     s.unlockPickup();
     expect(useBookingDraft.getState().pickupLocked).toBe(true);
+  });
+
+  it('with a destination, the camera never moves the pickup (route refits, my location)', () => {
+    const s = useBookingDraft.getState();
+    s.setPickupFromPin(place(1));
+    s.setDestination(place(2));
+    s.unlockPickup(); // e.g. a map gesture while the route is shown
+    s.setPickupFromPin(place(3));
+    expect(useBookingDraft.getState()).toMatchObject({
+      pickup: { placeId: 'p1' },
+      pickupLocked: true,
+    });
+  });
+
+  it('changing the pickup on the map after both points are set needs a confirm', () => {
+    const s = useBookingDraft.getState();
+    s.setPickupFromPin(place(1));
+    s.setDestination(place(2));
+    s.startPinPicking('pickup');
+    expect(useBookingDraft.getState().mapPick).toBe('pickup');
+    s.setPickupFromPin(place(3)); // the moving pin is not the pickup yet
+    expect(useBookingDraft.getState().pickup?.placeId).toBe('p1');
+
+    s.setPickup(place(4)); // confirm
+    expect(useBookingDraft.getState()).toMatchObject({
+      mapPick: null,
+      pickup: { placeId: 'p4' },
+      destination: { placeId: 'p2' },
+    });
+  });
+
+  it('"Choose on map" for the pickup without a destination just frees the pin', () => {
+    const s = useBookingDraft.getState();
+    s.setPickup(place(1));
+    s.startPinPicking('pickup');
+    expect(useBookingDraft.getState()).toMatchObject({ mapPick: null, pickupLocked: false });
   });
 });

@@ -5,7 +5,7 @@ import { useBookingDraft } from '@/features/booking/store';
 import type { Place } from '@/types/place';
 
 import { HomeSheetContent } from './HomeSheetContent';
-import { PinDestinationContent } from './PinDestinationContent';
+import { PinPickContent } from './PinPickContent';
 
 export interface HomePanelProps {
   pinnedPlace: Place | null;
@@ -14,13 +14,13 @@ export interface HomePanelProps {
 }
 
 /**
- * The one persistent sheet on home, in three modes: "Where to?", choosing the destination on
- * the map, and booking (vehicles, promo, payment + pinned Order button).
+ * The one persistent sheet on home, in three modes: "Where to?", choosing a point on the map
+ * (pickup or destination), and booking (vehicles, promo, payment + pinned Order button).
  */
 export function HomePanel({ pinnedPlace, pinLoading, onHeightChange }: HomePanelProps) {
-  const choosingDestination = useBookingDraft((s) => s.pinTarget === 'destination');
+  const mapPick = useBookingDraft((s) => s.mapPick);
   const hasDestination = useBookingDraft((s) => s.destination !== null);
-  const booking = hasDestination && !choosingDestination;
+  const booking = hasDestination && mapPick === null;
 
   return (
     <BottomPanel
@@ -29,8 +29,8 @@ export function HomePanel({ pinnedPlace, pinLoading, onHeightChange }: HomePanel
       footer={booking ? <OrderButton /> : undefined}
       testID="home-sheet"
     >
-      {choosingDestination ? (
-        <PinDestinationContent pinnedPlace={pinnedPlace} loading={pinLoading} />
+      {mapPick ? (
+        <PinPickContent target={mapPick} pinnedPlace={pinnedPlace} loading={pinLoading} />
       ) : booking ? (
         <BookingSheetContent />
       ) : (

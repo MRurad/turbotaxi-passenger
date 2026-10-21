@@ -1,8 +1,13 @@
 # Backend requests for the passenger app
 
-Send this to the backend developer. Items are ordered by priority. Claude Code appends new items here when it hits a gap.
+Send this to the backend developer. Claude Code appends new items here when it hits a gap. Item numbers are stable (code comments refer to them).
 
-## Blocking (needed before the ride flow works end to end)
+## Required before launch
+
+8. Take the user's identity from the **JWT claims**, not from `userId` / `actorId` / `actorRole` in the body or query. Today any logged-in user could cancel another user's ride or read their chat.
+9. Lock down `/api/debug/*`, `/api/Users` (list all), `/api/Drivers`, `/api/Vehicles` and `PromoCodes` POST to admin only.
+
+## Open questions (the app works around them; answers improve it)
 
 1. **Server → client SignalR events for the passenger** (`/hubs/user`). *Partly answered*: the app has seen `RideStatusUpdated(rideId, "ride_update", payload)` and `DriverLocationUpdated(driverId, lat, lng)` (captured 2026-10-22, now in `docs/REALTIME_CONTRACT.md`). Still needed:
    - **driver and vehicle info** once a driver accepts: name, phone, plate, brand, model, color. None of the captured payloads carry it, so the app can't show who is coming.
@@ -11,25 +16,25 @@ Send this to the backend developer. Items are ordered by priority. Claude Code a
    - driver heading in `DriverLocationUpdated` (optional, to rotate the car marker).
    - the new chat message event on `/hubs/chat` (not captured yet).
 2. **What string does `SubscribeUser(string)` expect?** The userId as a string? A group name like `user-12`?
-3. **`GET /api/rides/{id}`.** Returns full ride state (status, driver, vehicle, pickup/destination, fare, polylines). This lets the app recover state after a restart or reconnect.
-4. **`GET /api/rides/active`** (for the current JWT user). Returns the in-progress ride or 204. Without it, a reinstalled or relaunched app can't find an ongoing ride.
 5. **Full list of ride status strings.** Seen so far: `Searching`, `OnWay` (trip started) and `Completed`, plus one driver-on-the-way update (`polylinePhase: "Approach"`) whose status wasn't captured. Which strings mean accepted, arrived at pickup, cancelled (by whom) and no driver found? Please also confirm that `OnWay` means "trip started" (it came with `startedAt` and `polylinePhase: "EnRoute"`), not "driver on the way to pickup".
 6. **VehicleType 0–3 names** (0 = ?, 1 = ?, 2 = ?, 3 = ?). Ideally return them as string enums in Swagger (`JsonStringEnumConverter`), or provide `GET /api/vehicle-types` with name and capacity.
 7. **Chat `actorRole` value** for passengers (`"User"`? `"user"`? `"Passenger"`?).
-
-## Security (important before production)
-
-8. Take the user's identity from the **JWT claims**, not from `userId` / `actorId` / `actorRole` in the body or query. Today any logged-in user could cancel another user's ride or read their chat.
-9. Lock down `/api/debug/*`, `/api/Users` (list all), `/api/Drivers`, `/api/Vehicles` and `PromoCodes` POST to admin only.
-10. Add a Bearer security scheme to Swagger so the generated types and docs show which endpoints need auth.
+25. **Trip history as the ride-recovery source.** The app finds a ride that ended while it was closed on the first page of `GET /api/TripHistory/user/{userId}` (see "Won't do" #3/#4). Please confirm: newest rides come first; a ride appears there as soon as it ends (or already while active?); and which `status` a cancelled and a no-driver ride get.
 
 ## Nice to have
 
-11. `POST /api/auth/refresh` (refreshToken → new tokens). The app is ready to use it.
-12. `GET /api/users/me`.
-13. Add `pickupAddress` / `destinationAddress` text to `CreateRideRequest`. The app already knows the address from Google, so the backend doesn't need to reverse-geocode.
-14. Add `promoCode` (or `promoCodeId`) to `CreateRideRequest` so the user's chosen promo applies explicitly.
-15. Later: rating and tip after a ride, push device token registration, saved places.
+10. Add a Bearer security scheme to Swagger so the generated types and docs show which endpoints need auth.
+
+## Won't do: handled in the app
+
+Agreed with the backend (2026-10-22): these will not be added. How the app copes:
+
+3. ~~`GET /api/rides/{id}`~~ and 4. ~~`GET /api/rides/active`~~ — **won't do, handled in app.** The app persists an active-ride snapshot (ride id, phase, driver id; AsyncStorage, no PII). On app start and on every `/hubs/user` (re)connect it looks the ride up on the first page of `GET /api/TripHistory/user/{userId}`: completed / cancelled there → show the summary or cancelled screen; otherwise restore and resubscribe (SignalR then brings the live state). A snapshot older than 3 h that history can't confirm is reset as a last fallback. See `src/features/ride/recovery.ts`. Limitation: after a reinstall (no snapshot) an ongoing ride isn't found until the next SignalR update.
+11. ~~`POST /api/auth/refresh`~~ — **won't do, handled in app.** On 401 the session is cleared and the user signs in again.
+12. ~~`GET /api/users/me`~~ — **won't do, handled in app.** The signed-in user from login is cached (SecureStore); `GET /api/Users/{id}` refreshes it when needed.
+13. ~~Addresses in `CreateRideRequest`~~ — **won't do, handled in app.** The app keeps the Google addresses locally for its own screens.
+14. ~~`promoCode` in `CreateRideRequest`~~ — **won't do, handled in app** with the existing promo endpoints and the estimate's `promoCode` (wired in Prompt 9).
+15. ~~Rating, tip, push token, saved places~~ — **won't do for now.** Recent places stay on the device.
 
 ## Added while building the API layer
 

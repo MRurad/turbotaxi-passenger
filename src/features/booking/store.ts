@@ -4,18 +4,22 @@ import { VEHICLE_TYPE, type VehicleType } from '@/constants/vehicles';
 import type { UserPromo } from '@/features/promo/types';
 import type { Place } from '@/types/place';
 
-/** Which point the center pin is currently choosing on the home map. */
+/** Which point the center pin is explicitly choosing ("Choose on map"), with a confirm step. */
 export type PinTarget = 'pickup' | 'destination';
 
 interface BookingDraftState {
   pickup: Place | null;
   destination: Place | null;
-  /** 'destination' while the user chose "Choose on map" for the destination. */
-  pinTarget: PinTarget;
   /**
-   * When true the center pin no longer moves the pickup. Set by an explicit pickup (search),
-   * while choosing the destination on the map, and once a destination exists (the map then
-   * frames both points). Cleared only when the user drags the map in pickup mode.
+   * Set while "Choose on map" is open for that point (pin + confirm button). Null otherwise:
+   * without a destination the pin then IS the pickup (unless locked); with one, the map frames
+   * the route and the pin is hidden.
+   */
+  mapPick: PinTarget | null;
+  /**
+   * When true the center pin no longer moves the pickup. Set by an explicit pickup (search or
+   * a confirmed pin), and always while a destination exists or a point is being picked.
+   * Cleared only in free mode (no destination, nothing picked) when the user moves the map.
    */
   pickupLocked: boolean;
   vehicleType: VehicleType;
@@ -26,17 +30,21 @@ interface BookingDraftState {
 }
 
 interface BookingDraftActions {
-  /** From the center pin (map drag) — ignored while the pickup is locked. */
+  /** From the center pin in free mode — ignored while the pickup is locked. */
   setPickupFromPin: (place: Place) => void;
   /** From search: an explicit pickup choice. */
   setPickup: (place: Place) => void;
   setDestination: (place: Place) => void;
   clearDestination: () => void;
-  /** "Pickup follows the map" again (user dragged the map in pickup mode). */
+  /** "Pickup follows the map" again — only in free mode (no destination, nothing picked). */
   unlockPickup: () => void;
-  /** Start choosing `target` with the center pin. Choosing the destination freezes the pickup. */
+  /**
+   * "Choose on map" for `target`. For the pickup without a destination this is just free mode
+   * (the pin is the pickup); otherwise a pick with a confirm step, leaving the draft untouched
+   * until confirmed.
+   */
   startPinPicking: (target: PinTarget) => void;
-  /** Leave destination-on-map mode without picking (pickup stays where it was). */
+  /** Leave "Choose on map" without picking (both points stay where they were). */
   cancelPinPicking: () => void;
   /** Explicit user choice. */
   selectVehicle: (vehicleType: VehicleType) => void;
@@ -51,12 +59,15 @@ export type BookingDraftStore = BookingDraftState & BookingDraftActions;
 const INITIAL: BookingDraftState = {
   pickup: null,
   destination: null,
-  pinTarget: 'pickup',
+  mapPick: null,
   pickupLocked: false,
   vehicleType: VEHICLE_TYPE.Economy,
   vehicleChosen: false,
   promo: null,
 };
+
+/** No destination and no "Choose on map": the only mode where the pin may move the pickup. */
+const isFreeMode = (s: BookingDraftState) => s.destination === null && s.mapPick === null;
 
 /**
  * What's being booked: pickup, destination, vehicle and promo. In-memory (a fresh launch starts
@@ -65,20 +76,22 @@ const INITIAL: BookingDraftState = {
 export const useBookingDraft = create<BookingDraftStore>()((set, get) => ({
   ...INITIAL,
   setPickupFromPin: (place) => {
-    const { pickupLocked, pinTarget } = get();
-    if (!pickupLocked && pinTarget === 'pickup') set({ pickup: place });
+    if (isFreeMode(get()) && !get().pickupLocked) set({ pickup: place });
   },
-  setPickup: (place) => set({ pickup: place, pickupLocked: true }),
-  setDestination: (place) => set({ destination: place, pinTarget: 'pickup', pickupLocked: true }),
-  clearDestination: () => set({ destination: null }),
+  setPickup: (place) => set({ pickup: place, pickupLocked: true, mapPick: null }),
+  setDestination: (place) => set({ destination: place, mapPick: null, pickupLocked: true }),
+  clearDestination: () => set({ destination: null, mapPick: null }),
   unlockPickup: () => {
-    if (get().pinTarget === 'pickup') set({ pickupLocked: false });
+    if (isFreeMode(get())) set({ pickupLocked: false });
   },
-  startPinPicking: (target) =>
-    set(
-      target === 'destination' ? { pinTarget: target, pickupLocked: true } : { pinTarget: target },
-    ),
-  cancelPinPicking: () => set({ pinTarget: 'pickup' }),
+  startPinPicking: (target) => {
+    if (target === 'pickup' && get().destination === null) {
+      set({ mapPick: null, pickupLocked: false });
+      return;
+    }
+    set({ mapPick: target, pickupLocked: true });
+  },
+  cancelPinPicking: () => set({ mapPick: null }),
   selectVehicle: (vehicleType) => set({ vehicleType, vehicleChosen: true }),
   autoSelectVehicle: (vehicleType) => {
     if (!get().vehicleChosen) set({ vehicleType });

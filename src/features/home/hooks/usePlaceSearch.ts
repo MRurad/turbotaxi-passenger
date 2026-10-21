@@ -24,7 +24,6 @@ export function usePlaceSearch() {
       pickup: s.pickup,
       setPickup: s.setPickup,
       setDestination: s.setDestination,
-      unlockPickup: s.unlockPickup,
       startPinPicking: s.startPinPicking,
     })),
   );
@@ -61,7 +60,6 @@ export function usePlaceSearch() {
     });
 
   const chooseOnMap = () => {
-    if (active === 'pickup') draft.unlockPickup();
     draft.startPinPicking(active);
     router.back();
   };

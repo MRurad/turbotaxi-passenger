@@ -140,7 +140,8 @@
     "myLocation": "Yerimi göstər",
     "menu": "Menyunu aç",
     "recentPlaces": "Son ünvanlar",
-    "noRecent": "Son getdiyiniz ünvanlar burada görünəcək"
+    "noRecent": "Son getdiyiniz ünvanlar burada görünəcək",
+    "pickupAtMyLocation": "Məni olduğum yerdən götürün"
   },
   "search": {
     "title": "Marşrutunuz",
@@ -152,9 +153,10 @@
     "noResultsHint": "Başqa ünvan yazın və ya nöqtəni xəritədə seçin",
     "error": "Təkliflər yüklənmədi",
     "map": {
-      "confirmPickup": "Minmə yerini təsdiqlə",
-      "confirmDestination": "Təyinat yerini təsdiqlə",
-      "hint": "Nöqtəni seçmək üçün xəritəni sürüşdürün"
+      "confirmPickup": "Minmə yerini təsdiqləyin",
+      "confirmDestination": "Təyinat yerini təsdiqləyin",
+      "hint": "Nöqtəni seçmək üçün xəritəni sürüşdürün",
+      "loading": "Ünvan müəyyənləşdirilir…"
     },
     "poweredByGoogle": "Powered by Google"
   },

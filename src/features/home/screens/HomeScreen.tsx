@@ -59,8 +59,7 @@ export function HomeScreen() {
 
   const routeCoords = useRoutePolyline();
   const map = useHomeMap(mapRef, location, { pinPoint, framePadding, routeCoords });
-  const choosingDestination = map.pinTarget === 'destination';
-  const pinIsActive = choosingDestination || !destination;
+  const pinIsActive = map.mapPick !== null || !destination;
 
   useEffect(() => {
     hydrateRecents().catch(() => undefined);
@@ -94,7 +93,7 @@ export function HomeScreen() {
         >
           <CenterPin
             lifted={map.dragging}
-            variant={choosingDestination ? 'destination' : 'pickup'}
+            variant={map.mapPick === 'destination' ? 'destination' : 'pickup'}
           />
         </View>
       ) : null}
@@ -114,7 +113,9 @@ export function HomeScreen() {
           variant="surface"
           size="lg"
           onPress={map.goToMyLocation}
-          accessibilityLabel={t('home.myLocation')}
+          accessibilityLabel={t(
+            map.myLocationStartsPick ? 'home.pickupAtMyLocation' : 'home.myLocation',
+          )}
           testID="home-my-location"
         />
       </View>
