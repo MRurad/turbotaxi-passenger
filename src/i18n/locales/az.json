@@ -154,7 +154,8 @@
       "confirmPickup": "Minmə yerini təsdiqlə",
       "confirmDestination": "Təyinat yerini təsdiqlə",
       "hint": "Nöqtəni seçmək üçün xəritəni sürüşdürün"
-    }
+    },
+    "poweredByGoogle": "Powered by Google"
   },
   "booking": {
     "title": "Tarif seçin",
@@ -337,7 +338,8 @@
       "message": "Minmə yerini müəyyən etmək və sürücünü xəritədə göstərmək üçün məkanınızdan istifadə edirik.",
       "allow": "İcazə ver",
       "denied": "Məkana giriş söndürülüb. Onu Ayarlardan aktiv edə bilərsiniz.",
-      "openSettings": "Ayarları aç"
+      "openSettings": "Ayarları aç",
+      "unavailable": "Məkanınızı tapa bilmədik. Məkan xidmətlərini aktiv edib yenidən cəhd edin."
     }
   },
   "dev": {

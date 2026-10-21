@@ -2,8 +2,13 @@ import type { QueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { useAuthStore } from '@/features/auth/store';
+import { useBookingDraft } from '@/features/booking/store';
+import { useRecentPlaces } from '@/features/home/recentPlaces';
 
-/** Drops all cached server data when the session ends or the account changes. */
+/**
+ * Drops everything tied to the previous account when the session ends or the account changes:
+ * cached server data, the booking draft and recent places (home/work addresses).
+ */
 export function useClearCacheOnLogout(queryClient: QueryClient): void {
   useEffect(
     () =>
@@ -13,6 +18,11 @@ export function useClearCacheOnLogout(queryClient: QueryClient): void {
         const switchedUser = Boolean(prev.user) && state.user?.id !== prev.user?.id;
         if (signedOut || switchedUser) {
           queryClient.clear();
+          useBookingDraft.getState().reset();
+          useRecentPlaces
+            .getState()
+            .clear()
+            .catch(() => undefined);
         }
       }),
     [queryClient],

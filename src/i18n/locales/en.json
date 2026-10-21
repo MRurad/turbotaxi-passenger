@@ -154,7 +154,8 @@
       "confirmPickup": "Confirm pickup",
       "confirmDestination": "Confirm destination",
       "hint": "Move the map to place the pin"
-    }
+    },
+    "poweredByGoogle": "Powered by Google"
   },
   "booking": {
     "title": "Choose a ride",
@@ -337,7 +338,8 @@
       "message": "We use your location to set the pickup point and show your driver on the map.",
       "allow": "Allow",
       "denied": "Location access is turned off. You can turn it on in Settings.",
-      "openSettings": "Open Settings"
+      "openSettings": "Open Settings",
+      "unavailable": "We couldn't find your location. Turn on Location Services and try again."
     }
   },
   "dev": {

@@ -7,6 +7,7 @@ export const ROUTES = {
   welcome: '/welcome',
   login: '/login',
   register: '/register',
+  search: '/search',
   /** Dev-only design-system showcase. */
   devUiKit: '/dev/ui-kit',
 } as const;

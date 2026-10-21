@@ -32,7 +32,6 @@ export const palette = {
     surface: '#121A2A',
     elevated: '#18233A',
     border: '#24314B',
-    skeletonHighlight: '#22304A',
   },
   status: {
     success: '#22A06B',
@@ -53,4 +52,31 @@ export const palette = {
   overlayDark: 'rgba(0, 0, 0, 0.6)',
   primarySoftDark: 'rgba(91, 147, 199, 0.16)',
   transparent: 'transparent',
+  /** Google map styling (customMapStyle). Apple Maps (iOS Expo Go) uses userInterfaceStyle instead. */
+  map: {
+    light: {
+      land: '#F4F6FA',
+      park: '#E3F0E8',
+      water: '#CFE0F0',
+      road: '#FFFFFF',
+      arterial: '#FBFCFE',
+      highway: '#E4ECF5',
+      highwayStroke: '#C9D7E8',
+      label: '#5B6577',
+      labelStroke: '#FFFFFF',
+      transit: '#DDE3EC',
+    },
+    dark: {
+      land: '#101827',
+      park: '#13261F',
+      water: '#0A1A2C',
+      road: '#1E2A40',
+      arterial: '#233150',
+      highway: '#2A3A5C',
+      highwayStroke: '#1A2540',
+      label: '#8F9BB3',
+      labelStroke: '#0B1220',
+      transit: '#1A2338',
+    },
+  },
 } as const;

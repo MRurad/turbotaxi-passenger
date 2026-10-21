@@ -104,8 +104,9 @@ export const darkColors: ColorTokens = {
   dangerSoft: palette.status.dangerSoftDark,
   overlay: palette.overlayDark,
   mapRoute: palette.steel[300],
-  skeleton: palette.navy.elevated,
-  skeletonHighlight: palette.navy.skeletonHighlight,
+  // Lighter than surfaceElevated (the sheet) so skeletons stay visible on it.
+  skeleton: palette.navy.border,
+  skeletonHighlight: palette.neutral[700],
   shadow: palette.shadow,
   transparent: palette.transparent,
 };

@@ -29,7 +29,8 @@ export const queryKeys = {
     all: ['places'] as const,
     autocomplete: (input: string, language: string) =>
       ['places', 'autocomplete', input, language] as const,
-    details: (placeId: string) => ['places', 'details', placeId] as const,
+    details: (placeId: string, language: string) =>
+      ['places', 'details', placeId, language] as const,
     reverse: (coords: LatLng, language: string) =>
       ['places', 'reverse', coords.latitude, coords.longitude, language] as const,
   },

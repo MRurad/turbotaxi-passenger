@@ -1,5 +1,5 @@
-import { HomePlaceholderScreen } from '@/features/home/screens/HomePlaceholderScreen';
+import { HomeScreen } from '@/features/home/screens/HomeScreen';
 
-export default function Index() {
-  return <HomePlaceholderScreen />;
+export default function HomeRoute() {
+  return <HomeScreen />;
 }

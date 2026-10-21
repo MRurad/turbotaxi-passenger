@@ -1,5 +1,6 @@
 export * from './Avatar';
 export * from './Badge';
+export * from './BottomPanel';
 export * from './Button';
 export * from './Card';
 export * from './Chip';

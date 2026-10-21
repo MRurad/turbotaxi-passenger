@@ -17,6 +17,12 @@ export const sizes = {
   chipHitSlop: 4,
   sheetHandle: 40,
   zIndexToast: 1000,
+  /** Map pins (center pin, place markers). */
+  pin: { head: 36, stem: 14, stemWidth: 3, lift: 14, shadow: 18 },
+  /** Route polyline stroke widths. */
+  route: { line: 5, outline: 9 },
+  /** Floating map controls (top bar, my-location button). */
+  mapControl: 48,
 } as const;
 
 export type Sizes = typeof sizes;

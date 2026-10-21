@@ -10,3 +10,4 @@ export * from './ThemeProvider';
 export * from './types';
 export * from './typography';
 export * from './useTheme';
+export * from './mapStyles';
