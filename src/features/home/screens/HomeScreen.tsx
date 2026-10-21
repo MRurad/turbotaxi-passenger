@@ -75,6 +75,7 @@ export function HomeScreen() {
           ref={mapRef}
           initialRegion={BAKU_REGION}
           overlayInsets={overlays}
+          viewWidth={view.width}
           viewHeight={view.height}
           showsUserLocation={location.status === 'granted'}
           onRegionChange={map.onRegionChange}

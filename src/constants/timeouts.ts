@@ -30,3 +30,6 @@ export const MAP_ANIMATION_MS = 450;
 
 /** Car marker glides between driver location updates over this long. */
 export const CAR_MARKER_ANIMATION_MS = 1_000;
+
+/** Short nudge that puts the target exactly under the pin after a camera animation. */
+export const MAP_FOCUS_CORRECTION_MS = 200;
