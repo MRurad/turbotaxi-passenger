@@ -1,0 +1,12 @@
+node_modules
+.expo
+dist
+coverage
+ios
+android
+src/api/generated
+package-lock.json
+
+# Claude kit + docs are hand-formatted
+*.md
+.claude
