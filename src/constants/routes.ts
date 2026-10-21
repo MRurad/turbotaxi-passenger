@@ -10,6 +10,8 @@ export const ROUTES = {
   search: '/search',
   /** Dev-only design-system showcase. */
   devUiKit: '/dev/ui-kit',
+  /** Dev-only SignalR inspector. */
+  devRealtime: '/dev/realtime',
 } as const;
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];

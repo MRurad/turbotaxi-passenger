@@ -23,6 +23,7 @@ export function RootStack() {
       </Stack.Protected>
       <Stack.Protected guard={__DEV__}>
         <Stack.Screen name="dev/ui-kit" />
+        <Stack.Screen name="dev/realtime" />
       </Stack.Protected>
     </Stack>
   );

@@ -2,6 +2,7 @@ import { AxiosHeaders, create, isAxiosError, type InternalAxiosRequestConfig } f
 
 import { config } from '@/constants/config';
 import { API_TIMEOUT_MS } from '@/constants/timeouts';
+import { expireSession } from '@/features/auth/session';
 import { useAuthStore } from '@/features/auth/store';
 import { getAcceptLanguage } from '@/i18n';
 
@@ -28,21 +29,6 @@ apiClient.interceptors.request.use((request: InternalAxiosRequestConfig) => {
   request.headers = headers;
   return request;
 });
-
-// Several requests can fail with 401 at once; only the first one logs out.
-let logoutInFlight: Promise<void> | null = null;
-
-function handleUnauthorized(): Promise<void> {
-  if (!logoutInFlight) {
-    logoutInFlight = useAuthStore
-      .getState()
-      .logout('expired')
-      .finally(() => {
-        logoutInFlight = null;
-      });
-  }
-  return logoutInFlight;
-}
 
 function sentAuthorization(error: unknown): string {
   if (!isAxiosError(error)) return '';
@@ -76,7 +62,7 @@ apiClient.interceptors.response.use(
     if (current && sent === bearer(current)) {
       // TODO(refresh): when POST /api/Auth/refresh exists (docs/BACKEND_REQUESTS.md #11), try
       // refreshing here once, retry the original request, and only log out if that fails.
-      await handleUnauthorized();
+      await expireSession();
     }
     return Promise.reject(apiError);
   },

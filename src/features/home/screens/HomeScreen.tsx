@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { View, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { IconButton } from '@/components/ui';
 import { useRoutePolyline } from '@/features/booking/hooks/useRoutePolyline';
 import { useBookingDraft } from '@/features/booking/store';
@@ -99,6 +100,7 @@ export function HomeScreen() {
       ) : null}
 
       <HomeTopBar />
+      <RealtimeBanner />
 
       {showCard ? (
         <View style={[styles.card, { top: cardTop }]}>

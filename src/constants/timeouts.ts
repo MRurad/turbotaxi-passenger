@@ -33,3 +33,15 @@ export const CAR_MARKER_ANIMATION_MS = 1_000;
 
 /** Short nudge that puts the target exactly under the pin after a camera animation. */
 export const MAP_FOCUS_CORRECTION_MS = 200;
+
+/** SignalR reconnect delays; after the last one it keeps retrying at that interval forever. */
+export const REALTIME_RECONNECT_DELAYS_MS = [0, 2_000, 5_000, 10_000, 20_000, 30_000] as const;
+
+/** In the background with no active ride, the hubs are stopped after this long. */
+export const REALTIME_BACKGROUND_STOP_MS = 30_000;
+
+/** A hub drop must last this long before the connection banner appears (no flashes). */
+export const BANNER_SHOW_DELAY_MS = 1_500;
+
+/** Once shown, the connection banner stays at least this long. */
+export const BANNER_MIN_VISIBLE_MS = 800;

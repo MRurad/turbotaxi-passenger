@@ -4,7 +4,7 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
-import type { TextStyle } from 'react-native';
+import { Platform, type TextStyle } from 'react-native';
 
 /** Passed to `useFonts` in the root layout. Keys become the fontFamily names. */
 export const INTER_FONTS = {
@@ -40,6 +40,9 @@ export const typography = {
 
 export type Typography = typeof typography;
 export type TypographyVariant = keyof Typography;
+
+/** System monospace (dev screens: raw JSON). */
+export const MONO_FONT_FAMILY = Platform.select({ ios: 'Menlo', default: 'monospace' });
 
 /** Caps Dynamic Type scaling so layouts don't break at accessibility sizes. */
 export const MAX_FONT_SCALE = 1.4;

@@ -64,7 +64,8 @@
     },
     "connection": {
       "connecting": "Reconnecting…",
-      "offline": "No internet connection"
+      "offline": "No internet connection",
+      "lost": "Connection lost. Reconnecting…"
     }
   },
   "errors": {
@@ -414,6 +415,33 @@
         "toastDanger": "Error toast",
         "toastInfoMessage": "Your driver is 2 minutes away",
         "toastSuccessMessage": "Ride requested"
+      }
+    },
+    "realtime": {
+      "title": "Realtime",
+      "subtitle": "SignalR inspector",
+      "open": "Open realtime inspector",
+      "connections": "Connections",
+      "userHub": "User hub",
+      "chatHub": "Chat hub",
+      "start": "Start",
+      "stop": "Stop",
+      "driverId": "Driver ID",
+      "rideId": "Ride ID",
+      "events_one": "Last {{count}} event",
+      "events_other": "Last {{count}} events",
+      "clear": "Clear",
+      "noEvents": "No events received yet",
+      "known": "known",
+      "unknown": "unknown",
+      "invoked": "{{method}} sent",
+      "failed": "{{method}} failed: {{message}}",
+      "state": {
+        "idle": "Idle",
+        "connecting": "Connecting",
+        "connected": "Connected",
+        "reconnecting": "Reconnecting",
+        "disconnected": "Disconnected"
       }
     }
   }

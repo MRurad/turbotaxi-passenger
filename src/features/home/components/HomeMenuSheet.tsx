@@ -39,6 +39,16 @@ export function HomeMenuSheet({ ref, onClose }: HomeMenuSheetProps) {
             }}
           />
         ) : null}
+        {__DEV__ ? (
+          <ListItem
+            icon="pulse-outline"
+            title={t('dev.realtime.open')}
+            onPress={() => {
+              onClose();
+              router.push(ROUTES.devRealtime);
+            }}
+          />
+        ) : null}
         <ListItem
           icon="log-out-outline"
           title={t('common.actions.logout')}

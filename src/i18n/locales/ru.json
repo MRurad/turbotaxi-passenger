@@ -64,7 +64,8 @@
     },
     "connection": {
       "connecting": "Переподключение…",
-      "offline": "Нет подключения к интернету"
+      "offline": "Нет подключения к интернету",
+      "lost": "Нет связи. Переподключаемся…"
     }
   },
   "errors": {
@@ -424,6 +425,35 @@
         "toastDanger": "Уведомление об ошибке",
         "toastInfoMessage": "Водитель будет через 2 минуты",
         "toastSuccessMessage": "Поездка заказана"
+      }
+    },
+    "realtime": {
+      "title": "Realtime",
+      "subtitle": "Инспектор SignalR",
+      "open": "Открыть инспектор realtime",
+      "connections": "Подключения",
+      "userHub": "Хаб пользователя",
+      "chatHub": "Хаб чата",
+      "start": "Запустить",
+      "stop": "Остановить",
+      "driverId": "ID водителя",
+      "rideId": "ID поездки",
+      "events_one": "Последнее {{count}} событие",
+      "events_few": "Последние {{count}} события",
+      "events_many": "Последние {{count}} событий",
+      "events_other": "Последние {{count}} события",
+      "clear": "Очистить",
+      "noEvents": "Событий пока нет",
+      "known": "известно",
+      "unknown": "неизвестно",
+      "invoked": "{{method}} отправлен",
+      "failed": "{{method}}: ошибка — {{message}}",
+      "state": {
+        "idle": "Остановлен",
+        "connecting": "Подключение",
+        "connected": "Подключено",
+        "reconnecting": "Переподключение",
+        "disconnected": "Нет соединения"
       }
     }
   }

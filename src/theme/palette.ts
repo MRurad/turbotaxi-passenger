@@ -40,6 +40,10 @@ export const palette = {
     successStrong: '#167A51',
     warningStrong: '#8A5E00',
     dangerStrong: '#C73A3F',
+    /** Danger text on light soft fills (AA for 13 pt). */
+    dangerDeep: '#B3262B',
+    /** Danger text on dark surfaces (AA on dangerSoftDark). */
+    dangerLight: '#FF8F92',
     successSoftLight: '#E3F5EC',
     warningSoftLight: '#FDF3DC',
     dangerSoftLight: '#FDE8E8',

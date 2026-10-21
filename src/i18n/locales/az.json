@@ -64,7 +64,8 @@
     },
     "connection": {
       "connecting": "Yenidən qoşulur…",
-      "offline": "İnternet bağlantısı yoxdur"
+      "offline": "İnternet bağlantısı yoxdur",
+      "lost": "Bağlantı kəsildi. Qoşulur…"
     }
   },
   "errors": {
@@ -414,6 +415,33 @@
         "toastDanger": "Xəta bildirişi",
         "toastInfoMessage": "Sürücü 2 dəqiqəyə çatacaq",
         "toastSuccessMessage": "Sifariş göndərildi"
+      }
+    },
+    "realtime": {
+      "title": "Realtime",
+      "subtitle": "SignalR yoxlayıcısı",
+      "open": "Realtime yoxlayıcısını aç",
+      "connections": "Bağlantılar",
+      "userHub": "İstifadəçi hub-ı",
+      "chatHub": "Çat hub-ı",
+      "start": "Başlat",
+      "stop": "Dayandır",
+      "driverId": "Sürücü ID",
+      "rideId": "Gediş ID",
+      "events_one": "Son {{count}} hadisə",
+      "events_other": "Son {{count}} hadisə",
+      "clear": "Təmizlə",
+      "noEvents": "Hələ hadisə alınmayıb",
+      "known": "tanınır",
+      "unknown": "naməlum",
+      "invoked": "{{method}} göndərildi",
+      "failed": "{{method}} alınmadı: {{message}}",
+      "state": {
+        "idle": "Dayanıb",
+        "connecting": "Qoşulur",
+        "connected": "Qoşulub",
+        "reconnecting": "Yenidən qoşulur",
+        "disconnected": "Bağlantı yoxdur"
       }
     }
   }
