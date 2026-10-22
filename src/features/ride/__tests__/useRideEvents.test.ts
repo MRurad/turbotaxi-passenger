@@ -15,6 +15,12 @@ import {
   userHub,
 } from '@/realtime/userHub';
 
+const mockInvalidate = jest.fn(() => Promise.resolve());
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual<typeof import('@tanstack/react-query')>('@tanstack/react-query'),
+  useQueryClient: () => ({ invalidateQueries: mockInvalidate }),
+}));
+
 const mockOffs: jest.Mock[] = [];
 const mockRemovers: jest.Mock[] = [];
 jest.mock('@/realtime/userHub', () => ({
@@ -217,5 +223,31 @@ describe('useRideEvents search timeout', () => {
 
     expect(useRideStore.getState().phase).toBe('driver_assigned');
     expect(cancelRide).not.toHaveBeenCalled();
+  });
+});
+
+describe('useRideEvents after a ride', () => {
+  it('refreshes trip history and promos when the ride completes', async () => {
+    mockInvalidate.mockClear();
+    useRideStore.getState().reset();
+    useRideStore.getState().restore(
+      {
+        rideId: 5,
+        phase: 'in_progress',
+        driverId: 4,
+        vehicleType: VEHICLE_TYPE.Comfort,
+        fare: { estimated: 7, original: 7, discount: 0, promoCode: null, final: null },
+        tripKm: 3,
+        tripMinutes: 9,
+        searchStartedAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+      null,
+    );
+    await renderHook(() => useRideEvents());
+    await act(async () => useRideStore.getState().rideFinished(7));
+    const keys = mockInvalidate.mock.calls.map((call) => JSON.stringify(call));
+    expect(keys.join()).toContain('tripHistory');
+    expect(keys.join()).toContain('promoList');
   });
 });

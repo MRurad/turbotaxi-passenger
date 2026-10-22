@@ -28,6 +28,12 @@ export default function AppLayout() {
         <Stack.Screen name="ride/index" options={{ gestureEnabled: false }} />
         <Stack.Screen name="ride/summary" options={{ gestureEnabled: false }} />
         <Stack.Screen name="chat/[rideId]" />
+        <Stack.Screen name="profile/index" />
+        <Stack.Screen name="profile/edit" />
+        <Stack.Screen name="history/index" />
+        <Stack.Screen name="history/[rideId]" />
+        <Stack.Screen name="promos" />
+        <Stack.Screen name="settings" />
       </Stack>
     </View>
   );

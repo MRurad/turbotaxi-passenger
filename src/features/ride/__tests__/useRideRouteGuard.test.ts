@@ -9,7 +9,11 @@ import { useRideStore } from '@/features/ride/store';
 
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: jest.fn(() => ({ replace: mockReplace })),
+  useRouter: jest.fn(() => ({
+    replace: mockReplace,
+    canDismiss: () => false,
+    dismissAll: jest.fn(),
+  })),
   useSegments: jest.fn(),
 }));
 jest.mock('@/lib/logger', () => ({
@@ -50,7 +54,11 @@ beforeEach(() => {
   jest.clearAllMocks();
   jest
     .mocked(useRouter)
-    .mockReturnValue({ replace: mockReplace } as unknown as ReturnType<typeof useRouter>);
+    .mockReturnValue({
+      replace: mockReplace,
+      canDismiss: () => false,
+      dismissAll: jest.fn(),
+    } as unknown as ReturnType<typeof useRouter>);
   useRideStore.getState().reset();
   useAuthStore.setState({ status: 'authenticated' });
 });

@@ -4,6 +4,7 @@ import type { RideStatusUpdatedEvent } from '@/realtime/events';
 import type { LatLng } from '@/types/geo';
 import type { RidePhase } from '@/types/ride';
 
+import { isActivePhase } from './snapshot';
 import { TRACKING_PHASES } from './store';
 import type { CancelReason, RideDriver, RideRouteInfo } from './types';
 
@@ -119,8 +120,15 @@ export function framePoints(
 
 const RIDE_SEGMENT = ROUTE_SEGMENTS.ride;
 const SUMMARY_SEGMENT = ROUTE_SEGMENTS.rideSummary;
-/** Other signed-in screens reachable during an active ride. */
+/** Screens reachable while a driver is assigned. */
 const ALLOWED_DURING_RIDE: ReadonlySet<string> = new Set<string>([ROUTE_SEGMENTS.chat]);
+/** Account screens (from the avatar) stay reachable during any active ride, also searching. */
+const ACCOUNT_SECTIONS: ReadonlySet<string> = new Set<string>([
+  ROUTE_SEGMENTS.profile,
+  ROUTE_SEGMENTS.history,
+  ROUTE_SEGMENTS.promos,
+  ROUTE_SEGMENTS.settings,
+]);
 
 /**
  * Where the ride guard should send the user, or null to stay. `segments` are expo-router
@@ -138,5 +146,6 @@ export function rideRedirect(phase: RidePhase, segments: readonly string[]) {
   if (onRide) return null;
   // Chat is live only with an assigned driver (searching again → back to the ride).
   if (TRACKING_PHASES.has(phase) && ALLOWED_DURING_RIDE.has(section)) return null;
+  if (isActivePhase(phase) && ACCOUNT_SECTIONS.has(section)) return null;
   return ROUTES.ride;
 }

@@ -13,6 +13,14 @@ export const ROUTES = {
   rideSummary: '/ride/summary',
   /** In-ride chat; push with `{ pathname: ROUTES.chat, params: { rideId } }`. */
   chat: '/chat/[rideId]',
+  /** Account (reachable from the avatar, also during a ride). */
+  profile: '/profile',
+  profileEdit: '/profile/edit',
+  history: '/history',
+  /** Push with `{ pathname: ROUTES.tripDetail, params: { rideId } }`. */
+  tripDetail: '/history/[rideId]',
+  promos: '/promos',
+  settings: '/settings',
   /** Dev-only design-system showcase. */
   devUiKit: '/dev/ui-kit',
   /** Dev-only SignalR inspector. */
@@ -27,4 +35,8 @@ export const ROUTE_SEGMENTS = {
   ride: 'ride',
   rideSummary: 'summary',
   chat: 'chat',
+  profile: 'profile',
+  history: 'history',
+  promos: 'promos',
+  settings: 'settings',
 } as const;

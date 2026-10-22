@@ -304,14 +304,17 @@
   "history": {
     "title": "Мои поездки",
     "emptyTitle": "Поездок пока нет",
-    "emptyMessage": "Здесь появятся ваши завершённые поездки.",
+    "emptyMessage": "Здесь появятся ваши поездки.",
     "loadError": "Не удалось загрузить поездки",
     "detail": {
       "title": "Детали поездки",
       "driver": "Водитель",
       "vehicle": "Автомобиль",
-      "date": "Дата"
-    }
+      "date": "Дата",
+      "notFound": "Этой поездки больше нет в списке"
+    },
+    "a11yCard": "{{date}}, {{from}} — {{to}}, {{price}}, {{status}}",
+    "unknownPlace": "Неизвестный адрес"
   },
   "promo": {
     "title": "Мои промокоды",
@@ -329,7 +332,8 @@
     "ridesLeft_other": "Осталось {{count}} поездки",
     "expires": "Действует до {{date}}",
     "copy": "Скопировать код {{code}}",
-    "copied": "Код скопирован"
+    "copied": "Код скопирован",
+    "starts": "Действует с {{date}}"
   },
   "profile": {
     "title": "Профиль",
@@ -367,7 +371,10 @@
     "about": "О приложении",
     "version": "Версия {{version}}",
     "logout": "Выйти из аккаунта",
-    "deleteAccount": "Удалить аккаунт"
+    "deleteAccount": "Удалить аккаунт",
+    "deleteAccountA11y": "Удалить аккаунт (скоро)",
+    "logoutBlocked": "Завершите или отмените поездку, чтобы выйти.",
+    "account": "Аккаунт"
   },
   "permissions": {
     "location": {

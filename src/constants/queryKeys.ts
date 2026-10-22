@@ -21,9 +21,14 @@ export const queryKeys = {
     ['routes', 'estimate', 'idle', vehicleType] as const,
 
   promos: (userId: number, activeOnly: boolean) => ['promos', userId, { activeOnly }] as const,
+  /** Paged list of all the user's promo codes (My promo codes screen; infinite data). */
+  promoList: (userId: number) => ['promoList', userId] as const,
+  /** Prefixes invalidated after a ride (a promo may have been used). */
+  promosAll: () => ['promos'] as const,
+  promoListAll: () => ['promoList'] as const,
 
   tripHistory: (userId: number) => ['tripHistory', userId] as const,
-  tripDetail: (tripId: number) => ['tripHistory', 'detail', tripId] as const,
+  tripHistoryAll: () => ['tripHistory'] as const,
 
   chatMessages: (rideId: number) => ['chat', 'messages', rideId] as const,
   rideDriver: (driverId: number) => ['ride', 'driver', driverId] as const,

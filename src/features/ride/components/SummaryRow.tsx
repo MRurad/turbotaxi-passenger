@@ -23,7 +23,9 @@ export function SummaryRow({ label, value, strong = false, testID }: SummaryRowP
       >
         {label}
       </Text>
-      <Text variant={strong ? 'title' : 'bodyStrong'}>{value}</Text>
+      <Text variant={strong ? 'title' : 'bodyStrong'} align="right" style={styles.value}>
+        {value}
+      </Text>
     </View>
   );
 }
@@ -37,4 +39,6 @@ const useStyles = makeStyles((t) => ({
     paddingVertical: t.spacing.xs,
   },
   label: { flexShrink: 1 },
+  // Long values (a car + plate, a driver's name) wrap instead of overflowing.
+  value: { flexShrink: 1 },
 }));

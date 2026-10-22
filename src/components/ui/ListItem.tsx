@@ -22,6 +22,8 @@ export interface ListItemProps {
   /** Defaults to true when `onPress` is set. */
   showChevron?: boolean;
   onPress?: () => void;
+  /** Shown but not available (dimmed, announced as disabled). */
+  disabled?: boolean;
   accessibilityLabel?: string;
   /** Defaults to "button" when pressable; use "radio" in single-select lists. */
   accessibilityRole?: 'button' | 'radio';
@@ -38,6 +40,7 @@ export function ListItem({
   right,
   showChevron,
   onPress,
+  disabled = false,
   accessibilityLabel,
   accessibilityRole = 'button',
   accessibilityState,
@@ -51,7 +54,11 @@ export function ListItem({
     left ??
     (icon ? (
       <View style={styles.iconWrap}>
-        <Ionicons name={icon} size={sizes.icon.md} color={colors.primary} />
+        <Ionicons
+          name={icon}
+          size={sizes.icon.md}
+          color={disabled ? colors.textMuted : colors.primary}
+        />
       </View>
     ) : null);
 
@@ -82,9 +89,15 @@ export function ListItem({
   );
 
   // Static rows stay a plain View so screen readers don't announce them as "dimmed".
-  if (!onPress) {
+  if (!onPress || disabled) {
     return (
-      <View testID={testID} accessible accessibilityLabel={label} style={styles.row}>
+      <View
+        testID={testID}
+        accessible
+        accessibilityLabel={label}
+        accessibilityState={disabled ? { disabled: true } : undefined}
+        style={[styles.row, disabled && styles.disabled]}
+      >
         {content}
       </View>
     );
@@ -115,6 +128,7 @@ const useStyles = makeStyles((t) => ({
     borderRadius: t.radii.md,
   },
   pressed: { backgroundColor: t.colors.pressedOverlay },
+  disabled: { opacity: t.motion.disabledOpacity },
   value: { flexShrink: 0 },
   iconWrap: {
     width: t.sizes.avatar.md,

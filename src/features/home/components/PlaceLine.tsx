@@ -15,6 +15,8 @@ export interface PlaceLineProps {
   loadingLabel?: string;
   /** Trailing action (e.g. clear destination). */
   right?: ReactNode;
+  /** Lines for the address (1 in sheets; more on detail screens). */
+  numberOfLines?: number;
   testID?: string;
 }
 
@@ -26,6 +28,7 @@ export function PlaceLine({
   loading = false,
   loadingLabel,
   right,
+  numberOfLines = 1,
   testID,
 }: PlaceLineProps) {
   const styles = useStyles();
@@ -54,7 +57,7 @@ export function PlaceLine({
         {loading ? (
           <Skeleton width="70%" height={sizes.icon.sm} />
         ) : (
-          <Text variant="bodyStrong" numberOfLines={1}>
+          <Text variant="bodyStrong" numberOfLines={numberOfLines}>
             {value}
           </Text>
         )}

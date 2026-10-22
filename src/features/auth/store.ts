@@ -130,6 +130,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   },
 
   updateUser: async (user) => {
+    if (get().user?.id !== user.id) return;
     if (get().status !== 'authenticated') return;
     set({ user });
     await enqueuePersist(() => setSecureJSON(SECURE_KEYS.user, user));

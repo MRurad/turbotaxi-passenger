@@ -19,6 +19,10 @@ export function useRideRouteGuard(): void {
   const target = signedIn ? rideRedirect(phase, segments) : null;
 
   useEffect(() => {
-    if (target) router.replace(target);
+    if (!target) return;
+    // Pushed screens (profile → history → trip…) would otherwise stay under the new one,
+    // leaving two ride screens and a back gesture into stale pages.
+    if (router.canDismiss()) router.dismissAll();
+    router.replace(target);
   }, [target, router]);
 }

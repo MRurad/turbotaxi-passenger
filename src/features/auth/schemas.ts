@@ -28,15 +28,17 @@ export const loginSchema = z.object({
   password: z.string().min(1, msg('errors.validation.required')),
 });
 
+/** National digits as typed/masked, e.g. "50 123 45 67". */
+const phone = z
+  .string()
+  .min(1, msg('errors.validation.required'))
+  .refine((value) => isValidAzMobile(toNationalDigits(value)), msg('errors.validation.phone'));
+
 export const registerSchema = z
   .object({
     name,
     surname: name,
-    /** National digits as typed/masked, e.g. "50 123 45 67". */
-    phone: z
-      .string()
-      .min(1, msg('errors.validation.required'))
-      .refine((value) => isValidAzMobile(toNationalDigits(value)), msg('errors.validation.phone')),
+    phone,
     email,
     password: z
       .string()
@@ -49,5 +51,9 @@ export const registerSchema = z
     path: ['confirmPassword'],
   });
 
+/** Profile edit: the register fields without the password (same rules). */
+export const profileSchema = z.object({ name, surname: name, phone, email });
+
 export type LoginFormValues = z.infer<typeof loginSchema>;
+export type ProfileFormValues = z.infer<typeof profileSchema>;
 export type RegisterFormValues = z.infer<typeof registerSchema>;

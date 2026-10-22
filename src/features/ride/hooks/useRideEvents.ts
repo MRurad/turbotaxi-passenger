@@ -1,7 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { AccessibilityInfo } from 'react-native';
 
 import { cancelRide } from '@/api/services/rides';
+import { queryKeys } from '@/constants/queryKeys';
 import { SEARCH_TIMEOUT_MS } from '@/constants/timeouts';
 import { i18n } from '@/i18n';
 import { triggerHaptic } from '@/lib/haptics';
@@ -21,6 +23,24 @@ import { TRACKING_PHASES, useRideStore } from '../store';
  * SEARCH_TIMEOUT_MS; haptics + screen-reader announcements on the moments that matter.
  */
 export function useRideEvents(): void {
+  const queryClient = useQueryClient();
+
+  useEffect(
+    () =>
+      useRideStore.subscribe((state, prev) => {
+        if (state.phase === prev.phase) return;
+        if (state.phase !== 'completed' && state.phase !== 'cancelled') return;
+        for (const queryKey of [
+          queryKeys.tripHistoryAll(),
+          queryKeys.promosAll(),
+          queryKeys.promoListAll(),
+        ]) {
+          queryClient.invalidateQueries({ queryKey }).catch(() => undefined);
+        }
+      }),
+    [queryClient],
+  );
+
   useEffect(() => {
     const offs = [
       onUserHubEvent('rideStatusUpdated', handleRideUpdate),

@@ -1,27 +1,26 @@
-import { useRef } from 'react';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Avatar, PressableScale, type SheetRef } from '@/components/ui';
+import { Avatar, PressableScale } from '@/components/ui';
+import { ROUTES } from '@/constants/routes';
 import { useAuthStore } from '@/features/auth/store';
 import { makeStyles } from '@/theme';
 
-import { HomeMenuSheet } from './HomeMenuSheet';
-
-/** Floating bar over the map. The avatar opens the account menu (full profile in Prompt 11). */
+/** Floating bar over the map (home and ride screens). The avatar opens the profile. */
 export function HomeTopBar() {
   const styles = useStyles();
+  const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const menuRef = useRef<SheetRef>(null);
   const user = useAuthStore((s) => s.user);
   const name = [user?.name, user?.surname].filter(Boolean).join(' ') || t('common.appName');
 
   return (
     <View style={[styles.bar, { top: insets.top }]} pointerEvents="box-none">
       <PressableScale
-        onPress={() => menuRef.current?.present()}
+        onPress={() => router.push(ROUTES.profile)}
         haptic="light"
         accessibilityRole="button"
         accessibilityLabel={t('home.menu')}
@@ -30,7 +29,6 @@ export function HomeTopBar() {
       >
         <Avatar name={name} size="md" />
       </PressableScale>
-      <HomeMenuSheet ref={menuRef} onClose={() => menuRef.current?.dismiss()} />
     </View>
   );
 }

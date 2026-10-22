@@ -294,14 +294,17 @@
   "history": {
     "title": "Gedişlərim",
     "emptyTitle": "Hələ gedişiniz yoxdur",
-    "emptyMessage": "Tamamlanmış gedişləriniz burada görünəcək.",
+    "emptyMessage": "Gedişləriniz burada görünəcək.",
     "loadError": "Gedişlər yüklənmədi",
     "detail": {
       "title": "Gediş haqqında",
       "driver": "Sürücü",
       "vehicle": "Avtomobil",
-      "date": "Tarix"
-    }
+      "date": "Tarix",
+      "notFound": "Bu gediş artıq siyahınızda yoxdur"
+    },
+    "a11yCard": "{{date}}, {{from}} – {{to}}, {{price}}, {{status}}",
+    "unknownPlace": "Naməlum ünvan"
   },
   "promo": {
     "title": "Promokodlarım",
@@ -317,7 +320,8 @@
     "ridesLeft_other": "{{count}} gediş qalıb",
     "expires": "Bitmə tarixi: {{date}}",
     "copy": "{{code}} kodunu kopyala",
-    "copied": "Kod kopyalandı"
+    "copied": "Kod kopyalandı",
+    "starts": "{{date}} tarixindən etibarlıdır"
   },
   "profile": {
     "title": "Profil",
@@ -355,7 +359,10 @@
     "about": "Tətbiq haqqında",
     "version": "Versiya {{version}}",
     "logout": "Hesabdan çıx",
-    "deleteAccount": "Hesabı sil"
+    "deleteAccount": "Hesabı sil",
+    "deleteAccountA11y": "Hesabı sil (tezliklə)",
+    "logoutBlocked": "Çıxış etmək üçün gedişi bitirin və ya ləğv edin.",
+    "account": "Hesab"
   },
   "permissions": {
     "location": {

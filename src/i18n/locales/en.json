@@ -294,14 +294,17 @@
   "history": {
     "title": "My trips",
     "emptyTitle": "No trips yet",
-    "emptyMessage": "Your completed rides will show up here.",
+    "emptyMessage": "Your rides will show up here.",
     "loadError": "Couldn't load your trips",
     "detail": {
       "title": "Trip details",
       "driver": "Driver",
       "vehicle": "Vehicle",
-      "date": "Date"
-    }
+      "date": "Date",
+      "notFound": "This trip is no longer in your list"
+    },
+    "a11yCard": "{{date}}, {{from}} to {{to}}, {{price}}, {{status}}",
+    "unknownPlace": "Unknown place"
   },
   "promo": {
     "title": "My promo codes",
@@ -317,7 +320,8 @@
     "ridesLeft_other": "{{count}} rides left",
     "expires": "Valid until {{date}}",
     "copy": "Copy code {{code}}",
-    "copied": "Code copied"
+    "copied": "Code copied",
+    "starts": "Starts {{date}}"
   },
   "profile": {
     "title": "Profile",
@@ -355,7 +359,10 @@
     "about": "About",
     "version": "Version {{version}}",
     "logout": "Log out",
-    "deleteAccount": "Delete account"
+    "deleteAccount": "Delete account",
+    "deleteAccountA11y": "Delete account (coming soon)",
+    "logoutBlocked": "Finish or cancel your ride before logging out.",
+    "account": "Account"
   },
   "permissions": {
     "location": {

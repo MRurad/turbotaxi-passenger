@@ -57,7 +57,7 @@ export function formatPhoneInput(text: string, previous: string): string {
   // Where the edit happened, and how many digits precede it.
   let edit = 0;
   while (edit < text.length && text[edit] === previous[edit]) edit += 1;
-  const digitsBefore = previous.slice(0, edit).replace(/D/g, '').length;
+  const digitsBefore = previous.slice(0, edit).replace(/\D/g, '').length;
   const withoutDigit = digits.slice(0, Math.max(0, digitsBefore - 1)) + digits.slice(digitsBefore);
   return formatPhoneMask(withoutDigit);
 }

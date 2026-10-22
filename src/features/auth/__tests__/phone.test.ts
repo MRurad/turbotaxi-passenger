@@ -44,6 +44,8 @@ describe('formatPhoneInput', () => {
   it('backspacing over a mask space deletes the digit before it', () => {
     // Caret after the space in "50 |123 45" + backspace → removes the "0".
     expect(formatPhoneInput('50123 45', '50 123 45')).toBe('51 234 5');
+    // A later space: "50 123 |45" + backspace → removes the "3" (spaces aren't digits).
+    expect(formatPhoneInput('50 12345', '50 123 45')).toBe('50 124 5');
     // Ordinary backspace at the end still removes the last digit.
     expect(formatPhoneInput('50 12', '50 123')).toBe('50 12');
   });

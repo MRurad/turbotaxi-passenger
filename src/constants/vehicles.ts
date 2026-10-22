@@ -24,6 +24,18 @@ export interface VehicleInfo {
 }
 
 // TODO confirm with backend (docs/BACKEND_REQUESTS.md #6): names and seat counts for 0–3.
+/** Backend vehicle type names (trip history sends strings) → the app's class. */
+const VEHICLE_TYPE_BY_NAME: Readonly<Record<string, VehicleType>> = {
+  economy: VEHICLE_TYPE.Economy,
+  comfort: VEHICLE_TYPE.Comfort,
+  business: VEHICLE_TYPE.Business,
+  minivan: VEHICLE_TYPE.Minivan,
+};
+
+export function vehicleTypeFromName(name: string | null | undefined): VehicleType | null {
+  return name ? (VEHICLE_TYPE_BY_NAME[name.trim().toLowerCase()] ?? null) : null;
+}
+
 export const VEHICLES: Readonly<Record<VehicleType, VehicleInfo>> = {
   [VEHICLE_TYPE.Economy]: {
     type: VEHICLE_TYPE.Economy,
