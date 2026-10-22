@@ -31,10 +31,11 @@ export function MessageList({ rideId, driverName, onRetry }: MessageListProps) {
   const { colors, sizes } = useTheme();
   const chat = useChatMessages(rideId);
   const outgoing = useChatStore((s) => s.outgoing[rideId] ?? NO_OUTGOING);
+  const aliases = useChatStore((s) => s.aliases);
   // Day labels ("Today"…) are localized, so a language switch rebuilds them.
   const items = useMemo(
-    () => buildChatItems(chat.messages, outgoing, undefined, language),
-    [chat.messages, outgoing, language],
+    () => buildChatItems(chat.messages, outgoing, undefined, language, aliases),
+    [chat.messages, outgoing, language, aliases],
   );
 
   const renderItem = useCallback(

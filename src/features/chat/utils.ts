@@ -4,7 +4,7 @@ import { getLanguage, type Language } from '@/i18n';
 import { formatDay, parseApiDate } from '@/lib/format';
 import type { Paged } from '@/types/paged';
 
-import type { ChatListItem, ChatMessage, OutgoingMessage } from './types';
+import type { ChatListItem, ChatMessage, ConfirmedAlias, OutgoingMessage } from './types';
 
 export type ChatPages = InfiniteData<Paged<ChatMessage>, number>;
 
@@ -62,17 +62,27 @@ export function buildChatItems(
   outgoing: readonly OutgoingMessage[],
   now: Date = new Date(),
   language: Language = getLanguage(),
+  aliases: Readonly<Record<number, ConfirmedAlias>> = {},
 ): ChatListItem[] {
   type Entry = { at: string; item: ChatListItem };
+  const takenKeys = new Set(
+    messages.map((m) => aliases[m.id]?.key).filter((key): key is string => key !== undefined),
+  );
   const entries: Entry[] = [
-    ...messages.map((message) => ({
-      at: message.sentAt,
-      item: { kind: 'message', key: `m${message.id}`, message } as const,
-    })),
-    ...outgoing.map((message) => ({
-      at: message.createdAt,
-      item: { kind: 'outgoing', key: message.localId, message } as const,
-    })),
+    ...messages.map((message) => {
+      // A confirmed message of mine keeps its local row: same key, same place.
+      const alias = aliases[message.id];
+      return {
+        at: alias?.at ?? message.sentAt,
+        item: { kind: 'message', key: alias?.key ?? `m${message.id}`, message } as const,
+      };
+    }),
+    ...outgoing
+      .filter((message) => !takenKeys.has(message.localId))
+      .map((message) => ({
+        at: message.createdAt,
+        item: { kind: 'outgoing', key: message.localId, message } as const,
+      })),
   ].sort((a, b) => timeOf(a.at) - timeOf(b.at));
 
   const rows: ChatListItem[] = [];

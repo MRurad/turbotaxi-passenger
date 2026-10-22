@@ -34,13 +34,13 @@ export function useRideChatConnection(): void {
         // A refetch in flight would overwrite this insert with older data.
         queryClient
           .cancelQueries({ queryKey: key })
-          .finally(() =>
-            queryClient.setQueryData<ChatPages>(key, (data) => insertMessage(data, message)),
-          )
+          .finally(() => {
+            queryClient.setQueryData<ChatPages>(key, (data) => insertMessage(data, message));
+            // After the insert, so a local copy never vanishes before its confirmed one shows.
+            if (message.isMine) useChatStore.getState().reconcileOutgoing(rideId, [message]);
+          })
           .catch(() => undefined);
-        const chat = useChatStore.getState();
-        if (message.isMine) chat.reconcileOutgoing(rideId, [message]);
-        else chat.messageReceived(rideId);
+        if (!message.isMine) useChatStore.getState().messageReceived(rideId);
       } catch (error) {
         // Incomplete payload: fall back to re-reading the history.
         logger.warn('chat: unusable message event', {

@@ -145,3 +145,16 @@ describe('reconciling my messages', () => {
     expect(store().unread[RIDE]).toBeUndefined();
   });
 });
+
+describe('aliases (no flicker on confirm)', () => {
+  it('a confirmed send and a reconciled hub echo both leave an alias to the local row', async () => {
+    jest.mocked(sendChatMessage).mockResolvedValue(SENT);
+    const { client, wrapper } = setup();
+    const { result } = await renderHook(() => useSendChatMessage(RIDE), { wrapper });
+    await act(async () => result.current.send("I'm coming"));
+    const alias = useChatStore.getState().aliases[SENT.id];
+    expect(alias?.key).toMatch(/^local-/);
+    expect(outgoing()).toEqual([]);
+    client.clear();
+  });
+});

@@ -53,8 +53,17 @@ export const MessageBubble = memo(function MessageBubble({
         <Text variant="caption" color={mine ? 'textOnPrimary' : 'textMuted'}>
           {time}
         </Text>
-        {status === 'pending' ? (
-          <Ionicons name="time-outline" size={sizes.icon.xs} color={colors.textOnPrimary} />
+        {mine ? (
+          // Fixed slot: pending clock → sent check, without the bubble changing width.
+          <View style={styles.statusSlot}>
+            {status !== 'failed' ? (
+              <Ionicons
+                name={status === 'pending' ? 'time-outline' : 'checkmark'}
+                size={sizes.icon.xs}
+                color={colors.textOnPrimary}
+              />
+            ) : null}
+          </View>
         ) : null}
       </View>
     </View>
@@ -128,6 +137,7 @@ const useStyles = makeStyles((t) => ({
   // Failed: a danger edge instead of fading (keeps the text readable).
   failed: { borderWidth: t.sizes.focusBorder, borderColor: t.colors.danger },
   meta: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end', gap: t.spacing.xxs },
+  statusSlot: { width: t.sizes.icon.xs, alignItems: 'center' },
   failedWrap: { maxWidth: BUBBLE_MAX_WIDTH, alignItems: 'flex-end', gap: t.spacing.xxs },
   failedHint: { flexDirection: 'row', alignItems: 'center', gap: t.spacing.xxs },
 }));

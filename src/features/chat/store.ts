@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import { parseApiDate } from '@/lib/format';
 
-import type { ChatMessage, OutgoingMessage } from './types';
+import type { ChatMessage, ConfirmedAlias, OutgoingMessage } from './types';
 
 /** A confirmed message of mine this close (in time) to a local one with the same text is it. */
 const RECONCILE_WINDOW_MS = 2 * 60_000;
@@ -14,6 +14,8 @@ interface ChatState {
   unread: Readonly<Record<number, number>>;
   /** Sent but not yet confirmed (pending) or failed messages, per ride. */
   outgoing: Readonly<Record<number, readonly OutgoingMessage[]>>;
+  /** Server message id → the local row it replaced (no flicker on confirm). */
+  aliases: Readonly<Record<number, ConfirmedAlias>>;
 }
 
 interface ChatActions {
@@ -31,7 +33,12 @@ interface ChatActions {
     localId: string,
     status: OutgoingMessage['status'],
   ) => boolean;
-  /** The server confirmed it (the real message is in the query cache now). */
+  /**
+   * The server confirmed a local message as `confirmedId`: that message takes over the local
+   * row (same key, same place). Call before putting it into the cache, then removeOutgoing.
+   */
+  confirmOutgoing: (rideId: number, localId: string, confirmedId: number) => void;
+  /** Drop a local message (after its confirmed copy is in the cache). */
   removeOutgoing: (rideId: number, localId: string) => void;
   /**
    * My messages the server already has (hub, send response or a refetch) replace their local
@@ -43,9 +50,21 @@ interface ChatActions {
   reset: () => void;
 }
 
-const INITIAL: ChatState = { openRideId: null, unread: {}, outgoing: {} };
+const INITIAL: ChatState = { openRideId: null, unread: {}, outgoing: {}, aliases: {} };
 
 const timeOf = (iso: string) => parseApiDate(iso)?.getTime() ?? 0;
+
+/** The alias a confirmed local message leaves behind (unchanged when there's none). */
+function aliasFor(
+  s: ChatState,
+  rideId: number,
+  localId: string,
+  confirmedId: number,
+): ChatState['aliases'] {
+  const local = (s.outgoing[rideId] ?? []).find((m) => m.localId === localId);
+  if (!local) return s.aliases;
+  return { ...s.aliases, [confirmedId]: { key: local.localId, at: local.createdAt } };
+}
 
 const without = <T>(record: Readonly<Record<number, T>>, key: number) =>
   Object.fromEntries(Object.entries(record).filter(([k]) => Number(k) !== key));
@@ -83,6 +102,8 @@ export const useChatStore = create<ChatState & ChatActions>()((set, get) => ({
     }));
     return true;
   },
+  confirmOutgoing: (rideId, localId, confirmedId) =>
+    set((s) => ({ aliases: aliasFor(s, rideId, localId, confirmedId) })),
   removeOutgoing: (rideId, localId) =>
     set((s) => ({
       outgoing: {
@@ -94,6 +115,7 @@ export const useChatStore = create<ChatState & ChatActions>()((set, get) => ({
     const local = get().outgoing[rideId] ?? [];
     if (local.length === 0) return;
     const remaining = [...local];
+    const aliases: Record<number, ConfirmedAlias> = {};
     for (const message of confirmed) {
       if (!message.isMine) continue;
       const index = remaining.findIndex(
@@ -101,10 +123,16 @@ export const useChatStore = create<ChatState & ChatActions>()((set, get) => ({
           m.text === message.text.trim() &&
           Math.abs(timeOf(m.createdAt) - timeOf(message.sentAt)) <= RECONCILE_WINDOW_MS,
       );
-      if (index >= 0) remaining.splice(index, 1);
+      const match = remaining[index];
+      if (index < 0 || !match) continue;
+      aliases[message.id] = { key: match.localId, at: match.createdAt };
+      remaining.splice(index, 1);
     }
     if (remaining.length !== local.length) {
-      set((s) => ({ outgoing: { ...s.outgoing, [rideId]: remaining } }));
+      set((s) => ({
+        outgoing: { ...s.outgoing, [rideId]: remaining },
+        aliases: { ...s.aliases, ...aliases },
+      }));
     }
   },
   clearRide: (rideId) =>

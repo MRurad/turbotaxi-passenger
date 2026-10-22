@@ -31,6 +31,16 @@ export interface OutgoingMessage {
   status: 'pending' | 'failed';
 }
 
+/**
+ * A server message that replaced one of my local ones keeps that row's key and place in the
+ * list, so confirming a message doesn't remount or move its bubble.
+ */
+export interface ConfirmedAlias {
+  key: string;
+  /** The local createdAt (ISO), used for ordering instead of the server's sentAt. */
+  at: string;
+}
+
 /** One row of the (inverted) message list. */
 export type ChatListItem =
   | { kind: 'day'; key: string; label: string }

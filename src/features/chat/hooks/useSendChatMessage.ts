@@ -31,6 +31,10 @@ export function useSendChatMessage(rideId: number): SendChatMessage {
         const sent = await sendChatMessage(rideId, message.text);
         // A refetch in flight would overwrite the insert with data from before the send.
         await queryClient.cancelQueries({ queryKey: key });
+        // Order matters (no flicker): the server copy takes over the local row, then the
+        // local copy goes. At every step exactly one bubble shows, under one key.
+        const chat = useChatStore.getState();
+        chat.confirmOutgoing(rideId, message.localId, sent.id);
         queryClient.setQueryData<ChatPages>(key, (data) => insertMessage(data, sent));
         useChatStore.getState().removeOutgoing(rideId, message.localId);
       } catch {

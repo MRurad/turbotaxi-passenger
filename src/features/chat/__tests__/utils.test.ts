@@ -94,3 +94,24 @@ describe('buildChatItems', () => {
     expect(labels).toEqual(['Today', 'Yesterday']);
   });
 });
+
+describe('confirming a message without flicker', () => {
+  const NOW = new Date('2026-10-22T12:00:00Z');
+  const local = outgoing('local-7', '2026-10-22T10:03:00Z');
+  // Server clock a bit later than the phone's: without the alias the bubble would move.
+  const confirmed = msg(70, '2026-10-22T10:06:00Z', true);
+  const driver = msg(1, '2026-10-22T10:04:00Z');
+  const alias = { 70: { key: 'local-7', at: local.createdAt } };
+
+  it('the confirmed copy keeps the local row key and place', () => {
+    const before = buildChatItems([driver], [local], NOW).map((i) => i.key);
+    const after = buildChatItems([driver, confirmed], [], NOW, 'en', alias).map((i) => i.key);
+    expect(after).toEqual(before); // [driver m1, local-7, day] — same keys, same order
+  });
+
+  it('never shows both copies while the local one is still in the store', () => {
+    const keys = buildChatItems([driver, confirmed], [local], NOW, 'en', alias).map((i) => i.key);
+    expect(keys.filter((k) => k === 'local-7')).toHaveLength(1);
+    expect(keys).not.toContain('m70');
+  });
+});
