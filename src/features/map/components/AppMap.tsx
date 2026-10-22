@@ -144,6 +144,8 @@ export function AppMap({
       showsCompass={false}
       toolbarEnabled={false}
       pitchEnabled={false}
+      // Apple Maps can't rotate markers with the map: keep it north-up so the car points right.
+      rotateEnabled={IS_GOOGLE_MAP}
       style={[StyleSheet.absoluteFill, style]}
       onRegionChangeComplete={handleRegionChangeComplete}
       {...props}

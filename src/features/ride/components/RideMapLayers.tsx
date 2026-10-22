@@ -1,18 +1,19 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { CarMarker } from '@/features/map/components/CarMarker';
 import { MarkerLabel } from '@/features/map/components/MarkerLabel';
 import { PlaceMarker } from '@/features/map/components/PlaceMarker';
 import { RoutePolyline } from '@/features/map/components/RoutePolyline';
+import { routeAhead } from '@/lib/geo';
 
 import { useRideMarkerLabels } from '../hooks/useRideMarkerLabels';
 import { useRideRoute } from '../hooks/useRideRoute';
 import { TRACKING_PHASES, useRideStore } from '../store';
 
 /**
- * Pickup / destination markers with their time labels, the current leg's route and the
- * driver's car. (An ordered ride's places can't be changed: there is no endpoint for it.)
+ * Pickup / destination markers with their time labels, the rest of the current leg's route
+ * (from the car on) and the driver's car. (An ordered ride's places can't be changed: there is no endpoint for it.)
  */
 export const RideMapLayers = memo(function RideMapLayers() {
   const { phase, pickup, destination, driverLocation } = useRideStore(
@@ -23,14 +24,20 @@ export const RideMapLayers = memo(function RideMapLayers() {
       driverLocation: s.driverLocation,
     })),
   );
-  const line = useRideRoute();
+  const route = useRideRoute();
+  const tracking = TRACKING_PHASES.has(phase);
+  // Only what's still ahead of the car: the line shrinks as it drives.
+  const line = useMemo(
+    () => (driverLocation && tracking ? routeAhead(route, driverLocation).coordinates : route),
+    [route, driverLocation, tracking],
+  );
   const labels = useRideMarkerLabels();
   // Once the trip has started the car is at the pickup; only the destination matters.
   const showPickup = pickup !== null && phase !== 'in_progress';
 
   return (
     <>
-      {line ? <RoutePolyline encoded={line} /> : null}
+      <RoutePolyline coordinates={line} />
       {showPickup ? <PlaceMarker coordinate={pickup.location} kind="pickup" /> : null}
       {showPickup && labels.pickup ? (
         <MarkerLabel coordinate={pickup.location} {...labels.pickup} testID="ride-pickup-label" />
@@ -44,9 +51,7 @@ export const RideMapLayers = memo(function RideMapLayers() {
           testID="ride-destination-label"
         />
       ) : null}
-      {driverLocation && TRACKING_PHASES.has(phase) ? (
-        <CarMarker coordinate={driverLocation} />
-      ) : null}
+      {driverLocation && tracking ? <CarMarker coordinate={driverLocation} /> : null}
     </>
   );
 });

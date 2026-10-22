@@ -49,6 +49,9 @@ export const RIDE_HISTORY_POLL_MS = 30_000;
 /** An open chat re-fetches this often: a safety net for a missed hub message. */
 export const CHAT_REFETCH_MS = 15_000;
 
+/** The car left its route: routed again from where it is, at most this often (each is an estimate call). */
+export const REROUTE_MIN_INTERVAL_MS = 60_000;
+
 /** A driver's name / car doesn't change during a ride. */
 export const DRIVER_PROFILE_STALE_TIME_MS = 30 * 60_000;
 

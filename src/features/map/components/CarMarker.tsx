@@ -7,6 +7,7 @@ import { bearingDegrees, distanceMeters } from '@/lib/geo';
 import { makeStyles, useTheme } from '@/theme';
 import type { LatLng } from '@/types/geo';
 
+import { IS_GOOGLE_MAP } from '../constants';
 import { TopDownCar } from './TopDownCar';
 
 /** Ignore GPS jitter below this distance when computing a bearing. */
@@ -74,8 +75,10 @@ export function CarMarker({ coordinate, heading, title }: CarMarkerProps) {
       coordinate={region as unknown as LatLng}
       title={title}
       anchor={{ x: 0.5, y: 0.5 }}
+      // Google rotates the (flat) marker natively; Apple Maps ignores , so there the
+      // car view itself is turned (the Apple map stays north-up, see AppMap).
       flat
-      rotation={rotation}
+      rotation={IS_GOOGLE_MAP ? rotation : undefined}
       zIndex={sizes.car.zIndex}
       tracksViewChanges={snapshotScheme !== isDark}
     >
@@ -83,7 +86,7 @@ export function CarMarker({ coordinate, heading, title }: CarMarkerProps) {
           SVG has drawn. The padded frame keeps the outline inside the snapshot. */}
       <View
         key={isDark ? 'dark' : 'light'}
-        style={styles.frame}
+        style={[styles.frame, !IS_GOOGLE_MAP && { transform: [{ rotate: `${rotation}deg` }] }]}
         onLayout={() => {
           const scheme = isDark;
           if (snapshotTimer.current) clearTimeout(snapshotTimer.current);

@@ -24,6 +24,49 @@ export function bearingDegrees(a: LatLng, b: LatLng): number {
   return (((Math.atan2(y, x) / DEG) % FULL_TURN) + FULL_TURN) % FULL_TURN;
 }
 
+export interface RouteAhead {
+  /** From the point's nearest spot on the route to the route's end. */
+  coordinates: LatLng[];
+  /** How far the point is from the route (meters): large = the car left it. */
+  offRouteMeters: number;
+}
+
+/**
+ * The part of `route` still ahead of `point` (the car): the line shrinks as it drives. Uses a
+ * local flat projection around the point, accurate enough at city scale.
+ */
+export function routeAhead(route: LatLng[], point: LatLng): RouteAhead {
+  if (route.length < 2) return { coordinates: route, offRouteMeters: 0 };
+  const metersPerDegLat = EARTH_RADIUS_M * DEG;
+  const metersPerDegLng = metersPerDegLat * Math.cos(point.latitude * DEG);
+  const toXY = (c: LatLng) => ({
+    x: (c.longitude - point.longitude) * metersPerDegLng,
+    y: (c.latitude - point.latitude) * metersPerDegLat,
+  });
+  let best = { index: 0, t: 0, distance: Infinity };
+  for (let i = 0; i < route.length - 1; i += 1) {
+    const a = toXY(route[i] as LatLng);
+    const b = toXY(route[i + 1] as LatLng);
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lengthSq = dx * dx + dy * dy;
+    // The point is the origin: project it onto segment a→b.
+    const t = lengthSq === 0 ? 0 : Math.min(1, Math.max(0, -(a.x * dx + a.y * dy) / lengthSq));
+    const distance = Math.hypot(a.x + t * dx, a.y + t * dy);
+    if (distance < best.distance) best = { index: i, t, distance };
+  }
+  const a = route[best.index] as LatLng;
+  const b = route[best.index + 1] as LatLng;
+  const onRoute: LatLng = {
+    latitude: a.latitude + best.t * (b.latitude - a.latitude),
+    longitude: a.longitude + best.t * (b.longitude - a.longitude),
+  };
+  return {
+    coordinates: [onRoute, ...route.slice(best.index + 1)],
+    offRouteMeters: best.distance,
+  };
+}
+
 /** "40.3769, 49.8671", "(40.3769 49.8671)", "40.3769;49.8671" → a point; anything else → null. */
 const COORDS_TEXT = /^\s*\(?\s*(-?\d{1,3}\.\d+)\s*[,;\s]\s*(-?\d{1,3}\.\d+)\s*\)?\s*$/;
 

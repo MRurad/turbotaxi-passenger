@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Platform, View, type LayoutChangeEvent } from 'react-native';
+import { Platform, View } from 'react-native';
 import { Marker } from 'react-native-maps';
 
 import { Text } from '@/components/ui';
@@ -34,11 +34,10 @@ export function MarkerLabel({
   testID,
 }: MarkerLabelProps) {
   const styles = useStyles();
-  const { isDark } = useTheme();
-  const [height, setHeight] = useState(0);
+  const { isDark, sizes } = useTheme();
   // Google snapshots custom markers: track view changes until new content has drawn, then
   // stop (no remount, so the bubble doesn't blink when the arrival minute changes).
-  const content = `${title}|${subtitle ?? ''}|${isDark}|${height}`;
+  const content = `${title}|${subtitle ?? ''}|${isDark}`;
   const [snapshotted, setSnapshotted] = useState<string | null>(null);
   useEffect(() => {
     const timer = setTimeout(() => setSnapshotted(content), MARKER_SNAPSHOT_MS);
@@ -48,20 +47,17 @@ export function MarkerLabel({
   return (
     <Marker
       coordinate={coordinate}
-      // Android/Google: bottom edge on the point. Apple Maps ignores anchor and centers the
-      // view, so it is lifted by half its measured height instead.
+      // The box's bottom centre sits on the point. Android/Google: anchor. Apple Maps ignores
+      // anchor and centres the view, so it is lifted by half the (fixed) height.
       anchor={{ x: 0.5, y: 1 }}
-      centerOffset={Platform.OS === 'ios' ? { x: 0, y: -height / 2 } : undefined}
+      centerOffset={Platform.OS === 'ios' ? { x: 0, y: -sizes.markerLabel.height / 2 } : undefined}
       tracksViewChanges={snapshotted !== content}
       onPress={onPress}
       zIndex={1}
       accessibilityLabel={accessibilityLabel ?? [title, subtitle].filter(Boolean).join(', ')}
       testID={testID}
     >
-      <View
-        style={[styles.wrap, lifted && styles.lifted, height === 0 && styles.measuring]}
-        onLayout={(e: LayoutChangeEvent) => setHeight(Math.round(e.nativeEvent.layout.height))}
-      >
+      <View style={[styles.box, lifted && styles.lifted]} pointerEvents="box-none">
         <View style={styles.bubble}>
           <View style={styles.chip}>
             <Text variant="caption" color="textOnPrimary" style={styles.strong} numberOfLines={1}>
@@ -83,17 +79,19 @@ export function MarkerLabel({
 const POINTER = 12;
 
 const useStyles = makeStyles((t) => ({
-  // Room for the shadow on the sides/top; below, the pointer tip stops just above the marker.
-  wrap: {
+  // Fixed box, bubble + pointer stacked at its bottom centre; below, the pointer tip stops just
+  // above the marker. The empty top leaves room for larger text sizes and the shadow.
+  box: {
+    width: t.sizes.markerLabel.width,
+    height: t.sizes.markerLabel.height,
     alignItems: 'center',
+    justifyContent: 'flex-end',
     paddingHorizontal: t.spacing.xs,
-    paddingTop: t.spacing.xs,
     paddingBottom: t.sizes.pin.head / 2 + t.spacing.xxs,
   },
   lifted: { paddingBottom: t.sizes.pin.head / 2 + t.spacing.sm },
-  // Not yet lifted into place (first layout on iOS): don't flash it over the marker.
-  measuring: { opacity: 0 },
   bubble: {
+    maxWidth: '100%',
     flexDirection: 'row',
     alignItems: 'stretch',
     borderRadius: t.radii.pill,
@@ -110,6 +108,7 @@ const useStyles = makeStyles((t) => ({
     backgroundColor: t.colors.primaryFill,
   },
   subtitle: {
+    flexShrink: 1,
     alignSelf: 'center',
     paddingLeft: t.spacing.sm,
     paddingRight: t.spacing.md,

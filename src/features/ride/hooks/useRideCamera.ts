@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useRef, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import type { EdgePadding } from 'react-native-maps';
 import { useShallow } from 'zustand/react/shallow';
 
 import type { AppMapHandle } from '@/features/map/components/AppMap';
-import { decodePolyline } from '@/lib/polyline';
 import type { LatLng } from '@/types/geo';
 
 import { RIDE_FRAME_BUCKET_PX } from '../constants';
@@ -32,8 +31,7 @@ export function useRideCamera(
       car: s.driverLocation,
     })),
   );
-  const encoded = useRideRoute();
-  const route = useMemo(() => decodePolyline(encoded), [encoded]);
+  const route = useRideRoute();
   const latest = useRef({ phase, pickup, destination, car, route, framePadding });
 
   useEffect(() => {
