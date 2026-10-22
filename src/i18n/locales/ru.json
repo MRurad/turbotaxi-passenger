@@ -263,7 +263,11 @@
       "plate": "Госномер {{plate}}",
       "call": "Позвонить водителю",
       "chat": "Написать водителю",
-      "fallbackName": "Ваш водитель"
+      "fallbackName": "Ваш водитель",
+      "chatWithUnread_one": "Написать водителю, {{count}} новое сообщение",
+      "chatWithUnread_few": "Написать водителю, {{count}} новых сообщения",
+      "chatWithUnread_many": "Написать водителю, {{count}} новых сообщений",
+      "chatWithUnread_other": "Написать водителю, {{count}} новых сообщения"
     },
     "restoring": "Восстанавливаем поездку…",
     "promoNotApplied": "Промокод не применён к этой поездке",
@@ -286,7 +290,16 @@
       "coming": "Уже иду",
       "here": "Я на месте",
       "wait": "Подождите, пожалуйста, 2 минуты"
-    }
+    },
+    "a11y": {
+      "mine": "Вы, {{time}}: {{text}}",
+      "theirs": "{{name}}, {{time}}: {{text}}",
+      "withStatus": "{{message}}. {{status}}"
+    },
+    "quickRepliesLabel": "Быстрые ответы",
+    "carWithPlate": "{{car}} · {{plate}}",
+    "retryHint": "Отправит сообщение ещё раз",
+    "loadOlderFailed": "Не удалось загрузить старые сообщения"
   },
   "history": {
     "title": "Мои поездки",

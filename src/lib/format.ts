@@ -1,4 +1,11 @@
-import { format, formatRelative as dfFormatRelative, isValid, parseISO } from 'date-fns';
+import {
+  format,
+  formatRelative as dfFormatRelative,
+  isSameDay,
+  isValid,
+  parseISO,
+  subDays,
+} from 'date-fns';
 
 import { DATE_FNS_LOCALES, getLanguage, i18n, LANGUAGE_TAGS, type Language } from '@/i18n';
 
@@ -10,6 +17,7 @@ const METERS_ROUNDING = 10;
 const MINUTES_IN_HOUR = 60;
 const DATE_PATTERN = 'd MMM yyyy, HH:mm';
 const TIME_PATTERN = 'HH:mm';
+const DAY_PATTERN = 'd MMMM yyyy';
 
 // Intl.NumberFormat construction is slow on Hermes; reuse one per locale + precision.
 const numberFormats = new Map<string, Intl.NumberFormat>();
@@ -96,6 +104,19 @@ export function formatDate(isoUtc: string, lang: Language = getLanguage()): stri
 export function formatTime(isoUtc: string, lang: Language = getLanguage()): string {
   const date = parseApiDate(isoUtc);
   return date ? format(date, TIME_PATTERN, { locale: DATE_FNS_LOCALES[lang] }) : '';
+}
+
+/** Day heading in the device time zone: "Today", "Yesterday" or "15 January 2026". */
+export function formatDay(
+  isoUtc: string,
+  now: Date = new Date(),
+  lang: Language = getLanguage(),
+): string {
+  const date = parseApiDate(isoUtc);
+  if (!date) return '';
+  if (isSameDay(date, now)) return i18n.t('common.labels.today', { lng: lang });
+  if (isSameDay(date, subDays(now, 1))) return i18n.t('common.labels.yesterday', { lng: lang });
+  return format(date, DAY_PATTERN, { locale: DATE_FNS_LOCALES[lang] });
 }
 
 /** "yesterday at 18:40", "Monday at 09:15", or a date for older values (date-fns wording). */

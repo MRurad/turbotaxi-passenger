@@ -11,6 +11,7 @@ import { TEL_URL_SCHEME } from '../constants';
 import { useDriverProfile } from '../hooks/useDriverProfile';
 import { useRideStore } from '../store';
 import { mergeDriver } from '../utils';
+import { ChatButton } from './ChatButton';
 import { DriverCard } from './DriverCard';
 import { RideCancelButton } from './RideCancelButton';
 
@@ -40,8 +41,6 @@ export function DriverContent() {
       toast.show({ message: t('errors.unknown'), tone: 'danger' }),
     );
   };
-  // Chat is built in Prompt 10.
-  const chat = () => toast.show({ message: t('common.labels.comingSoon') });
 
   return (
     <>
@@ -84,15 +83,7 @@ export function DriverContent() {
             testID="ride-call"
           />
         ) : null}
-        <Button
-          label={t('common.actions.chat')}
-          accessibilityLabel={t('ride.driver.chat')}
-          variant="secondary"
-          leftIcon="chatbubble-ellipses"
-          onPress={chat}
-          style={styles.action}
-          testID="ride-chat"
-        />
+        <ChatButton style={styles.action} />
       </View>
       <RideCancelButton />
     </>

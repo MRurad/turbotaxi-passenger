@@ -12,10 +12,11 @@ import type {
 import { CHAT_ACTOR_ROLE, CHAT_PAGE_SIZE, DEFAULT_PAGE_SIZE, FIRST_PAGE } from '@/constants/api';
 import { requireUserId } from '@/features/auth/store';
 import type { ChatConversation, ChatMessage } from '@/features/chat/types';
+import type { ChatMessageEvent } from '@/realtime/events';
 import type { Paged } from '@/types/paged';
 
 /** The passenger as a chat actor; the backend takes identity from the request (see #8). */
-function currentActor(): ChatActor {
+export function currentChatActor(): ChatActor {
   return { role: CHAT_ACTOR_ROLE, id: requireUserId() };
 }
 
@@ -24,7 +25,7 @@ export async function getChatMessages(
   pageNumber: number = FIRST_PAGE,
   { signal }: RequestOptions = {},
 ): Promise<Paged<ChatMessage>> {
-  const me = currentActor();
+  const me = currentChatActor();
   const { data } = await apiClient.get<ChatMessageDtoPagedResult>(ENDPOINTS.chat.messages(rideId), {
     params: { actorRole: me.role, actorId: me.id, pageNumber, pageSize: CHAT_PAGE_SIZE },
     signal,
@@ -33,7 +34,7 @@ export async function getChatMessages(
 }
 
 export async function sendChatMessage(rideId: number, text: string): Promise<ChatMessage> {
-  const me = currentActor();
+  const me = currentChatActor();
   const body: SendChatMessageRequest = { actorRole: me.role, actorId: me.id, text: text.trim() };
   const { data } = await apiClient.post<ChatMessageDto>(ENDPOINTS.chat.messages(rideId), body);
   return mapChatMessage(data, me);
@@ -43,7 +44,7 @@ export async function getChatConversations(
   pageNumber: number = FIRST_PAGE,
   { signal }: RequestOptions = {},
 ): Promise<Paged<ChatConversation>> {
-  const me = currentActor();
+  const me = currentChatActor();
   const { data } = await apiClient.get<ChatConversationItemDtoPagedResult>(
     ENDPOINTS.chat.conversations,
     {
@@ -52,4 +53,16 @@ export async function getChatConversations(
     },
   );
   return mapPaged(data, mapConversation);
+}
+
+/** A hub chat message as a domain message (throws when the payload is incomplete). */
+export function chatMessageFromEvent(event: ChatMessageEvent): ChatMessage {
+  return mapChatMessage(
+    {
+      ...event,
+      senderId: event.senderId ?? undefined,
+      sentAtUtc: event.sentAtUtc ?? undefined,
+    },
+    currentChatActor(),
+  );
 }

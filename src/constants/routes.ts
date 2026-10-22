@@ -11,6 +11,8 @@ export const ROUTES = {
   /** Active ride (searching → in progress), cancelled and no-driver states. */
   ride: '/ride',
   rideSummary: '/ride/summary',
+  /** In-ride chat; push with `{ pathname: ROUTES.chat, params: { rideId } }`. */
+  chat: '/chat/[rideId]',
   /** Dev-only design-system showcase. */
   devUiKit: '/dev/ui-kit',
   /** Dev-only SignalR inspector. */
@@ -24,4 +26,5 @@ export const ROUTE_SEGMENTS = {
   signedIn: '(app)',
   ride: 'ride',
   rideSummary: 'summary',
+  chat: 'chat',
 } as const;

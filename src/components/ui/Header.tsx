@@ -50,15 +50,17 @@ export function Header({
         {large || !title ? (
           <View style={styles.title} />
         ) : (
-          <Text
-            variant="heading"
-            numberOfLines={1}
-            align="center"
-            style={styles.title}
-            accessibilityRole="header"
-          >
-            {title}
-          </Text>
+          <View style={styles.title} accessible accessibilityRole="header">
+            <Text variant="heading" numberOfLines={1} align="center">
+              {title}
+            </Text>
+            {/* Compact header: the subtitle is one caption line under the title. */}
+            {subtitle ? (
+              <Text variant="caption" color="textSecondary" numberOfLines={1} align="center">
+                {subtitle}
+              </Text>
+            ) : null}
+          </View>
         )}
         <View style={[styles.side, styles.right]}>{right}</View>
       </View>

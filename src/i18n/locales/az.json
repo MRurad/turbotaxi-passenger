@@ -257,7 +257,9 @@
       "plate": "Dövlət nömrəsi {{plate}}",
       "call": "Sürücüyə zəng et",
       "chat": "Sürücüyə yaz",
-      "fallbackName": "Sürücünüz"
+      "fallbackName": "Sürücünüz",
+      "chatWithUnread_one": "Sürücüyə yaz, {{count}} yeni mesaj",
+      "chatWithUnread_other": "Sürücüyə yaz, {{count}} yeni mesaj"
     },
     "restoring": "Gedişiniz bərpa olunur…",
     "promoNotApplied": "Promo kod bu sifarişə tətbiq olunmadı",
@@ -278,7 +280,16 @@
       "coming": "Gəlirəm",
       "here": "Buradayam",
       "wait": "Zəhmət olmasa, 2 dəqiqə gözləyin"
-    }
+    },
+    "a11y": {
+      "mine": "Siz, {{time}}: {{text}}",
+      "theirs": "{{name}}, {{time}}: {{text}}",
+      "withStatus": "{{message}}. {{status}}"
+    },
+    "quickRepliesLabel": "Tez cavablar",
+    "carWithPlate": "{{car}} · {{plate}}",
+    "retryHint": "Mesajı yenidən göndərir",
+    "loadOlderFailed": "Köhnə mesajlar yüklənmədi"
   },
   "history": {
     "title": "Gedişlərim",

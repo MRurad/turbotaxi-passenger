@@ -126,6 +126,16 @@ describe('rideRedirect', () => {
     expect(rideRedirect('idle', ['(app)'])).toBeNull();
   });
 
+  it('lets the chat stay open during a ride, but not after it', () => {
+    expect(rideRedirect('driver_assigned', ['(app)', 'chat', '[rideId]'])).toBeNull();
+    expect(rideRedirect('completed', ['(app)', 'chat', '[rideId]'])).toBe(ROUTES.rideSummary);
+    expect(rideRedirect('cancelled', ['(app)', 'chat', '[rideId]'])).toBe(ROUTES.ride);
+    // Searching again (driver dropped out): no driver to chat with.
+    expect(rideRedirect('searching', ['(app)', 'chat', '[rideId]'])).toBe(ROUTES.ride);
+    // A stale chat link with no ride goes home.
+    expect(rideRedirect('idle', ['(app)', 'chat', '[rideId]'])).toBe(ROUTES.home);
+  });
+
   it('never hijacks screens outside the signed-in group (dev inspector)', () => {
     expect(rideRedirect('searching', ['dev', 'realtime'])).toBeNull();
   });

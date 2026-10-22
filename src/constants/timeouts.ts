@@ -31,6 +31,12 @@ export const ROUTE_ESTIMATE_STALE_TIME_MS = 2 * 60_000;
  */
 export const RIDE_HISTORY_POLL_MS = 30_000;
 
+/**
+ * An open chat re-fetches this often: a safety net while the hub's chat event name is
+ * unconfirmed (docs/BACKEND_REQUESTS.md #1). Live messages normally arrive over SignalR.
+ */
+export const CHAT_REFETCH_MS = 15_000;
+
 /** A driver's name / car doesn't change during a ride. */
 export const DRIVER_PROFILE_STALE_TIME_MS = 30 * 60_000;
 

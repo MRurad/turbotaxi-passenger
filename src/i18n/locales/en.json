@@ -257,7 +257,9 @@
       "plate": "Plate number {{plate}}",
       "call": "Call driver",
       "chat": "Message driver",
-      "fallbackName": "Your driver"
+      "fallbackName": "Your driver",
+      "chatWithUnread_one": "Message driver, {{count}} new message",
+      "chatWithUnread_other": "Message driver, {{count}} new messages"
     },
     "restoring": "Restoring your ride…",
     "promoNotApplied": "Your promo code wasn’t applied to this ride",
@@ -278,7 +280,16 @@
       "coming": "I'm coming",
       "here": "I'm here",
       "wait": "Please wait 2 minutes"
-    }
+    },
+    "a11y": {
+      "mine": "You, {{time}}: {{text}}",
+      "theirs": "{{name}}, {{time}}: {{text}}",
+      "withStatus": "{{message}}. {{status}}"
+    },
+    "quickRepliesLabel": "Quick replies",
+    "carWithPlate": "{{car}} · {{plate}}",
+    "retryHint": "Sends the message again",
+    "loadOlderFailed": "Couldn't load older messages"
   },
   "history": {
     "title": "My trips",

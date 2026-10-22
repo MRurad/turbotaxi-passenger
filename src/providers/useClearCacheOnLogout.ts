@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 
 import { useAuthStore } from '@/features/auth/store';
 import { useBookingDraft } from '@/features/booking/store';
+import { useChatStore } from '@/features/chat/store';
 import { useRecentPlaces } from '@/features/home/recentPlaces';
 import { clearPersistedRide } from '@/features/ride/persistence';
 import { useRideStore } from '@/features/ride/store';
@@ -22,6 +23,7 @@ export function useClearCacheOnLogout(queryClient: QueryClient): void {
           queryClient.clear();
           useBookingDraft.getState().reset();
           useRideStore.getState().reset();
+          useChatStore.getState().reset();
           clearPersistedRide().catch(() => undefined);
           useRecentPlaces
             .getState()

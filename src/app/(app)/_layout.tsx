@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { View } from 'react-native';
 
+import { useRideChatConnection } from '@/features/chat/hooks/useRideChatConnection';
 import { useRideEvents } from '@/features/ride/hooks/useRideEvents';
 import { useRideRecovery } from '@/features/ride/hooks/useRideRecovery';
 import { useRideRouteGuard } from '@/features/ride/hooks/useRideRouteGuard';
@@ -16,6 +17,7 @@ export default function AppLayout() {
   useRideRecovery();
   useRideEvents();
   useRideRouteGuard();
+  useRideChatConnection();
 
   return (
     <View style={styles.root}>
@@ -25,6 +27,7 @@ export default function AppLayout() {
         {/* Phases are routed by useRideRouteGuard; no swipe-back out of a ride. */}
         <Stack.Screen name="ride/index" options={{ gestureEnabled: false }} />
         <Stack.Screen name="ride/summary" options={{ gestureEnabled: false }} />
+        <Stack.Screen name="chat/[rideId]" />
       </Stack>
     </View>
   );

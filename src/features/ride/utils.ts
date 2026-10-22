@@ -4,7 +4,7 @@ import type { RideStatusUpdatedEvent } from '@/realtime/events';
 import type { LatLng } from '@/types/geo';
 import type { RidePhase } from '@/types/ride';
 
-import { isActivePhase } from './snapshot';
+import { TRACKING_PHASES } from './store';
 import type { CancelReason, RideDriver, RideRouteInfo } from './types';
 
 const POLYLINE_PHASE_TO_RIDE: Readonly<Record<string, RidePhase>> = {
@@ -119,8 +119,8 @@ export function framePoints(
 
 const RIDE_SEGMENT = ROUTE_SEGMENTS.ride;
 const SUMMARY_SEGMENT = ROUTE_SEGMENTS.rideSummary;
-/** Other signed-in screens reachable during an active ride (chat joins in Prompt 10). */
-const ALLOWED_DURING_RIDE: ReadonlySet<string> = new Set<string>();
+/** Other signed-in screens reachable during an active ride. */
+const ALLOWED_DURING_RIDE: ReadonlySet<string> = new Set<string>([ROUTE_SEGMENTS.chat]);
 
 /**
  * Where the ride guard should send the user, or null to stay. `segments` are expo-router
@@ -132,9 +132,11 @@ export function rideRedirect(phase: RidePhase, segments: readonly string[]) {
   const onSummary = section === RIDE_SEGMENT && segments[2] === SUMMARY_SEGMENT;
   const onRide = section === RIDE_SEGMENT && !onSummary;
   if (phase === 'completed') return onSummary ? null : ROUTES.rideSummary;
-  if (phase === 'idle') return section === RIDE_SEGMENT ? ROUTES.home : null;
+  if (phase === 'idle')
+    return section === RIDE_SEGMENT || section === ROUTE_SEGMENTS.chat ? ROUTES.home : null;
   // Active, cancelled and no-driver phases live on /ride.
   if (onRide) return null;
-  if (isActivePhase(phase) && ALLOWED_DURING_RIDE.has(section)) return null;
+  // Chat is live only with an assigned driver (searching again → back to the ride).
+  if (TRACKING_PHASES.has(phase) && ALLOWED_DURING_RIDE.has(section)) return null;
   return ROUTES.ride;
 }

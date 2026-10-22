@@ -33,6 +33,10 @@ export const sizes = {
     /** Above the pickup / destination pins (the car ends up on the pickup). */
     zIndex: 10,
   },
+  /** Chat: widest a bubble gets, tallest the input grows, and the bubble's squared "tail" corner. */
+  chatBubbleMaxWidth: 280,
+  chatInputMaxHeight: 120,
+  chatTailRadius: 4,
   /** Searching: pulse ring diameter around the pickup. */
   searchPulse: 160,
   /** Driver card: plate number badge border. */

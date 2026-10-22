@@ -48,7 +48,10 @@ export function keepRideChatJoined(rideId: number): () => void {
     remove();
     openChats = Math.max(0, openChats - 1);
     const leave = leaveRideChat(rideId).catch(() => undefined);
-    if (openChats === 0) leave.finally(() => chatHub.stop().catch(() => undefined));
+    // Re-checked when the leave settles: another chat may have started in the meantime.
+    leave.finally(() => {
+      if (openChats === 0) chatHub.stop().catch(() => undefined);
+    });
   };
 }
 
