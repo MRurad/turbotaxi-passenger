@@ -21,6 +21,7 @@ import type { LatLng } from '@/types/geo';
 
 import { IS_GOOGLE_MAP, MAP_PROVIDER, USER_ZOOM_DELTA } from '../constants';
 import { appleFocusShift, focusError } from '../focus';
+import { MapProjectionContext, type MapProjection } from '../mapProjection';
 
 export interface AppMapHandle {
   /** Frame several points (pickup + destination, route) leaving room for overlays. */
@@ -127,8 +128,28 @@ export function AppMap({
     }
   }, [focusPoint, viewHeight]);
 
+  // Markers that place themselves (PlaceMarker on Apple Maps) ask where points are on screen.
+  const idleListeners = useRef(new Set<() => void>());
+  const projection = useMemo<MapProjection>(
+    () => ({
+      pointForCoordinate: async (coordinate) => {
+        try {
+          return (await mapRef.current?.pointForCoordinate(coordinate)) ?? null;
+        } catch {
+          return null;
+        }
+      },
+      onIdle: (listener) => {
+        idleListeners.current.add(listener);
+        return () => idleListeners.current.delete(listener);
+      },
+    }),
+    [],
+  );
+
   const handleRegionChangeComplete = (region: Region, details: Details) => {
     if (pendingFocus.current) correctFocus().catch(() => undefined);
+    idleListeners.current.forEach((listener) => listener());
     onRegionChangeComplete?.(region, details);
   };
 
@@ -150,7 +171,7 @@ export function AppMap({
       onRegionChangeComplete={handleRegionChangeComplete}
       {...props}
     >
-      {children}
+      <MapProjectionContext value={projection}>{children}</MapProjectionContext>
     </MapView>
   );
 }

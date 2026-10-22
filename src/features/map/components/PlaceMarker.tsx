@@ -7,6 +7,7 @@ import { MARKER_SNAPSHOT_MS } from '@/constants/timeouts';
 import { makeStyles, useTheme } from '@/theme';
 import type { LatLng } from '@/types/geo';
 
+import { useMarkerCentering } from '../hooks/useMarkerCentering';
 import { MarkerBubble, type MarkerBubbleProps } from './MarkerBubble';
 
 export interface PlaceMarkerProps {
@@ -28,7 +29,8 @@ export interface PlaceMarkerProps {
  * Bubble and dot are ONE marker view, laid out symmetrically (bubble area, dot, an equal empty
  * area): the view's centre is the dot, so the default centring puts the dot on the point and
  * the pointer straight above it. (Two separate markers drift apart on iOS: MapKit positions
- * each custom view by its own size, which changes as the text does.)
+ * each custom view by its own size, which changes as the text does.) On Apple Maps the whole
+ * marker is also measured and nudged onto its coordinate (useMarkerCentering).
  */
 export function PlaceMarker({
   coordinate,
@@ -42,6 +44,7 @@ export function PlaceMarker({
   const styles = useStyles();
   const { colors, sizes, isDark } = useTheme();
   const pickup = kind === 'pickup';
+  const { ref: centeringRef, offset, onLayout } = useMarkerCentering(coordinate);
   // Google snapshots custom markers: track view changes until new content has drawn.
   const content = `${label?.title ?? ''}|${label?.subtitle ?? ''}|${isDark}`;
   const [snapshotted, setSnapshotted] = useState<string | null>(null);
@@ -75,22 +78,26 @@ export function PlaceMarker({
         ([label?.title, label?.subtitle, title].filter(Boolean).join(', ') || undefined)
       }
       anchor={{ x: 0.5, y: 0.5 }}
+      centerOffset={offset}
       tracksViewChanges={snapshotted !== content}
       zIndex={label ? 1 : 0}
       testID={testID}
     >
-      {label ? (
-        <View style={styles.labelled}>
-          <View style={styles.bubbleArea}>
-            <MarkerBubble {...label} />
+      {/* The measured root: its centre is the dot (useMarkerCentering keeps it on the point). */}
+      <View ref={centeringRef} collapsable={false} onLayout={onLayout}>
+        {label ? (
+          <View style={styles.labelled}>
+            <View style={styles.bubbleArea}>
+              <MarkerBubble {...label} />
+            </View>
+            {dot}
+            {/* Mirrors the bubble area so the dot is the exact centre of the view. */}
+            <View style={styles.mirror} />
           </View>
-          {dot}
-          {/* Mirrors the bubble area so the dot is the exact centre of the view. */}
-          <View style={styles.mirror} />
-        </View>
-      ) : (
-        dot
-      )}
+        ) : (
+          dot
+        )}
+      </View>
     </Marker>
   );
 }
