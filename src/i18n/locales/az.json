@@ -166,7 +166,8 @@
       "hint": "Nöqtəni seçmək üçün xəritəni sürüşdürün",
       "loading": "Ünvan müəyyənləşdirilir…"
     },
-    "poweredByGoogle": "Powered by Google"
+    "poweredByGoogle": "Powered by Google",
+    "poweredByOsm": "Axtarış: Photon · © OpenStreetMap iştirakçıları"
   },
   "booking": {
     "title": "Tarif seçin",

@@ -1,9 +1,9 @@
 import { ApiError } from '@/api/errors';
 import { resetGeocodeFallback, resolveAddress } from '@/features/map/hooks/useReverseGeocode';
-import { reverseGeocode } from '@/lib/google/places';
+import { reverseGeocode } from '@/lib/places';
 import { nativeReverseGeocode } from '@/lib/nativeGeocode';
 
-jest.mock('@/lib/google/places', () => ({ reverseGeocode: jest.fn() }));
+jest.mock('@/lib/places', () => ({ reverseGeocode: jest.fn() }));
 jest.mock('@/lib/nativeGeocode', () => ({ nativeReverseGeocode: jest.fn() }));
 jest.mock('@/lib/logger', () => ({ logger: { warn: jest.fn(), info: jest.fn() } }));
 
@@ -17,19 +17,19 @@ beforeEach(() => {
 });
 
 describe('resolveAddress', () => {
-  it('uses Google when it has a named address', async () => {
+  it('uses the provider when it has a named address', async () => {
     jest.mocked(reverseGeocode).mockResolvedValue(place('Nizami 12'));
     await expect(resolveAddress(POINT, CTX)).resolves.toMatchObject({ title: 'Nizami 12' });
     expect(nativeReverseGeocode).not.toHaveBeenCalled();
   });
 
-  it('falls back to the OS geocoder when Google has only an unnamed point', async () => {
+  it('falls back to the OS geocoder when the provider has only an unnamed point', async () => {
     jest.mocked(nativeReverseGeocode).mockResolvedValue(place('Füzuli 5'));
     jest.mocked(reverseGeocode).mockResolvedValueOnce(place(''));
     await expect(resolveAddress(POINT, CTX)).resolves.toMatchObject({ title: 'Füzuli 5' });
   });
 
-  it('after a refusal, uses the OS geocoder and skips Google for the session', async () => {
+  it('after a refusal, uses the OS geocoder and skips the provider for the session', async () => {
     jest.mocked(nativeReverseGeocode).mockResolvedValue(place('Füzuli 5'));
     jest
       .mocked(reverseGeocode)
@@ -39,7 +39,7 @@ describe('resolveAddress', () => {
     expect(reverseGeocode).toHaveBeenCalledTimes(1);
   });
 
-  it("rethrows Google's refusal only when the fallback has nothing", async () => {
+  it("rethrows the provider's refusal only when the fallback has nothing", async () => {
     jest.mocked(nativeReverseGeocode).mockResolvedValue(null);
     jest.mocked(reverseGeocode).mockRejectedValueOnce(new ApiError({ code: 'server' }));
     await expect(resolveAddress(POINT, CTX)).rejects.toMatchObject({ code: 'server' });

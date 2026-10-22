@@ -4,10 +4,10 @@ import type { ApiError } from '@/api/errors';
 import { queryKeys } from '@/constants/queryKeys';
 import { PLACES_STALE_TIME_MS } from '@/constants/timeouts';
 import { getLanguage } from '@/i18n';
-import { placeDetails } from '@/lib/google/places';
+import { placeDetails } from '@/lib/places';
 import type { Place, PlaceSuggestion } from '@/types/place';
 
-/** Suggestion → Place with coordinates (Place Details), cached per place id + language. */
+/** Suggestion → Place with coordinates (Place Details, or as-is for Photon), cached per id. */
 export function useResolvePlace(sessionToken: string, onSessionEnd: () => void) {
   const queryClient = useQueryClient();
 

@@ -5,7 +5,7 @@ import { EmptyState, ErrorState, ListItem, Skeleton } from '@/components/ui';
 import { makeStyles, useTheme } from '@/theme';
 import type { PlaceSuggestion } from '@/types/place';
 
-import { PoweredByGoogle } from './PoweredByGoogle';
+import { PlacesAttribution } from './PlacesAttribution';
 
 const SKELETON_ROWS = 4;
 
@@ -86,7 +86,7 @@ export function SuggestionList({
           testID={`suggestion-${item.placeId}`}
         />
       )}
-      ListFooterComponent={PoweredByGoogle}
+      ListFooterComponent={PlacesAttribution}
     />
   );
 }

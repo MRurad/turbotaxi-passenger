@@ -14,6 +14,15 @@ import { i18n } from '@/i18n';
 import { renderWithTheme } from '@/test-utils/renderWithTheme';
 
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
+// Coordinates-only stops are named by the geocoder (here: a fixed answer per point).
+jest.mock('@/features/map/hooks/useReverseGeocode', () => ({
+  useReverseGeocode: (point: { latitude: number } | null) => ({
+    isLoading: false,
+    data: point
+      ? { title: point.latitude > 40.39 ? 'Gənclik' : '8 Noyabr pr. 5', subtitle: 'Bakı' }
+      : undefined,
+  }),
+}));
 
 const TRIP: Trip = {
   rideId: 12,
@@ -21,6 +30,8 @@ const TRIP: Trip = {
   vehicle: { plateNumber: '99LC702', type: 'Comfort', brand: 'Ford', model: 'Fusion' },
   pickupAddress: 'Nizami küç. 12',
   destinationAddress: 'Gənclik',
+  pickupPoint: null,
+  destinationPoint: null,
   fare: 10,
   discountAmount: 2,
   finalFare: 8,
@@ -68,6 +79,20 @@ describe('TripCard', () => {
     expect(screen.getByText(/^completed$/i)).toBeTruthy();
     await fireEvent.press(screen.getByTestId('trip-12'));
     expect(onPress).toHaveBeenCalledWith(12);
+  });
+
+  it('names stops the backend only has coordinates for (never shows the numbers)', async () => {
+    const trip: Trip = {
+      ...TRIP,
+      pickupAddress: null,
+      destinationAddress: null,
+      pickupPoint: { latitude: 40.3769, longitude: 49.8671 },
+      destinationPoint: { latitude: 40.3999, longitude: 49.851 },
+    };
+    await renderWithTheme(<TripCard trip={trip} onPress={jest.fn()} />);
+    expect(screen.getByText('8 Noyabr pr. 5, Bakı')).toBeTruthy();
+    expect(screen.getByText('Gənclik, Bakı')).toBeTruthy();
+    expect(screen.queryByText(/40.37/)).toBeNull();
   });
 });
 

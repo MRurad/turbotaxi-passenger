@@ -31,6 +31,12 @@ Use a light and a dark `customMapStyle` JSON in `src/features/map/styles/` (Goog
 ## Location
 `src/features/map/hooks/useCurrentLocation.ts`: requests foreground permission and returns `{ status, coords, refresh }`. If permission is denied, show a friendly card with an "Open settings" action (`Linking.openSettings()`) and fall back to `BAKU_REGION`. Don't request background location.
 
+## Place search provider (current: Photon)
+- Features import `autocomplete` / `placeDetails` / `reverseGeocode` from `src/lib/places` only. It picks the provider from `PLACES_PROVIDER` in `src/constants/places.ts`.
+- **Photon** (`src/lib/photon/`, photon.komoot.io): free OpenStreetMap search, no key. It is used while Google billing is off. Results carry coordinates, so `placeDetails` makes no request. The search is limited to an Azerbaijan bbox, and reverse geocoding skips bus stops. Languages: `en` or local names (`default`). Attribution: "© OpenStreetMap contributors" under the results (`PlacesAttribution`). It is a public service, so be gentle: debounce, cache, and no polling.
+- Reverse geocoding falls back to the OS geocoder (`src/lib/nativeGeocode.ts`).
+- To go back to Google, set `PLACES_PROVIDER = 'google'`. The Google client below stays as it is.
+
 ## Google APIs: `src/lib/google/`
 - `placesClient.ts`: a separate axios instance (base `https://places.googleapis.com/v1`), with headers `X-Goog-Api-Key` and `X-Goog-FieldMask`. On iOS also send `X-Ios-Bundle-Identifier`, on Android `X-Android-Package` (needed when the key is app-restricted).
 - `autocomplete(input, sessionToken, bias)`: `POST /places:autocomplete` with `includedRegionCodes: ['az']`, `languageCode` from i18n, and `locationBias` as a circle around the user.

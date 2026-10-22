@@ -170,7 +170,8 @@
       "hint": "Передвиньте карту, чтобы поставить точку",
       "loading": "Определяем адрес…"
     },
-    "poweredByGoogle": "Powered by Google"
+    "poweredByGoogle": "Powered by Google",
+    "poweredByOsm": "Поиск: Photon · © участники OpenStreetMap"
   },
   "booking": {
     "title": "Выберите тариф",

@@ -45,7 +45,7 @@ export const NO_STATUS = 'ERR';
 
 const normalizeName = (name: string) => name.toLowerCase().replace(/[_-]/g, '');
 
-export type NetworkSource = 'api' | 'google';
+export type NetworkSource = 'api' | 'google' | 'photon';
 
 export interface NetworkLogEntry {
   id: number;

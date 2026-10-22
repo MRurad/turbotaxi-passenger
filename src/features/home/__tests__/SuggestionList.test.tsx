@@ -15,12 +15,12 @@ beforeEach(() => i18n.changeLanguage('en'));
 afterAll(() => i18n.changeLanguage('az'));
 
 describe('SuggestionList', () => {
-  it('renders suggestions with Google attribution and selects one', async () => {
+  it('renders suggestions with the OpenStreetMap attribution and selects one', async () => {
     const onSelect = jest.fn();
     await renderWithTheme(
       <SuggestionList {...base} suggestions={SUGGESTIONS} onSelect={onSelect} />,
     );
-    expect(screen.getByText('Powered by Google')).toBeTruthy();
+    expect(screen.getByText('Search by Photon · © OpenStreetMap contributors')).toBeTruthy();
     await fireEvent.press(screen.getByText('Port Baku Towers'));
     expect(onSelect).toHaveBeenCalledWith(SUGGESTIONS[0]);
   });

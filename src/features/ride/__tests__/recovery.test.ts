@@ -27,6 +27,8 @@ const trip = (rideId: number, status: Trip['status']): Trip => ({
   vehicle: null,
   pickupAddress: null,
   destinationAddress: null,
+  pickupPoint: null,
+  destinationPoint: null,
   fare: 5,
   discountAmount: 0,
   finalFare: 5,

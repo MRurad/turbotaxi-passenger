@@ -1,4 +1,5 @@
 import type { MappedRideStatus } from '@/constants/rideStatus';
+import type { LatLng } from '@/types/geo';
 
 export interface TripDriver {
   name: string;
@@ -18,8 +19,12 @@ export interface Trip {
   rideId: number;
   driver: TripDriver | null;
   vehicle: TripVehicle | null;
+  /** Address text, when the backend has a real one. */
   pickupAddress: string | null;
   destinationAddress: string | null;
+  /** Set instead when the backend's "address" is only coordinates: named on the device. */
+  pickupPoint: LatLng | null;
+  destinationPoint: LatLng | null;
   /** Price before discount. */
   fare: number;
   discountAmount: number;

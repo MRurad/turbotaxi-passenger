@@ -3,12 +3,13 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { Badge, Card, Text } from '@/components/ui';
+import { Badge, Card, Skeleton, Text } from '@/components/ui';
 import { VEHICLES, vehicleTypeFromName } from '@/constants/vehicles';
 import { useChangeLanguage } from '@/i18n/useChangeLanguage';
 import { formatDate, formatMoney } from '@/lib/format';
 import { makeStyles, useTheme } from '@/theme';
 
+import { useTripPlaceName } from '../hooks/useTripPlaceName';
 import type { Trip } from '../types';
 import { tripStatusTone, vehicleLine } from '../utils';
 
@@ -24,8 +25,10 @@ export const TripCard = memo(function TripCard({ trip, onPress }: TripCardProps)
   const { language } = useChangeLanguage();
   const { colors, sizes } = useTheme();
   const date = trip.date ? formatDate(trip.date, language) : '';
-  const from = trip.pickupAddress ?? t('history.unknownPlace');
-  const to = trip.destinationAddress ?? t('history.unknownPlace');
+  const pickup = useTripPlaceName(trip.pickupAddress, trip.pickupPoint);
+  const destination = useTripPlaceName(trip.destinationAddress, trip.destinationPoint);
+  const from = pickup.name;
+  const to = destination.name;
   const price = formatMoney(trip.finalFare, language);
   const status = t(`ride.status.${trip.status}`);
   const vehicleType = vehicleTypeFromName(trip.vehicle?.type);
@@ -51,15 +54,23 @@ export const TripCard = memo(function TripCard({ trip, onPress }: TripCardProps)
       <View style={styles.route}>
         <View style={styles.stop}>
           <Ionicons name="radio-button-on" size={sizes.icon.sm} color={colors.primary} />
-          <Text variant="body" numberOfLines={1} style={styles.address}>
-            {from}
-          </Text>
+          {pickup.loading ? (
+            <Skeleton width="60%" height={sizes.icon.sm} />
+          ) : (
+            <Text variant="body" numberOfLines={1} style={styles.address}>
+              {from}
+            </Text>
+          )}
         </View>
         <View style={styles.stop}>
           <Ionicons name="flag" size={sizes.icon.sm} color={colors.danger} />
-          <Text variant="body" numberOfLines={1} style={styles.address}>
-            {to}
-          </Text>
+          {destination.loading ? (
+            <Skeleton width="60%" height={sizes.icon.sm} />
+          ) : (
+            <Text variant="body" numberOfLines={1} style={styles.address}>
+              {to}
+            </Text>
+          )}
         </View>
       </View>
       <View style={styles.footer}>

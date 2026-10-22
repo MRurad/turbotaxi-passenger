@@ -41,7 +41,7 @@ export const NetworkLogRow = memo(function NetworkLogRow({ entry }: { entry: Net
         style={styles.header}
       >
         <View style={styles.titleRow}>
-          <Badge label={entry.method} tone={entry.source === 'google' ? 'neutral' : 'primary'} />
+          <Badge label={entry.method} tone={entry.source === 'api' ? 'primary' : 'neutral'} />
           <Text
             variant="caption"
             style={[styles.mono, styles.url]}

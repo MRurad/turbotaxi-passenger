@@ -6,13 +6,13 @@ import { AUTOCOMPLETE_MIN_CHARS } from '@/constants/google';
 import { queryKeys } from '@/constants/queryKeys';
 import { AUTOCOMPLETE_DEBOUNCE_MS, PLACES_STALE_TIME_MS } from '@/constants/timeouts';
 import { getLanguage } from '@/i18n';
-import { autocomplete } from '@/lib/google/places';
+import { autocomplete } from '@/lib/places';
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue';
 import type { LatLng } from '@/types/geo';
 import type { PlaceSuggestion } from '@/types/place';
 
 /**
- * Debounced Places autocomplete (AZ only, biased to `bias`, current language).
+ * Debounced place autocomplete (provider: constants/places.ts) (AZ only, biased to `bias`, current language).
  * `isActive` is false until the input is long enough, so the screen can show recents instead.
  */
 export function usePlacesAutocomplete(input: string, sessionToken: string, bias: LatLng | null) {

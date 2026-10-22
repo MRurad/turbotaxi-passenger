@@ -187,6 +187,8 @@ describe('restore and history', () => {
       vehicle: null,
       pickupAddress: null,
       destinationAddress: null,
+      pickupPoint: null,
+      destinationPoint: null,
       fare: 10,
       discountAmount: 2,
       finalFare: 8,

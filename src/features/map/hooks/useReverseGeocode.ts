@@ -2,11 +2,12 @@ import { skipToken, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
 import { toApiError, type ApiError } from '@/api/errors';
+import { PLACES_PROVIDER, PLACES_PROVIDER_COOLDOWN_MS } from '@/constants/places';
 import { queryKeys } from '@/constants/queryKeys';
 import { PLACES_STALE_TIME_MS } from '@/constants/timeouts';
 import { getLanguage, type Language } from '@/i18n';
 import { roundCoords } from '@/lib/geo';
-import { reverseGeocode } from '@/lib/google/places';
+import { reverseGeocode } from '@/lib/places';
 import { logger } from '@/lib/logger';
 import { nativeReverseGeocode } from '@/lib/nativeGeocode';
 import type { LatLng } from '@/types/geo';
@@ -15,45 +16,56 @@ import type { Place } from '@/types/place';
 /** ≈11 m: nearby pin drops share one (billed) geocode; the caller keeps the exact point. */
 const GEOCODE_KEY_DECIMALS = 4;
 
-/** Google refused this key (REQUEST_DENIED, …): skip it for the rest of the session. */
-let googleRefused = false;
+/** Connection problems: rethrown so the query retries (no fallback cached for a day). */
+const TRANSIENT_CODES: ReadonlySet<ApiError['code']> = new Set(['network', 'timeout', 'cancelled']);
+/** Google refusing the key (REQUEST_DENIED) won't change this session. */
+const GOOGLE_REFUSAL_CODES: ReadonlySet<ApiError['code']> = new Set(['server', 'forbidden']);
 
-/** Test-only: forget a refusal. */
+/** Until then the provider is skipped (after it failed); Infinity = for the session. */
+let skipProviderUntil = 0;
+
+/** Test-only: forget a provider failure. */
 export function resetGeocodeFallback(): void {
-  googleRefused = false;
+  skipProviderUntil = 0;
 }
 
 /**
- * Google first (app language, place id); when it refuses the request (e.g. REQUEST_DENIED
- * for an app-restricted key) or only has a plus code, the OS geocoder. Network errors and
- * timeouts are rethrown so the query retries Google instead of caching a fallback for 24 h.
+ * The places provider first (Photon or Google, app language); when it fails or has no
+ * address, the OS geocoder. A failing provider is skipped for a while — Photon (a public
+ * service: 429 / 5xx) for a few minutes, a Google key refusal for the session. Connection
+ * errors are rethrown so the query retries instead of caching a fallback for 24 h.
  */
 export async function resolveAddress(
   point: LatLng,
   { language, signal }: { language: Language; signal?: AbortSignal },
 ): Promise<Place | null> {
-  let googlePlace: Place | null = null;
-  let googleError: ApiError | null = null;
-  if (!googleRefused) {
+  let providerPlace: Place | null = null;
+  let providerError: ApiError | null = null;
+  if (Date.now() >= skipProviderUntil) {
     try {
-      googlePlace = await reverseGeocode(point, { language, signal });
+      providerPlace = await reverseGeocode(point, { language, signal });
     } catch (error) {
-      googleError = toApiError(error);
-      if (googleError.code !== 'server' && googleError.code !== 'forbidden') throw googleError;
-      googleRefused = true;
-      logger.warn('geocode: google refused, using the OS geocoder', { code: googleError.code });
+      providerError = toApiError(error);
+      if (TRANSIENT_CODES.has(providerError.code)) throw providerError;
+      const forSession =
+        PLACES_PROVIDER === 'google' && GOOGLE_REFUSAL_CODES.has(providerError.code);
+      skipProviderUntil = forSession ? Infinity : Date.now() + PLACES_PROVIDER_COOLDOWN_MS;
+      logger.warn('geocode: provider failed, using the OS geocoder', {
+        code: providerError.code,
+      });
     }
   }
-  if (googlePlace?.title) return googlePlace;
+  if (providerPlace?.title) return providerPlace;
   const native = await nativeReverseGeocode(point);
   if (native) return native;
-  if (googleError) throw googleError;
-  return googlePlace;
+  if (providerError) throw providerError;
+  return providerPlace;
 }
 
 /**
  * Address for a settled map point (null point = don't query). Language is part of the key.
- * Google errors (REQUEST_DENIED, OVER_QUERY_LIMIT) are not retried.
+ * Kept a day (gcTime too: a revisited history list doesn't geocode everything again); only
+ * connection errors are retried.
  */
 export function useReverseGeocode(point: LatLng | null) {
   // Subscribing re-runs the query in the new language after a language switch.
@@ -65,6 +77,7 @@ export function useReverseGeocode(point: LatLng | null) {
     queryKey: rounded ? queryKeys.places.reverse(rounded, language) : ['places', 'reverse', 'idle'],
     queryFn: rounded ? ({ signal }) => resolveAddress(rounded, { language, signal }) : skipToken,
     staleTime: PLACES_STALE_TIME_MS,
-    retry: (count, error) => error.code !== 'server' && error.code !== 'forbidden' && count < 1,
+    gcTime: PLACES_STALE_TIME_MS,
+    retry: (count, error) => TRANSIENT_CODES.has(error.code) && count < 1,
   });
 }

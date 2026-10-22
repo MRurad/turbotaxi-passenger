@@ -12,6 +12,7 @@ import { makeStyles } from '@/theme';
 
 import { TripCardSkeleton } from '../components/TripCardSkeleton';
 import { useTripHistory } from '../hooks/useTripHistory';
+import { useTripPlaceName } from '../hooks/useTripPlaceName';
 import { driverName, tripStatusTone, vehicleLine } from '../utils';
 
 const ADDRESS_LINES = 3;
@@ -27,6 +28,11 @@ export function TripDetailScreen({ rideId }: { rideId: number }) {
   const { language } = useChangeLanguage();
   const history = useTripHistory();
   const trip = history.trips.find((item) => item.rideId === rideId) ?? null;
+  const pickup = useTripPlaceName(trip?.pickupAddress ?? null, trip?.pickupPoint ?? null);
+  const destination = useTripPlaceName(
+    trip?.destinationAddress ?? null,
+    trip?.destinationPoint ?? null,
+  );
   const searching = !trip && history.hasMore && !history.error;
   const { loadMore } = history;
 
@@ -88,13 +94,17 @@ export function TripDetailScreen({ rideId }: { rideId: number }) {
         <PlaceLine
           kind="pickup"
           label={t('common.labels.pickup')}
-          value={trip.pickupAddress ?? t('history.unknownPlace')}
+          value={pickup.name}
+          loading={pickup.loading}
+          loadingLabel={t('common.labels.loading')}
           numberOfLines={ADDRESS_LINES}
         />
         <PlaceLine
           kind="destination"
           label={t('common.labels.destination')}
-          value={trip.destinationAddress ?? t('history.unknownPlace')}
+          value={destination.name}
+          loading={destination.loading}
+          loadingLabel={t('common.labels.loading')}
           numberOfLines={ADDRESS_LINES}
         />
       </Card>

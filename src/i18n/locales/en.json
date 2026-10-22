@@ -166,7 +166,8 @@
       "hint": "Move the map to place the pin",
       "loading": "Finding the address…"
     },
-    "poweredByGoogle": "Powered by Google"
+    "poweredByGoogle": "Powered by Google",
+    "poweredByOsm": "Search by Photon · © OpenStreetMap contributors"
   },
   "booking": {
     "title": "Choose a ride",

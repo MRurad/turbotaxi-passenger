@@ -4,7 +4,7 @@ const latLngSchema = z.object({ latitude: z.number(), longitude: z.number() });
 
 /** A resolved location the user can pick as pickup or destination. */
 export const placeSchema = z.object({
-  /** Google place id, when known (autocomplete / reverse geocode). */
+  /** Provider place id (Google, or "osm:…" from Photon), when known. */
   placeId: z.string().nullable(),
   /** Short line, e.g. "28 May St 12". */
   title: z.string(),
@@ -15,9 +15,10 @@ export const placeSchema = z.object({
 
 export type Place = z.infer<typeof placeSchema>;
 
-/** One autocomplete suggestion (not yet resolved to coordinates). */
+/** One autocomplete suggestion; Google's still need resolving to coordinates, Photon's don't. */
 export interface PlaceSuggestion {
   placeId: string;
   title: string;
   subtitle: string;
+  location?: { latitude: number; longitude: number };
 }

@@ -73,6 +73,8 @@ const TRIP: Trip = {
   vehicle: null,
   pickupAddress: null,
   destinationAddress: null,
+  pickupPoint: null,
+  destinationPoint: null,
   fare: 8,
   discountAmount: 1,
   finalFare: 7.5,

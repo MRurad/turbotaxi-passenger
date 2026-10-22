@@ -24,6 +24,19 @@ export function bearingDegrees(a: LatLng, b: LatLng): number {
   return (((Math.atan2(y, x) / DEG) % FULL_TURN) + FULL_TURN) % FULL_TURN;
 }
 
+/** "40.3769, 49.8671", "(40.3769 49.8671)", "40.3769;49.8671" → a point; anything else → null. */
+const COORDS_TEXT = /^\s*\(?\s*(-?\d{1,3}\.\d+)\s*[,;\s]\s*(-?\d{1,3}\.\d+)\s*\)?\s*$/;
+
+/** A coordinate pair written as text (e.g. an address field that holds only coordinates). */
+export function parseCoordinates(text: string | null | undefined): LatLng | null {
+  const match = text ? COORDS_TEXT.exec(text) : null;
+  if (!match) return null;
+  const latitude = Number(match[1]);
+  const longitude = Number(match[2]);
+  if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return null;
+  return { latitude, longitude };
+}
+
 /** Rounds coordinates (≈1 m at 5 decimals) so nearby pins share a cache key. */
 export function roundCoords(c: LatLng, decimals = 5): LatLng {
   const f = 10 ** decimals;

@@ -1,10 +1,20 @@
 import type { UserTripHistoryItem } from '@/api/types';
 import { mapBackendStatus } from '@/constants/rideStatus';
 import type { Trip } from '@/features/history/types';
+import { parseCoordinates } from '@/lib/geo';
 
 import { numberOr, optionalString, requireId } from './common';
 
+/** The backend stores coordinates in the address fields for rides ordered by this app. */
+function addressOrPoint(value: string | null | undefined) {
+  const text = optionalString(value);
+  const point = parseCoordinates(text);
+  return point ? { address: null, point } : { address: text, point: null };
+}
+
 export function mapTrip(dto: UserTripHistoryItem): Trip {
+  const pickup = addressOrPoint(dto.pickupAddress);
+  const destination = addressOrPoint(dto.destinationAddress);
   const fare = numberOr(dto.fare, 0);
   const discountAmount = numberOr(dto.discountAmount, 0);
   const finalFare = numberOr(dto.finalFare, fare - discountAmount);
@@ -32,8 +42,10 @@ export function mapTrip(dto: UserTripHistoryItem): Trip {
           model: optionalString(dto.vehicleModel),
         }
       : null,
-    pickupAddress: optionalString(dto.pickupAddress),
-    destinationAddress: optionalString(dto.destinationAddress),
+    pickupAddress: pickup.address,
+    destinationAddress: destination.address,
+    pickupPoint: pickup.point,
+    destinationPoint: destination.point,
     fare,
     discountAmount,
     finalFare,

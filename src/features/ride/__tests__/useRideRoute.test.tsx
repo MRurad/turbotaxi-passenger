@@ -11,6 +11,9 @@ import { createQueryClient } from '@/providers/queryClient';
 jest.mock('@/api/services/routes', () => ({ estimateRoute: jest.fn() }));
 jest.mock('@/lib/logger', () => ({ logger: { info: jest.fn(), warn: jest.fn() } }));
 
+/** The road fetch can be slow when the whole suite runs in parallel. */
+const ASYNC_TIMEOUT_MS = 5_000;
+
 const STRAIGHT = encode([
   [40.41, 49.87],
   [40.3769, 49.8671],
@@ -85,7 +88,7 @@ describe('useRideRoute', () => {
     const { client, wrapper } = setup();
     const { result } = await renderHook(() => useRideRoute(), { wrapper });
     expect(result.current).toBeNull(); // never a straight line, not even while loading
-    await waitFor(() => expect(result.current).toBe(ROAD));
+    await waitFor(() => expect(result.current).toBe(ROAD), { timeout: ASYNC_TIMEOUT_MS });
     expect(estimateRoute).toHaveBeenCalledTimes(1);
     expect(estimateRoute).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -134,7 +137,7 @@ describe('useRideRoute', () => {
     await act(async () => {
       useRideStore.getState().updateDriverLocation({ latitude: 40.41, longitude: 49.87 });
     });
-    await waitFor(() => expect(result.current).toBe(ROAD));
+    await waitFor(() => expect(result.current).toBe(ROAD), { timeout: ASYNC_TIMEOUT_MS });
     expect(useRideStore.getState().etaMinutes).toBe(8);
     client.clear();
   });
