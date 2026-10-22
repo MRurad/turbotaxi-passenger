@@ -15,6 +15,8 @@ const NBSP = ' ';
 const METERS_IN_KM = 1000;
 const METERS_ROUNDING = 10;
 const MINUTES_IN_HOUR = 60;
+/** Amounts smaller than this round to 0.00; treated as exactly 0 so they never read "-0.00". */
+const HALF_CENT = 0.005;
 const DATE_PATTERN = 'd MMM yyyy, HH:mm';
 const TIME_PATTERN = 'HH:mm';
 const DAY_PATTERN = 'd MMMM yyyy';
@@ -47,7 +49,8 @@ function formatNumber(value: number, lang: Language, fractionDigits: { min: numb
  */
 export function formatMoney(amount: number, lang: Language = getLanguage()): string {
   if (!Number.isFinite(amount)) return '';
-  return `${formatNumber(amount, lang, { min: 2, max: 2 })}${NBSP}${CURRENCY_SYMBOL}`;
+  const value = Math.abs(amount) < HALF_CENT ? 0 : amount;
+  return `${formatNumber(value, lang, { min: 2, max: 2 })}${NBSP}${CURRENCY_SYMBOL}`;
 }
 
 /** "850 m" under 1 km, otherwise "4,2 km" / "4.2 km". Non-finite input returns ''. */
@@ -89,8 +92,10 @@ export function formatElapsed(totalSeconds: number): string {
  */
 export function parseApiDate(iso: string): Date | null {
   if (!iso) return null;
-  const hasZone = /(?:[zZ]|[+-]\d{2}(?::?\d{2})?)$/.test(iso);
-  const date = parseISO(hasZone ? iso : `${iso}Z`);
+  // The zone must follow a time ("…:00Z", "…:00.123+04:00"), so a date-only value's "-15"
+  // day isn't mistaken for an offset. parseISO only accepts an upper-case Z.
+  const hasZone = /:\d{2}(?:\.\d+)?(?:[zZ]|[+-]\d{2}(?::?\d{2})?)$/.test(iso);
+  const date = parseISO(hasZone ? iso.replace(/z$/, 'Z') : `${iso}Z`);
   return isValid(date) ? date : null;
 }
 

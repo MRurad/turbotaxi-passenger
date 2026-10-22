@@ -180,3 +180,75 @@ describe('auth store ordering', () => {
     expect(await storedUser()).toMatchObject({ id: 7 });
   });
 });
+
+describe('auth store edge cases', () => {
+  it('removes a stale refresh token when the new session has none', async () => {
+    await useAuthStore.getState().setSession(session());
+
+    await useAuthStore.getState().setSession(session({ refreshToken: null }));
+
+    expect(await SecureStore.getItemAsync(SECURE_KEYS.refreshToken)).toBeNull();
+    expect(useAuthStore.getState().refreshToken).toBeNull();
+  });
+
+  it('removes a stale expiry when the new session has none', async () => {
+    await useAuthStore.getState().setSession(session());
+
+    await useAuthStore.getState().setSession(session({ expiresAt: null }));
+
+    expect(await SecureStore.getItemAsync(SECURE_KEYS.tokenExpiresAt)).toBeNull();
+  });
+
+  it('treats an unparsable stored expiry as unknown (stays signed in)', async () => {
+    await useAuthStore.getState().setSession(session({ expiresAt: null }));
+    await SecureStore.setItemAsync(SECURE_KEYS.tokenExpiresAt, 'not-a-number');
+    useAuthStore.setState(initialState, true);
+
+    await useAuthStore.getState().hydrate();
+
+    expect(useAuthStore.getState()).toMatchObject({ status: 'authenticated', expiresAt: null });
+  });
+
+  it('signs out when a user is cached but the access token is missing', async () => {
+    await useAuthStore.getState().setSession(session());
+    await SecureStore.deleteItemAsync(SECURE_KEYS.accessToken);
+    useAuthStore.setState(initialState, true);
+
+    await useAuthStore.getState().hydrate();
+
+    expect(useAuthStore.getState()).toMatchObject({
+      status: 'unauthenticated',
+      lastLogoutReason: null,
+    });
+    expect(await storedUser()).toBeNull();
+  });
+
+  it('ignores updateUser for a different user id', async () => {
+    const s = session();
+    await useAuthStore.getState().setSession(s);
+
+    await useAuthStore.getState().updateUser({ ...s.user, id: 99, name: 'Someone else' });
+
+    expect(useAuthStore.getState().user).toMatchObject({ id: 7, name: 'Rashad' });
+    expect(await storedUser()).toMatchObject({ id: 7, name: 'Rashad' });
+  });
+
+  it('a new login clears the previous logout reason', async () => {
+    await useAuthStore.getState().logout('expired');
+
+    await useAuthStore.getState().setSession(session());
+
+    expect(useAuthStore.getState().lastLogoutReason).toBeNull();
+  });
+
+  it('hydrate does not override a logout that happened while it was reading', async () => {
+    await useAuthStore.getState().setSession(session());
+    useAuthStore.setState(initialState, true);
+    const hydrating = useAuthStore.getState().hydrate();
+
+    await useAuthStore.getState().logout('user');
+    await hydrating;
+
+    expect(useAuthStore.getState()).toMatchObject({ status: 'unauthenticated', user: null });
+  });
+});

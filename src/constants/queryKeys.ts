@@ -15,6 +15,8 @@ export const queryKeys = {
 
   user: (userId: number) => ['user', userId] as const,
 
+  /** Every route estimate (prefix). */
+  routeEstimateAll: () => ['routes', 'estimate'] as const,
   routeEstimate: (params: RouteEstimateKeyParams) => ['routes', 'estimate', params] as const,
   /** Placeholder key while there's no route yet (the query is skipped). */
   routeEstimateIdle: (vehicleType: VehicleType) =>

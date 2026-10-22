@@ -1,5 +1,5 @@
 import { mapAuthSession, mapUser } from '@/api/mappers/auth';
-import { mapChatMessage } from '@/api/mappers/chat';
+import { isSameActor, mapChatMessage, mapConversation } from '@/api/mappers/chat';
 import { mapPaged } from '@/api/mappers/common';
 import { mapPromoApplication, mapUserPromo } from '@/api/mappers/promo';
 import { mapCancelledRide, mapCreatedRide, toCreateRideRequest } from '@/api/mappers/rides';
@@ -273,5 +273,270 @@ describe('strict fields', () => {
   it('rejects non-positive user ids (they would fail userSchema on next launch)', () => {
     expect(() => mapUser({ id: 0 })).toThrow(expect.objectContaining({ code: 'invalidResponse' }));
     expect(() => mapUser({ id: -3 })).toThrow(expect.objectContaining({ code: 'invalidResponse' }));
+  });
+
+  it('rejects a fractional user id', () => {
+    expect(() => mapUser({ id: 1.5 })).toThrow(
+      expect.objectContaining({ code: 'invalidResponse' }),
+    );
+  });
+});
+
+describe('ride mappers (branches)', () => {
+  it('drops a promo that was applied but has a blank code', () => {
+    const ride = mapCreatedRide({
+      rideId: 1,
+      estimatedFare: 5,
+      promoApplied: true,
+      promoCode: ' ',
+    });
+
+    expect(ride.promo).toBeNull();
+  });
+
+  it('keeps remainingRides null when an applied promo omits it', () => {
+    const ride = mapCreatedRide({
+      rideId: 1,
+      estimatedFare: 5,
+      promoApplied: true,
+      promoCode: 'X',
+    });
+
+    expect(ride.promo).toEqual({ code: 'X', remainingRides: null });
+  });
+
+  it('defaults discount to 0, trip numbers and raw status to null when omitted', () => {
+    const ride = mapCreatedRide({ rideId: 1, estimatedFare: 5 });
+
+    expect(ride).toMatchObject({
+      status: 'unknown',
+      rawStatus: null,
+      discountAmount: 0,
+      distanceKm: null,
+      durationMinutes: null,
+    });
+  });
+
+  it('rejects a created ride without a ride id', () => {
+    expect(() => mapCreatedRide({ estimatedFare: 5 })).toThrow(
+      expect.objectContaining({ code: 'invalidResponse' }),
+    );
+  });
+
+  it('uses the response ride id and status of a cancel response when present', () => {
+    expect(mapCancelledRide({ rideId: 9, status: 'Completed' }, 42)).toEqual({
+      rideId: 9,
+      status: 'completed',
+    });
+  });
+});
+
+describe('trip history mapper (branches)', () => {
+  it('reads coordinates stored in the address fields as points', () => {
+    const trip = mapTrip({
+      rideId: 1,
+      pickupAddress: '40.4093, 49.8671',
+      destinationAddress: '(40.4675;50.0467)',
+    });
+
+    expect(trip).toMatchObject({
+      pickupAddress: null,
+      pickupPoint: BAKU,
+      destinationAddress: null,
+      destinationPoint: AIRPORT,
+    });
+  });
+
+  it('keeps a real address as text without a point', () => {
+    const trip = mapTrip({ rideId: 1, pickupAddress: ' 28 May St ', destinationAddress: '  ' });
+
+    expect(trip).toMatchObject({
+      pickupAddress: '28 May St',
+      pickupPoint: null,
+      destinationAddress: null,
+      destinationPoint: null,
+    });
+  });
+
+  it('builds a driver from a surname alone', () => {
+    const trip = mapTrip({ rideId: 1, driverSurname: 'Aliyev', driverPhoneNumber: ' +994 ' });
+
+    expect(trip.driver).toEqual({ name: '', surname: 'Aliyev', phoneNumber: '+994' });
+  });
+
+  it('builds a driver from a name alone', () => {
+    const trip = mapTrip({ rideId: 1, driverName: 'Elvin' });
+
+    expect(trip.driver).toEqual({ name: 'Elvin', surname: '', phoneNumber: null });
+  });
+
+  it('builds a vehicle from any one of plate, brand or model', () => {
+    const trip = mapTrip({ rideId: 1, vehicleModel: 'Prius', vehicleType: ' ' });
+
+    expect(trip.vehicle).toEqual({ plateNumber: null, type: null, brand: null, model: 'Prius' });
+  });
+
+  it('ignores a vehicle type alone (no plate, brand or model)', () => {
+    expect(mapTrip({ rideId: 1, vehicleType: 'Comfort' }).vehicle).toBeNull();
+  });
+
+  it('derives finalFare from fare minus discount and flags the discount', () => {
+    const trip = mapTrip({ rideId: 1, fare: 12, discountAmount: 2 });
+
+    expect(trip).toMatchObject({ finalFare: 10, hasDiscount: true });
+  });
+
+  it('defaults a trip without fare, date or status to zero / null / unknown', () => {
+    const trip = mapTrip({ rideId: 1 });
+
+    expect(trip).toMatchObject({ fare: 0, finalFare: 0, date: null, status: 'unknown' });
+  });
+
+  it('rejects a trip without a ride id', () => {
+    expect(() => mapTrip({ fare: 1 })).toThrow(
+      expect.objectContaining({ code: 'invalidResponse' }),
+    );
+  });
+});
+
+describe('chat mappers (branches)', () => {
+  const me = { role: 'user', id: 7 };
+
+  it('defaults a missing sender and text', () => {
+    const message = mapChatMessage({ id: 1, rideId: 2, sentAtUtc: '2026-01-01T10:00:00' }, me);
+
+    expect(message).toMatchObject({ senderRole: '', senderId: 0, text: '', isMine: false });
+  });
+
+  it('does not mark a message from another user id as mine', () => {
+    const message = mapChatMessage(
+      { id: 1, rideId: 2, senderRole: 'user', senderId: 8, sentAtUtc: '2026-01-01' },
+      me,
+    );
+
+    expect(message.isMine).toBe(false);
+  });
+
+  it('rejects a message without a ride id', () => {
+    expect(() => mapChatMessage({ id: 1, sentAtUtc: '2026-01-01' }, me)).toThrow(
+      expect.objectContaining({ code: 'invalidResponse' }),
+    );
+  });
+
+  it('isSameActor treats a missing role as not me', () => {
+    expect(isSameActor(null, 7, me)).toBe(false);
+    expect(isSameActor('USER', 7, me)).toBe(true);
+  });
+
+  it('maps a sparse conversation with empty defaults', () => {
+    expect(mapConversation({ rideId: 3, lastMessagePreview: '  ' })).toEqual({
+      rideId: 3,
+      counterpartyRole: '',
+      counterpartyId: 0,
+      counterpartyName: '',
+      lastMessagePreview: null,
+      lastMessageAt: null,
+      lastMessageSenderRole: null,
+    });
+  });
+
+  it('rejects a conversation without a ride id', () => {
+    expect(() => mapConversation({ counterpartyId: 1 })).toThrow(
+      expect.objectContaining({ code: 'invalidResponse' }),
+    );
+  });
+});
+
+describe('promo mappers (branches)', () => {
+  const base = { userPromoCodeId: 1, promoCodeId: 10, code: 'SALE' };
+
+  it('defaults optional promo fields', () => {
+    expect(mapUserPromo(base)).toEqual({
+      id: 1,
+      promoCodeId: 10,
+      code: 'SALE',
+      description: null,
+      discount: { kind: 'percentage', value: 0, maxAmount: null },
+      startDate: null,
+      endDate: null,
+      remainingRides: null,
+      usedCount: 0,
+      isActive: false,
+      canUse: false,
+    });
+  });
+
+  it('keeps dates, description and remaining rides when present', () => {
+    const promo = mapUserPromo({
+      ...base,
+      description: ' Spring sale ',
+      startDate: '2026-03-01T00:00:00',
+      endDate: '2026-04-01T00:00:00',
+      remainingRideCount: 2,
+      isActive: true,
+      canUse: true,
+    });
+
+    expect(promo).toMatchObject({
+      description: 'Spring sale',
+      startDate: '2026-03-01T00:00:00',
+      endDate: '2026-04-01T00:00:00',
+      remainingRides: 2,
+      isActive: true,
+      canUse: true,
+    });
+  });
+
+  it('rejects a promo without ids', () => {
+    expect(() => mapUserPromo({ code: 'X', promoCodeId: 10 })).toThrow(
+      expect.objectContaining({ code: 'invalidResponse' }),
+    );
+    expect(() => mapUserPromo({ code: 'X', userPromoCodeId: 1 })).toThrow(
+      expect.objectContaining({ code: 'invalidResponse' }),
+    );
+  });
+
+  it('prefers the response values of an apply response', () => {
+    expect(
+      mapPromoApplication(
+        { promoCodeId: 11, originalFare: 20, discountAmount: 5, finalFare: 15 },
+        { promoCodeId: 10, originalFare: 12 },
+      ),
+    ).toEqual({ promoCodeId: 11, originalFare: 20, discountAmount: 5, finalFare: 15 });
+  });
+
+  it('treats an empty apply response as no discount', () => {
+    expect(mapPromoApplication({}, { promoCodeId: 10, originalFare: 12 })).toEqual({
+      promoCodeId: 10,
+      originalFare: 12,
+      discountAmount: 0,
+      finalFare: 12,
+    });
+  });
+});
+
+describe('route estimate mappers (branches)', () => {
+  it('keeps a provided promo code trimmed', () => {
+    const request = toEstimateRequest(
+      { origin: BAKU, destination: AIRPORT, vehicleType: VEHICLE_TYPE.Economy, promoCode: ' X ' },
+      7,
+    );
+
+    expect(request.promoCode).toBe('X');
+  });
+
+  it('sends a null promo code when none is given', () => {
+    const request = toEstimateRequest(
+      { origin: BAKU, destination: AIRPORT, vehicleType: VEHICLE_TYPE.Economy },
+      7,
+    );
+
+    expect(request.promoCode).toBeNull();
+  });
+
+  it('does not flag a discount when the original price is not above the final', () => {
+    const estimate = mapEstimate({ price: { original: 10, discount: 2, final: 10 } });
+
+    expect(estimate.price.hasDiscount).toBe(false);
   });
 });

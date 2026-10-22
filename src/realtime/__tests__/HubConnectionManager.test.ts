@@ -1,8 +1,12 @@
 import {
+  HttpError,
   HttpTransportType,
   HubConnectionState,
+  LogLevel,
   NullLogger,
   type IHubProtocol,
+  type ILogger,
+  type IRetryPolicy,
 } from '@microsoft/signalr';
 
 import { useRealtimeDebug } from '@/realtime/debugLog';
@@ -21,6 +25,8 @@ interface FakeConnection {
   state: HubConnectionState;
   urlOptions: Record<string, unknown>;
   protocol: IHubProtocol | null;
+  reconnectPolicy: IRetryPolicy | null;
+  logging: ILogger | LogLevel | null;
   start: jest.Mock<Promise<void>, []>;
   stop: jest.Mock<Promise<void>, []>;
   invoke: jest.Mock<Promise<unknown>, unknown[]>;
@@ -41,18 +47,22 @@ jest.mock('@microsoft/signalr', () => {
   class FakeBuilder {
     private urlOptions: Record<string, unknown> = {};
     private protocol: IHubProtocol | null = null;
+    private reconnectPolicy: IRetryPolicy | null = null;
+    private logging: ILogger | LogLevel | null = null;
     withUrl(_url: string, options: Record<string, unknown>) {
       this.urlOptions = options;
       return this;
     }
-    withAutomaticReconnect() {
+    withAutomaticReconnect(policy: IRetryPolicy) {
+      this.reconnectPolicy = policy;
       return this;
     }
     withHubProtocol(protocol: IHubProtocol) {
       this.protocol = protocol;
       return this;
     }
-    configureLogging() {
+    configureLogging(logging: ILogger | LogLevel) {
+      this.logging = logging;
       return this;
     }
     build() {
@@ -62,6 +72,8 @@ jest.mock('@microsoft/signalr', () => {
         state: S.Disconnected,
         urlOptions: this.urlOptions,
         protocol: this.protocol,
+        reconnectPolicy: this.reconnectPolicy,
+        logging: this.logging,
         on: (event: string, fn: (...args: unknown[]) => void) =>
           handlers.set(event, [...(handlers.get(event) ?? []), fn]),
         onreconnecting: (fn: () => void) => (cb.reconnecting = fn),
@@ -387,5 +399,186 @@ describe('catch-all + retry table', () => {
     expect(retryDelay(1)).toBe(2_000);
     expect(retryDelay(5)).toBe(30_000);
     expect(retryDelay(50)).toBe(30_000);
+  });
+});
+
+describe('HubConnectionManager — automatic reconnect policy', () => {
+  it("SignalR's automatic reconnect follows our backoff table", async () => {
+    const { hub } = makeHub();
+    await hub.start();
+
+    const policy = last().reconnectPolicy;
+
+    expect(policy?.nextRetryDelayInMilliseconds({ previousRetryCount: 1 } as never)).toBe(
+      retryDelay(1),
+    );
+  });
+
+  it('stops the automatic reconnect loop once the session is gone', async () => {
+    let valid = true;
+    const { hub } = makeHub({ isSessionValid: () => valid });
+    await hub.start();
+    valid = false;
+
+    const delay = last().reconnectPolicy?.nextRetryDelayInMilliseconds({
+      previousRetryCount: 0,
+    } as never);
+
+    expect(delay).toBeNull();
+  });
+
+  it('a drop with an expired session logs out instead of scheduling a retry', async () => {
+    jest.useFakeTimers();
+    let valid = true;
+    const onSessionInvalid = jest.fn();
+    const { hub } = makeHub({ isSessionValid: () => valid, onSessionInvalid });
+    await hub.start();
+    valid = false;
+
+    last().drop();
+    await jest.advanceTimersByTimeAsync(retryDelay(10));
+
+    expect(onSessionInvalid).toHaveBeenCalledTimes(1);
+    expect(hub.getState()).toBe('idle');
+    expect(last().start).toHaveBeenCalledTimes(1);
+  });
+
+  it('a 401 HttpError ends the session whatever its message says', async () => {
+    mockStartResults = [new HttpError('handshake rejected', 401)];
+    const onSessionInvalid = jest.fn();
+    const { hub } = makeHub({ onSessionInvalid });
+
+    await hub.start();
+
+    expect(onSessionInvalid).toHaveBeenCalledTimes(1);
+    expect(mockConnections).toHaveLength(1);
+  });
+
+  it('a local abort does not trigger the negotiate fallback', async () => {
+    const abort = new Error('The connection was stopped during negotiation.');
+    abort.name = 'AbortError';
+    mockStartResults = [abort];
+    const { hub } = makeHub();
+
+    await hub.start();
+
+    expect(mockConnections).toHaveLength(1);
+    expect(last().urlOptions.skipNegotiation).toBe(true);
+    expect(hub.getState()).toBe('disconnected');
+    await hub.stop();
+  });
+});
+
+describe('HubConnectionManager — after stop()', () => {
+  it('ignores reconnect callbacks and does not re-run actions once stopped', async () => {
+    const { hub } = makeHub();
+    const action = jest.fn();
+    hub.addOnConnect(action);
+    await hub.start();
+    await flush();
+    const connection = last();
+    await hub.stop();
+
+    connection.reconnecting();
+    connection.reconnected();
+    await flush();
+
+    expect(hub.getState()).toBe('idle');
+    expect(action).toHaveBeenCalledTimes(1);
+  });
+
+  it('a connect that completes after stop() is closed and never reports connected', async () => {
+    const { hub, states } = makeHub();
+    const action = jest.fn();
+    hub.addOnConnect(action);
+
+    const starting = hub.start();
+    const stopping = hub.stop();
+    await Promise.all([starting, stopping]);
+    await flush();
+
+    expect(states).not.toContain('connected');
+    expect(hub.getState()).toBe('idle');
+    expect(hub.wasWanted()).toBe(false);
+    expect(action).not.toHaveBeenCalled();
+  });
+
+  it('does not retry a failing action that was removed in the meantime', async () => {
+    jest.useFakeTimers();
+    const { hub } = makeHub();
+    let reject: (error: Error) => void = () => undefined;
+    const action = jest.fn(() => new Promise((_resolve, fail) => (reject = fail)));
+    const remove = hub.addOnConnect(action);
+    await hub.start();
+    await jest.advanceTimersByTimeAsync(0);
+
+    remove();
+    reject(new Error('not in group'));
+    await jest.advanceTimersByTimeAsync(retryDelay(ON_CONNECT_MAX_ATTEMPTS));
+
+    expect(action).toHaveBeenCalledTimes(1);
+    expect(last().stop).not.toHaveBeenCalled();
+    expect(hub.getState()).toBe('connected');
+  });
+
+  it('reports whether the app still wants the hub (restore after backgrounding)', async () => {
+    const { hub } = makeHub();
+    expect(hub.wasWanted()).toBe(false);
+
+    await hub.start();
+    expect(hub.wasWanted()).toBe(true);
+
+    await hub.stop();
+    expect(hub.wasWanted()).toBe(false);
+  });
+});
+
+describe('HubConnectionManager — dev logging', () => {
+  const warnings = () => jest.mocked(console.warn).mock.calls.map(([line]) => String(line));
+
+  it('warns about an event name nobody handles', async () => {
+    const { hub } = makeHub();
+    await hub.start();
+    const frame = `${JSON.stringify({ type: 1, target: 'RideTeleported', arguments: [] })}\u001e`;
+
+    last().protocol?.parseMessages(frame, NullLogger.instance);
+
+    expect(warnings().some((line) => line.includes('unknown user event "RideTeleported"'))).toBe(
+      true,
+    );
+  });
+
+  it('does not warn about a known event name', async () => {
+    const { hub } = makeHub();
+    await hub.start();
+    const frame = `${JSON.stringify({
+      type: 1,
+      target: USER_HUB_EVENTS.driverLocationUpdated,
+      arguments: [1, 2, 3],
+    })}\u001e`;
+
+    last().protocol?.parseMessages(frame, NullLogger.instance);
+
+    expect(warnings().some((line) => line.includes('unknown'))).toBe(false);
+  });
+
+  it('forwards SignalR warnings and errors, drops its chatter', async () => {
+    const { hub } = makeHub();
+    await hub.start();
+    const signalrLogger = last().logging as ILogger;
+
+    signalrLogger.log(LogLevel.Information, 'connected to x');
+    signalrLogger.log(LogLevel.Error, 'socket closed');
+
+    expect(warnings().filter((line) => line.includes('signalr:'))).toEqual([
+      '[turbotaxi] signalr: socket closed',
+    ]);
+  });
+
+  it('drops an event that arrives with no handler registered without failing', async () => {
+    const { hub } = makeHub();
+    await hub.start();
+
+    expect(() => last().emit(USER_HUB_EVENTS.driverLocationUpdated, 3, 1, 2)).not.toThrow();
   });
 });

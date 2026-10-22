@@ -115,3 +115,59 @@ describe('confirming a message without flicker', () => {
     expect(keys).not.toContain('m70');
   });
 });
+
+describe('compareMessages', () => {
+  it('orders messages sent at the same instant by id (server order)', () => {
+    const merged = mergeMessagePages([
+      page([msg(9, '2026-10-22T10:00:00Z'), msg(4, '2026-10-22T10:00:00Z')]),
+    ]);
+
+    expect(merged.map((m) => m.id)).toEqual([4, 9]);
+  });
+
+  it('puts a message with an unreadable timestamp first instead of crashing', () => {
+    const merged = mergeMessagePages([
+      page([msg(1, '2026-10-22T10:00:00Z'), msg(2, 'not a date')]),
+    ]);
+
+    expect(merged.map((m) => m.id)).toEqual([2, 1]);
+  });
+});
+
+describe('insertMessage edge cases', () => {
+  it('returns the same object when the cache has no pages', () => {
+    const empty = pages();
+
+    expect(insertMessage(empty, msg(1, '2026-10-22T10:01:00Z'))).toBe(empty);
+  });
+
+  it('does not add a message already present on an older page', () => {
+    const data = pages(
+      page([msg(2, '2026-10-22T10:02:00Z')], 1),
+      page([msg(1, '2026-10-22T10:01:00Z')], 2),
+    );
+
+    expect(insertMessage(data, msg(1, '2026-10-22T10:01:00Z'))).toBe(data);
+  });
+});
+
+describe('buildChatItems edge cases', () => {
+  it('returns no rows (not even a day heading) for an empty chat', () => {
+    expect(buildChatItems([], [], new Date('2026-10-22T12:00:00Z'))).toEqual([]);
+  });
+
+  it('shows a failed outgoing message as its own row', () => {
+    const failed: OutgoingMessage = {
+      ...outgoing('local-9', '2026-10-22T10:00:00Z'),
+      status: 'failed',
+    };
+
+    const items = buildChatItems([], [failed], new Date('2026-10-22T12:00:00Z'), 'en');
+
+    expect(items[0]).toMatchObject({
+      kind: 'outgoing',
+      key: 'local-9',
+      message: { status: 'failed' },
+    });
+  });
+});

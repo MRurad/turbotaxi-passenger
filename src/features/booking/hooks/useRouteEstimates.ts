@@ -1,4 +1,10 @@
-import { keepPreviousData, queryOptions, skipToken, useQueries } from '@tanstack/react-query';
+import {
+  queryOptions,
+  skipToken,
+  useQueries,
+  useQueryClient,
+  type QueryClient,
+} from '@tanstack/react-query';
 
 import type { ApiError } from '@/api/errors';
 import { estimateRoute } from '@/api/services/routes';
@@ -9,6 +15,26 @@ import { roundCoords } from '@/lib/geo';
 
 import { useBookingDraft } from '../store';
 import type { RouteEstimate } from '../types';
+
+/**
+ * The most recent cached price of this class, shown while a new key loads. (keepPreviousData
+ * does nothing inside useQueries: a changed key gets a fresh observer with no previous data.)
+ */
+function latestEstimate(client: QueryClient, vehicleType: VehicleType): RouteEstimate | undefined {
+  let latest: { at: number; data: RouteEstimate } | undefined;
+  for (const query of client.getQueryCache().findAll({ queryKey: queryKeys.routeEstimateAll() })) {
+    const params = query.queryKey[2];
+    const data = query.state.data as RouteEstimate | undefined;
+    const sameClass =
+      typeof params === 'object' && params !== null && 'vehicleType' in params
+        ? params.vehicleType === vehicleType
+        : false;
+    if (sameClass && data && (!latest || query.state.dataUpdatedAt > latest.at)) {
+      latest = { at: query.state.dataUpdatedAt, data };
+    }
+  }
+  return latest?.data;
+}
 
 export interface VehicleEstimate {
   vehicleType: VehicleType;
@@ -30,6 +56,7 @@ export function useRouteEstimates(): VehicleEstimate[] {
   const pickup = useBookingDraft((s) => s.pickup?.location);
   const destination = useBookingDraft((s) => s.destination?.location);
   const promoCode = useBookingDraft((s) => s.promo?.code);
+  const queryClient = useQueryClient();
 
   const results = useQueries({
     queries: VEHICLE_TYPES.map((vehicleType) => {
@@ -53,7 +80,7 @@ export function useRouteEstimates(): VehicleEstimate[] {
         staleTime: ROUTE_ESTIMATE_STALE_TIME_MS,
         // Promo change / pickup tweak: keep showing the old prices while the new ones load
         // (no skeleton flash, no disabled Order button, no vanishing route).
-        placeholderData: keepPreviousData,
+        placeholderData: params ? () => latestEstimate(queryClient, vehicleType) : undefined,
       });
     }),
   });

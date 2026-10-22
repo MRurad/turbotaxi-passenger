@@ -29,9 +29,10 @@ export function useRideChatConnection(): void {
     const leave = keepRideChatJoined(rideId);
     const off = onChatMessage((event) => {
       if (event.rideId !== rideId || seen.has(event.id)) return;
-      seen.add(event.id);
       try {
         const message = chatMessageFromEvent(event);
+        // Only once it's usable: a complete repeat of a broken payload still counts.
+        seen.add(event.id);
         // A refetch in flight would overwrite this insert with older data.
         queryClient
           .cancelQueries({ queryKey: key })

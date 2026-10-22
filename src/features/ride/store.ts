@@ -179,6 +179,9 @@ export const useRideStore = create<RideStore>()((set, get) => {
     const s = get();
     const now = Date.now();
     if (s.phase === to) {
+      // A repeated final event (the hub's own "Cancelled" after ours, a second "Completed")
+      // must not overwrite who cancelled or what was charged.
+      if (!isActivePhase(to)) return false;
       // Route refresh (ETA, polyline): updatedAt marks phase changes only, so these don't
       // rewrite storage or invalidate a recovery check in flight.
       set({ ...routePatch(s, info), ...extra });

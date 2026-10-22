@@ -38,6 +38,10 @@ beforeEach(async () => {
   await i18n.changeLanguage('az');
 });
 
+// spyOn(getState(), 'logout') on the reset state patches `initialState` itself; restore it so
+// call counts don't leak into later tests through every state copy.
+afterEach(() => jest.restoreAllMocks());
+
 describe('apiClient', () => {
   it('sends the Bearer token and Accept-Language', async () => {
     signIn();
@@ -81,6 +85,38 @@ describe('apiClient', () => {
       code: 'invalidCredentials',
       serverMessage: 'Invalid',
     });
+    expect(logout).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['az', 'az-AZ'],
+    ['en', 'en-US'],
+  ] as const)('sends Accept-Language for %s as %s', async (language, tag) => {
+    await i18n.changeLanguage(language);
+    apiClient.defaults.adapter = respondWith(200);
+
+    await apiClient.get('/x');
+
+    expect(seen[0]?.headers['Accept-Language']).toBe(tag);
+  });
+
+  it('does not log out on a 403 for an authenticated request', async () => {
+    signIn();
+    const logout = jest.spyOn(useAuthStore.getState(), 'logout');
+    apiClient.defaults.adapter = respondWith(403);
+
+    await expect(apiClient.get('/x')).rejects.toMatchObject({ code: 'forbidden' });
+    expect(logout).not.toHaveBeenCalled();
+  });
+
+  it('rejects with network and keeps the session when there is no response', async () => {
+    signIn();
+    const logout = jest.spyOn(useAuthStore.getState(), 'logout');
+    apiClient.defaults.adapter = async (config) => {
+      throw new AxiosError('Network Error', 'ERR_NETWORK', config);
+    };
+
+    await expect(apiClient.get('/x')).rejects.toMatchObject({ code: 'network' });
     expect(logout).not.toHaveBeenCalled();
   });
 
@@ -135,6 +171,20 @@ describe('stale 401s (request sent with an older token)', () => {
 
     await expect(pending).rejects.toBeInstanceOf(ApiError);
     expect(useAuthStore.getState().lastLogoutReason).toBe('user');
+  });
+
+  it('treats a 401 from login as wrong credentials even while a session exists', async () => {
+    signIn();
+    const logout = jest.spyOn(useAuthStore.getState(), 'logout');
+    apiClient.defaults.adapter = respondWith(401, { success: false, message: 'Wrong password' });
+
+    await expect(apiClient.post('/api/Auth/login', {})).rejects.toMatchObject({
+      code: 'invalidCredentials',
+      status: 401,
+      envelopeMessage: 'Wrong password',
+    });
+    expect(logout).not.toHaveBeenCalled();
+    expect(useAuthStore.getState().status).toBe('authenticated');
   });
 
   it('never sends a token to login/register', async () => {

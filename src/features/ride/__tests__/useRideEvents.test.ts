@@ -1,9 +1,14 @@
 import { onlineManager } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react-native';
+import { AccessibilityInfo } from 'react-native';
 
 import { ApiError } from '@/api/errors';
 import { cancelRide } from '@/api/services/rides';
-import { SEARCH_TIMEOUT_GRACE_MS, SEARCH_TIMEOUT_MS } from '@/constants/timeouts';
+import {
+  CANCEL_RETRY_DELAY_MS,
+  SEARCH_TIMEOUT_GRACE_MS,
+  SEARCH_TIMEOUT_MS,
+} from '@/constants/timeouts';
 import { VEHICLE_TYPE } from '@/constants/vehicles';
 import { useAuthStore } from '@/features/auth/store';
 import { useRideEvents } from '@/features/ride/hooks/useRideEvents';
@@ -11,6 +16,8 @@ import { handleDriverLocation, handleRideUpdate } from '@/features/ride/rideEven
 import type { RideSnapshot } from '@/features/ride/snapshot';
 import { useRideStore } from '@/features/ride/store';
 import type { CreatedRide } from '@/features/ride/types';
+import { i18n } from '@/i18n';
+import { triggerHaptic } from '@/lib/haptics';
 import {
   onUserHubEvent,
   subscribeToDriverLocation,
@@ -300,5 +307,111 @@ describe('useRideEvents after a ride', () => {
     const keys = mockInvalidate.mock.calls.map((call) => JSON.stringify(call));
     expect(keys.join()).toContain('tripHistory');
     expect(keys.join()).toContain('promoList');
+  });
+
+  it('does not refresh history on non-final phase changes', async () => {
+    mockInvalidate.mockClear();
+    startSearching();
+    await renderHook(() => useRideEvents());
+
+    await act(() => useRideStore.getState().driverAssigned({ driverId: 42 }));
+
+    expect(mockInvalidate).not.toHaveBeenCalled();
+  });
+});
+
+describe('useRideEvents cancel retry when online', () => {
+  it('retries a cancel that failed with a network error after CANCEL_RETRY_DELAY_MS', async () => {
+    jest.useFakeTimers({ now: NOW });
+    jest.mocked(cancelRide).mockRejectedValueOnce(new ApiError({ code: 'timeout' }));
+    useAuthStore.setState({ user: SIGNED_IN });
+    startSearching();
+    await renderHook(() => useRideEvents());
+    await act(() => jest.advanceTimersByTime(SEARCH_TIMEOUT_MS));
+    expect(cancelRide).toHaveBeenCalledTimes(1);
+
+    await act(() => jest.advanceTimersByTime(CANCEL_RETRY_DELAY_MS));
+
+    expect(cancelRide).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not retry a cancel the backend rejected (not a network problem)', async () => {
+    jest.useFakeTimers({ now: NOW });
+    jest.mocked(cancelRide).mockRejectedValueOnce(new ApiError({ code: 'badRequest' }));
+    useAuthStore.setState({ user: SIGNED_IN });
+    startSearching();
+    await renderHook(() => useRideEvents());
+    await act(() => jest.advanceTimersByTime(SEARCH_TIMEOUT_MS));
+
+    await act(() => jest.advanceTimersByTime(CANCEL_RETRY_DELAY_MS * 2));
+
+    expect(cancelRide).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('useRideEvents feedback', () => {
+  let announce: jest.SpyInstance;
+  beforeEach(() => {
+    announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility').mockImplementation();
+  });
+  afterEach(() => announce.mockRestore());
+
+  it('announces the new phase and gives a success haptic when a driver is assigned', async () => {
+    startSearching();
+    await renderHook(() => useRideEvents());
+
+    await act(() => useRideStore.getState().driverAssigned({ driverId: 42 }));
+
+    expect(announce).toHaveBeenCalledWith(i18n.t('ride.status.driver_assigned'));
+    expect(triggerHaptic).toHaveBeenCalledWith('success');
+  });
+
+  it('announces "driver dropped" with a warning haptic when the driver drops out', async () => {
+    startSearching();
+    useRideStore.getState().driverAssigned({ driverId: 42 });
+    await renderHook(() => useRideEvents());
+
+    await act(() => useRideStore.getState().driverLost());
+
+    expect(announce).toHaveBeenCalledWith(i18n.t('ride.searching.driverDropped'));
+    expect(triggerHaptic).toHaveBeenCalledWith('warning');
+  });
+
+  it('warns when the driver cancels', async () => {
+    startSearching();
+    await renderHook(() => useRideEvents());
+
+    await act(() => useRideStore.getState().rideCancelled('driver'));
+
+    expect(triggerHaptic).toHaveBeenCalledWith('warning');
+  });
+
+  it('gives no haptic when the user cancelled themselves', async () => {
+    startSearching();
+    await renderHook(() => useRideEvents());
+
+    await act(() => useRideStore.getState().rideCancelled('user'));
+
+    expect(announce).toHaveBeenCalledWith(i18n.t('ride.status.cancelled'));
+    expect(triggerHaptic).not.toHaveBeenCalled();
+  });
+
+  it('stays quiet on a restore (idle to an active phase)', async () => {
+    await renderHook(() => useRideEvents());
+
+    await act(() => useRideStore.getState().restore(searchingSnapshot(Date.now()), null));
+
+    expect(announce).not.toHaveBeenCalled();
+    expect(triggerHaptic).not.toHaveBeenCalled();
+  });
+
+  it('stays quiet on a route refresh without a phase change', async () => {
+    startSearching();
+    useRideStore.getState().driverAssigned({ driverId: 42 });
+    await renderHook(() => useRideEvents());
+
+    await act(() => useRideStore.getState().updateRoute({ etaMinutes: 3 }));
+
+    expect(announce).not.toHaveBeenCalled();
   });
 });

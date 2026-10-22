@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react-native';
+import { AppState, type AppStateStatus } from 'react-native';
 
 import { ACTIVE_RIDE_STALE_MS, RIDE_HISTORY_POLL_MS } from '@/constants/timeouts';
 import { VEHICLE_TYPE } from '@/constants/vehicles';
@@ -307,5 +308,155 @@ describe('safety-net polling', () => {
     });
     expect(useRideStore.getState().phase).toBe('cancelled');
     await unmount();
+  });
+
+  it('does not poll trip history while no ride is active', async () => {
+    jest.useFakeTimers();
+    jest.mocked(loadRideSnapshot).mockResolvedValue(null);
+    const { unmount } = await renderHook(() => useRideRecovery());
+
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(RIDE_HISTORY_POLL_MS * 2);
+    });
+
+    expect(checkPersistedRide).not.toHaveBeenCalled();
+    await unmount();
+  });
+
+  it('stops polling on unmount', async () => {
+    jest.useFakeTimers();
+    jest.mocked(loadRideSnapshot).mockResolvedValue(snapshot());
+    const { unmount } = await renderHook(() => useRideRecovery());
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(0);
+    });
+    const callsBefore = jest.mocked(checkPersistedRide).mock.calls.length;
+
+    await unmount();
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(RIDE_HISTORY_POLL_MS * 2);
+    });
+
+    expect(checkPersistedRide).toHaveBeenCalledTimes(callsBefore);
+  });
+});
+
+describe('useRideRecovery foreground', () => {
+  let appStateHandler: ((state: AppStateStatus) => void) | undefined;
+  const removeAppState = jest.fn();
+
+  beforeEach(() => {
+    appStateHandler = undefined;
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_type, handler) => {
+      appStateHandler = handler;
+      return { remove: removeAppState };
+    });
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('re-checks an active ride when the app returns to the foreground', async () => {
+    jest.mocked(loadRideSnapshot).mockResolvedValue(snapshot());
+    await renderHook(() => useRideRecovery());
+    await flush();
+
+    await act(async () => appStateHandler?.('active'));
+
+    expect(checkPersistedRide).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not check when the app goes to the background', async () => {
+    jest.mocked(loadRideSnapshot).mockResolvedValue(snapshot());
+    await renderHook(() => useRideRecovery());
+    await flush();
+
+    await act(async () => appStateHandler?.('background'));
+
+    expect(checkPersistedRide).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not check on foreground without an active ride', async () => {
+    jest.mocked(loadRideSnapshot).mockResolvedValue(null);
+    await renderHook(() => useRideRecovery());
+    await flush();
+
+    await act(async () => appStateHandler?.('active'));
+
+    expect(checkPersistedRide).not.toHaveBeenCalled();
+  });
+
+  it('removes the AppState listener on unmount', async () => {
+    jest.mocked(loadRideSnapshot).mockResolvedValue(null);
+    const { unmount } = await renderHook(() => useRideRecovery());
+
+    await unmount();
+
+    expect(removeAppState).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('useRideRecovery robustness', () => {
+  it('still marks the store hydrated when loading the snapshot fails', async () => {
+    jest.mocked(loadRideSnapshot).mockRejectedValue(new Error('storage broken'));
+
+    await renderHook(() => useRideRecovery());
+    await flush();
+
+    expect(useRideStore.getState()).toMatchObject({ hydrated: true, phase: 'idle' });
+  });
+
+  it('keeps the restored ride when the history check throws (cancelled / signed out)', async () => {
+    jest.mocked(loadRideSnapshot).mockResolvedValue(snapshot());
+    jest.mocked(checkPersistedRide).mockRejectedValue(new Error('cancelled'));
+
+    await renderHook(() => useRideRecovery());
+    await flush();
+
+    expect(useRideStore.getState()).toMatchObject({ phase: 'driver_assigned', hydrated: true });
+  });
+
+  it('resets the ride on an expired decision', async () => {
+    jest.mocked(loadRideSnapshot).mockResolvedValue(snapshot());
+    jest.mocked(checkPersistedRide).mockResolvedValue({ kind: 'expired' });
+
+    await renderHook(() => useRideRecovery());
+    await flush();
+
+    expect(useRideStore.getState()).toMatchObject({ phase: 'idle', rideId: null });
+  });
+
+  it('runs one history check at a time (a reconnect during a check is skipped)', async () => {
+    jest.mocked(loadRideSnapshot).mockResolvedValue(snapshot());
+    let resolveCheck: (decision: RecoveryDecision) => void = () => undefined;
+    jest.mocked(checkPersistedRide).mockReturnValue(
+      new Promise((resolve) => {
+        resolveCheck = resolve;
+      }),
+    );
+    await renderHook(() => useRideRecovery());
+    await flush();
+    const onConnect = jest.mocked(userHub.addOnConnect).mock.calls[0]?.[0];
+
+    await act(async () => {
+      await onConnect?.();
+    });
+
+    expect(checkPersistedRide).toHaveBeenCalledTimes(1);
+    await act(async () => resolveCheck({ kind: 'restore', snapshot: snapshot() }));
+  });
+
+  it('neither restores nor hydrates when unmounted before the snapshot loads', async () => {
+    let resolveLoad: (value: RideSnapshot | null) => void = () => undefined;
+    jest.mocked(loadRideSnapshot).mockReturnValue(
+      new Promise((resolve) => {
+        resolveLoad = resolve;
+      }),
+    );
+    const { unmount } = await renderHook(() => useRideRecovery());
+
+    await unmount();
+    await act(async () => resolveLoad(snapshot()));
+
+    expect(useRideStore.getState()).toMatchObject({ phase: 'idle', hydrated: false });
+    expect(checkPersistedRide).not.toHaveBeenCalled();
   });
 });
