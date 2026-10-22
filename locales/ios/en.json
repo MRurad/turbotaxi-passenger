@@ -1,0 +1,4 @@
+{
+  "CFBundleDisplayName": "TurboTaxi",
+  "NSLocationWhenInUseUsageDescription": "TurboTaxi uses your location to set your pickup point and show your driver on the map."
+}

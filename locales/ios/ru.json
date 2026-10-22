@@ -1,0 +1,4 @@
+{
+  "CFBundleDisplayName": "TurboTaxi",
+  "NSLocationWhenInUseUsageDescription": "TurboTaxi использует ваше местоположение, чтобы указать точку посадки и показать водителя на карте."
+}

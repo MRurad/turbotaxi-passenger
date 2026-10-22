@@ -15,7 +15,8 @@ Backend: ASP.NET API at `https://api.turbotaxi.deepcode.az` (Swagger: `/swagger/
 - API types: generated with `openapi-typescript` into `src/api/generated/schema.ts`
 
 ## Commands
-- `npx expo start` — dev server (test on iPhone via Expo Go / dev build)
+- `npx expo start --go -c` — dev server for Expo Go (`npm run start:go`). Plain `npx expo start` opens in development-build mode because expo-dev-client is installed
+- `npx expo start --dev-client -c` — dev server for the EAS development build (`npm run start:dev`); builds: see docs/BUILD.md
 - `npx tsc --noEmit` — typecheck (must pass)
 - `npx expo lint` — lint (must pass)
 - `npm test` — unit tests
