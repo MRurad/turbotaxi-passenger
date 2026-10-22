@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { Platform, View, type LayoutChangeEvent } from 'react-native';
 import { Marker } from 'react-native-maps';
 
 import { Text } from '@/components/ui';
@@ -9,9 +9,9 @@ import type { LatLng } from '@/types/geo';
 
 export interface MarkerLabelProps {
   coordinate: LatLng;
-  /** Bold line, e.g. "18 min" or "Driver in 4 min". */
+  /** Highlighted part, e.g. "18 min" or "Driver in 4 min". */
   title: string;
-  /** Second line, e.g. "Arrive at 12:45". */
+  /** Second part, e.g. "Arrive at 12:45". */
   subtitle?: string;
   onPress?: () => void;
   accessibilityLabel?: string;
@@ -19,8 +19,8 @@ export interface MarkerLabelProps {
 }
 
 /**
- * A small card floating just above a place marker (same coordinate). Its transparent bottom
- * padding clears the marker, so the card never covers the point itself.
+ * Callout bubble above a place marker (same coordinate): a filled time chip, an optional
+ * arrival part, and a pointer down to the marker. The marker itself stays visible below.
  */
 export function MarkerLabel({
   coordinate,
@@ -32,9 +32,10 @@ export function MarkerLabel({
 }: MarkerLabelProps) {
   const styles = useStyles();
   const { isDark } = useTheme();
+  const [height, setHeight] = useState(0);
   // Google snapshots custom markers: track view changes until new content has drawn, then
-  // stop (no remount, so the card doesn't blink when the arrival minute changes).
-  const content = `${title}|${subtitle ?? ''}|${isDark}`;
+  // stop (no remount, so the bubble doesn't blink when the arrival minute changes).
+  const content = `${title}|${subtitle ?? ''}|${isDark}|${height}`;
   const [snapshotted, setSnapshotted] = useState<string | null>(null);
   useEffect(() => {
     const timer = setTimeout(() => setSnapshotted(content), MARKER_SNAPSHOT_MS);
@@ -44,48 +45,82 @@ export function MarkerLabel({
   return (
     <Marker
       coordinate={coordinate}
+      // Android/Google: bottom edge on the point. Apple Maps ignores anchor and centers the
+      // view, so it is lifted by half its measured height instead.
       anchor={{ x: 0.5, y: 1 }}
+      centerOffset={Platform.OS === 'ios' ? { x: 0, y: -height / 2 } : undefined}
       tracksViewChanges={snapshotted !== content}
       onPress={onPress}
       zIndex={1}
       accessibilityLabel={accessibilityLabel ?? [title, subtitle].filter(Boolean).join(', ')}
       testID={testID}
     >
-      <View style={styles.wrap}>
-        <View style={styles.card}>
-          <Text variant="caption" style={styles.title} numberOfLines={1}>
-            {title}
-          </Text>
+      <View
+        style={[styles.wrap, height === 0 && styles.measuring]}
+        onLayout={(e: LayoutChangeEvent) => setHeight(Math.round(e.nativeEvent.layout.height))}
+      >
+        <View style={styles.bubble}>
+          <View style={styles.chip}>
+            <Text variant="caption" color="textOnPrimary" style={styles.strong} numberOfLines={1}>
+              {title}
+            </Text>
+          </View>
           {subtitle ? (
-            <Text variant="caption" color="textSecondary" numberOfLines={1}>
+            <Text variant="caption" style={[styles.strong, styles.subtitle]} numberOfLines={1}>
               {subtitle}
             </Text>
           ) : null}
         </View>
+        <View style={[styles.pointer, !subtitle && styles.pointerOnChip]} />
       </View>
     </Marker>
   );
 }
 
+const POINTER = 12;
+
 const useStyles = makeStyles((t) => ({
-  // Half the marker + a gap below the card: the label sits above the dot / flag.
-  // Side/top padding leaves the shadow room inside the marker's bounds.
+  // Room for the shadow on the sides/top; below, the pointer tip stops just above the marker.
   wrap: {
-    paddingBottom: t.sizes.pin.head / 2 + t.spacing.xs,
+    alignItems: 'center',
     paddingHorizontal: t.spacing.xs,
     paddingTop: t.spacing.xs,
-    alignItems: 'center',
+    paddingBottom: t.sizes.pin.head / 2 + t.spacing.xxs,
   },
-  card: {
-    alignItems: 'center',
-    paddingHorizontal: t.spacing.sm,
-    paddingVertical: t.spacing.xxs,
-    borderRadius: t.radii.sm,
+  // Not yet lifted into place (first layout on iOS): don't flash it over the marker.
+  measuring: { opacity: 0 },
+  bubble: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    borderRadius: t.radii.pill,
     backgroundColor: t.colors.surfaceElevated,
-    // Always bordered: on a near-white map the shadow alone barely shows.
     borderWidth: t.sizes.border,
     borderColor: t.colors.border,
-    ...t.shadows.sm,
+    overflow: 'hidden',
+    ...t.shadows.md,
   },
-  title: { fontFamily: t.typography.bodyStrong.fontFamily },
+  chip: {
+    justifyContent: 'center',
+    paddingHorizontal: t.spacing.md,
+    paddingVertical: t.spacing.xs,
+    backgroundColor: t.colors.primaryFill,
+  },
+  subtitle: {
+    alignSelf: 'center',
+    paddingLeft: t.spacing.sm,
+    paddingRight: t.spacing.md,
+  },
+  strong: { fontFamily: t.typography.bodyStrong.fontFamily },
+  // A rotated square tucked under the bubble's edge: a small arrow pointing at the marker.
+  pointer: {
+    width: POINTER,
+    height: POINTER,
+    marginTop: -POINTER / 2 - t.sizes.border,
+    transform: [{ rotate: '45deg' }],
+    backgroundColor: t.colors.surfaceElevated,
+    borderRightWidth: t.sizes.border,
+    borderBottomWidth: t.sizes.border,
+    borderColor: t.colors.border,
+  },
+  pointerOnChip: { backgroundColor: t.colors.primaryFill, borderColor: t.colors.primaryFill },
 }));
