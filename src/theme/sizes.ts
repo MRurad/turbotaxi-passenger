@@ -20,8 +20,9 @@ export const sizes = {
   /** Map pins (center pin, place markers). */
   pin: { head: 36, stem: 14, stemWidth: 3, lift: 14, shadow: 18 },
   /**
-   * Time bubble marker box. Kept within ~180×55 pt: Apple Maps (react-native-maps, new
-   * architecture) places larger custom markers off their point. gap = pointer tip to the dot.
+   * Time bubble marker box: max width, fixed height, gap = pointer tip to the dot. Kept small
+   * and exactly as wide as the bubble: Apple Maps (react-native-maps, new architecture) places
+   * large or padded custom markers off their point.
    */
   timeBubble: { width: 168, height: 40, gap: 4 },
   /** Skeleton placeholder widths. */

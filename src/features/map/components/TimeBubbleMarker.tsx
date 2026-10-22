@@ -18,8 +18,8 @@ export interface TimeBubbleMarkerProps extends MarkerBubbleProps {
 }
 
 /**
- * Time bubble floating above a PlaceMarker. A small fixed box (sizes.timeBubble), bubble at
- * its bottom centre, lifted by half its height + the marker's radius + a gap: Apple Maps
+ * Time bubble floating above a PlaceMarker. A small box (fixed height, as wide as the bubble,
+ * sizes.timeBubble), bubble at its bottom, lifted by half its height + the marker's radius + a gap: Apple Maps
  * centres the view (centerOffset), Google uses the anchor (below the box's bottom edge).
  */
 export function TimeBubbleMarker({
@@ -61,10 +61,11 @@ export function TimeBubbleMarker({
 }
 
 const useStyles = makeStyles((t) => ({
+  // Exactly as wide as the bubble (no empty sides): Apple Maps centres a custom marker by a
+  // width that doesn't match wide views, so centring inside a wider box drifts right.
   box: {
-    width: t.sizes.timeBubble.width,
+    maxWidth: t.sizes.timeBubble.width,
     height: t.sizes.timeBubble.height,
-    alignItems: 'center',
     justifyContent: 'flex-end',
   },
 }));
