@@ -5,7 +5,6 @@ import { CLOCK_TICK_MS, MINUTE_MS } from '@/constants/timeouts';
 import { useRoutePolyline } from '@/features/booking/hooks/useRoutePolyline';
 import { useSelectedEstimate } from '@/features/booking/hooks/useSelectedEstimate';
 import { useBookingDraft } from '@/features/booking/store';
-import { MarkerLabel } from '@/features/map/components/MarkerLabel';
 import { PlaceMarker } from '@/features/map/components/PlaceMarker';
 import { RoutePolyline } from '@/features/map/components/RoutePolyline';
 import { useChangeLanguage } from '@/i18n/useChangeLanguage';
@@ -37,6 +36,7 @@ export const HomeMapLayers = memo(function HomeMapLayers() {
         });
   const pinIsPickup = mapPick === 'pickup' || (mapPick === null && !destination);
   const booking = destination !== null && mapPick === null;
+  const hasTimes = booking && minutes !== undefined;
 
   return (
     <>
@@ -53,19 +53,16 @@ export const HomeMapLayers = memo(function HomeMapLayers() {
         <PlaceMarker
           coordinate={destination.location}
           kind="destination"
+          label={hasTimes ? { title: duration, subtitle: arrival } : null}
           onPress={booking ? () => startPinPicking('destination') : undefined}
-          accessibilityLabel={booking ? t('booking.editDestination') : undefined}
-        />
-      ) : null}
-      {booking && minutes !== undefined ? (
-        <MarkerLabel
-          coordinate={destination.location}
-          lifted
-          title={duration}
-          subtitle={arrival}
-          onPress={() => startPinPicking('destination')}
-          accessibilityLabel={`${duration}, ${arrival}. ${t('booking.editDestination')}`}
-          testID="home-destination-label"
+          accessibilityLabel={
+            booking
+              ? [hasTimes ? `${duration}, ${arrival}.` : '', t('booking.editDestination')]
+                  .filter(Boolean)
+                  .join(' ')
+              : undefined
+          }
+          testID="home-destination-marker"
         />
       ) : null}
     </>

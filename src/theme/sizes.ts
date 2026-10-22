@@ -19,8 +19,8 @@ export const sizes = {
   zIndexToast: 1000,
   /** Map pins (center pin, place markers). */
   pin: { head: 36, stem: 14, stemWidth: 3, lift: 14, shadow: 18 },
-  /** Fixed box of a map time label (bubble at its bottom centre): a constant size keeps
-   *  the native marker from re-positioning when the text changes. */
+  /** Time bubble above a place marker: the area for the bubble (mirrored below the marker so
+   *  the marker stays the centre of the combined view) and its width. */
   markerLabel: { width: 260, height: 88 },
   /** Skeleton placeholder widths. */
   skeleton: { price: 56 },

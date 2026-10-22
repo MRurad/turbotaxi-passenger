@@ -2,7 +2,6 @@ import { memo, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { CarMarker } from '@/features/map/components/CarMarker';
-import { MarkerLabel } from '@/features/map/components/MarkerLabel';
 import { PlaceMarker } from '@/features/map/components/PlaceMarker';
 import { RoutePolyline } from '@/features/map/components/RoutePolyline';
 import { routeAhead } from '@/lib/geo';
@@ -38,17 +37,20 @@ export const RideMapLayers = memo(function RideMapLayers() {
   return (
     <>
       <RoutePolyline coordinates={line} />
-      {showPickup ? <PlaceMarker coordinate={pickup.location} kind="pickup" /> : null}
-      {showPickup && labels.pickup ? (
-        <MarkerLabel coordinate={pickup.location} {...labels.pickup} testID="ride-pickup-label" />
+      {showPickup ? (
+        <PlaceMarker
+          coordinate={pickup.location}
+          kind="pickup"
+          label={labels.pickup}
+          testID="ride-pickup-marker"
+        />
       ) : null}
-      {destination ? <PlaceMarker coordinate={destination.location} kind="destination" /> : null}
-      {destination && labels.destination ? (
-        <MarkerLabel
+      {destination ? (
+        <PlaceMarker
           coordinate={destination.location}
-          lifted
-          {...labels.destination}
-          testID="ride-destination-label"
+          kind="destination"
+          label={labels.destination}
+          testID="ride-destination-marker"
         />
       ) : null}
       {driverLocation && tracking ? <CarMarker coordinate={driverLocation} /> : null}
