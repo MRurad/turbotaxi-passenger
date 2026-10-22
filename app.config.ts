@@ -85,5 +85,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   experiments: {
     typedRoutes: true,
   },
-  ...(EAS_PROJECT_ID ? { extra: { ...config.extra, eas: { projectId: EAS_PROJECT_ID } } } : {}),
+  extra: {
+    ...config.extra,
+    // Public flag (not the key): the Google Maps SDK is in the native build only with a key,
+    // and ios.config is stripped from the config the app can read (src/features/map/constants.ts).
+    hasGoogleMapsKey: Boolean(googleMapsApiKey),
+    ...(EAS_PROJECT_ID ? { eas: { projectId: EAS_PROJECT_ID } } : {}),
+  },
 });

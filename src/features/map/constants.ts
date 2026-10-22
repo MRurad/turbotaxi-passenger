@@ -7,11 +7,17 @@ import type { Region } from 'react-native-maps';
 const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 /**
- * Google everywhere except iOS Expo Go, which can't load the Google Maps SDK and falls back
- * to Apple Maps (custom styles don't apply there; userInterfaceStyle handles dark mode).
+ * The Google Maps SDK is only compiled into an iOS build that had a key at build time
+ * (app.config.ts sets extra.hasGoogleMapsKey); asking for Google without it breaks the map.
+ */
+const iosHasGoogleMaps = !isExpoGo && Constants.expoConfig?.extra?.hasGoogleMapsKey === true;
+
+/**
+ * Google on Android and in iOS builds that include it; otherwise (Expo Go, a build without the
+ * key) Apple Maps (custom styles don't apply there; userInterfaceStyle handles dark mode).
  */
 export const MAP_PROVIDER =
-  Platform.OS === 'android' || !isExpoGo ? PROVIDER_GOOGLE : PROVIDER_DEFAULT;
+  Platform.OS === 'android' || iosHasGoogleMaps ? PROVIDER_GOOGLE : PROVIDER_DEFAULT;
 export const IS_GOOGLE_MAP = MAP_PROVIDER === PROVIDER_GOOGLE;
 
 /** Fallback when location permission is denied or not yet known. */
