@@ -1,8 +1,9 @@
 import { screen } from '@testing-library/react-native';
-import { StyleSheet, type ViewStyle } from 'react-native';
 
 import { PlaceMarker } from '@/features/map/components/PlaceMarker';
+import { TimeBubbleMarker } from '@/features/map/components/TimeBubbleMarker';
 import { renderWithTheme } from '@/test-utils/renderWithTheme';
+import { sizes } from '@/theme';
 
 // No native maps under Jest: a Marker is a plain View around its children here.
 jest.mock('react-native-maps', () => {
@@ -12,33 +13,31 @@ jest.mock('react-native-maps', () => {
 
 const POINT = { latitude: 40.4, longitude: 49.85 };
 
-describe('PlaceMarker', () => {
-  it('draws the time bubble in the same marker, centred on the dot', async () => {
+/** Apple Maps (react-native-maps, new architecture) misplaces custom markers above this. */
+const APPLE_SAFE_MARKER = { width: 180, height: 55 };
+
+describe('map markers', () => {
+  it('the place marker is just the dot', async () => {
+    await renderWithTheme(<PlaceMarker coordinate={POINT} kind="pickup" />);
+    expect(screen.queryByText(/./)).toBeNull();
+  });
+
+  it('the time bubble shows the duration and the arrival clock', async () => {
     await renderWithTheme(
-      <PlaceMarker
+      <TimeBubbleMarker
         coordinate={POINT}
-        kind="destination"
-        label={{ title: '10 min', subtitle: 'Arrive at 15:01' }}
-        testID="marker"
+        title="10 min"
+        time="15:01"
+        accessibilityLabel="10 min, Arrive at 15:01"
       />,
     );
     expect(screen.getByText('10 min')).toBeTruthy();
-    expect(screen.getByText('Arrive at 15:01')).toBeTruthy();
-
-    // Column: bubble area, dot, mirror. Equal outer heights = the dot is the view's centre,
-    // which is what the map puts on the point.
-    const column = screen.getByText('10 min').parent?.parent?.parent?.parent?.parent;
-    const [above, , below] = column?.children ?? [];
-    const height = (node: typeof above) =>
-      typeof node === 'object' && node !== null && 'props' in node
-        ? (StyleSheet.flatten(node.props.style as ViewStyle) ?? {}).height
-        : undefined;
-    expect(height(above)).toBeGreaterThan(0);
-    expect(height(above)).toBe(height(below));
+    expect(screen.getByText('15:01')).toBeTruthy();
+    expect(screen.getByLabelText('10 min, Arrive at 15:01')).toBeTruthy();
   });
 
-  it('is just the dot without a label', async () => {
-    await renderWithTheme(<PlaceMarker coordinate={POINT} kind="pickup" />);
-    expect(screen.queryByText(/min/)).toBeNull();
+  it('keeps the time bubble small enough for Apple Maps to place it correctly', () => {
+    expect(sizes.timeBubble.width).toBeLessThanOrEqual(APPLE_SAFE_MARKER.width);
+    expect(sizes.timeBubble.height).toBeLessThanOrEqual(APPLE_SAFE_MARKER.height);
   });
 });

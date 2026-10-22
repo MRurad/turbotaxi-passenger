@@ -7,6 +7,7 @@ import { useSelectedEstimate } from '@/features/booking/hooks/useSelectedEstimat
 import { useBookingDraft } from '@/features/booking/store';
 import { PlaceMarker } from '@/features/map/components/PlaceMarker';
 import { RoutePolyline } from '@/features/map/components/RoutePolyline';
+import { TimeBubbleMarker } from '@/features/map/components/TimeBubbleMarker';
 import { useChangeLanguage } from '@/i18n/useChangeLanguage';
 import { formatClock, formatDuration } from '@/lib/format';
 import { useNow } from '@/lib/hooks/useNow';
@@ -28,12 +29,8 @@ export const HomeMapLayers = memo(function HomeMapLayers() {
   const minutes = useSelectedEstimate()?.estimate?.durationMinutes;
   const now = useNow(CLOCK_TICK_MS);
   const duration = minutes === undefined ? '' : formatDuration(minutes, language);
-  const arrival =
-    minutes === undefined
-      ? ''
-      : t('common.map.arriveAt', {
-          time: formatClock(new Date(now + minutes * MINUTE_MS), language),
-        });
+  const arrivalTime =
+    minutes === undefined ? '' : formatClock(new Date(now + minutes * MINUTE_MS), language);
   const pinIsPickup = mapPick === 'pickup' || (mapPick === null && !destination);
   const booking = destination !== null && mapPick === null;
   const hasTimes = booking && minutes !== undefined;
@@ -53,16 +50,19 @@ export const HomeMapLayers = memo(function HomeMapLayers() {
         <PlaceMarker
           coordinate={destination.location}
           kind="destination"
-          label={hasTimes ? { title: duration, subtitle: arrival } : null}
           onPress={booking ? () => startPinPicking('destination') : undefined}
-          accessibilityLabel={
-            booking
-              ? [hasTimes ? `${duration}, ${arrival}.` : '', t('booking.editDestination')]
-                  .filter(Boolean)
-                  .join(' ')
-              : undefined
-          }
+          accessibilityLabel={booking ? t('booking.editDestination') : undefined}
           testID="home-destination-marker"
+        />
+      ) : null}
+      {hasTimes ? (
+        <TimeBubbleMarker
+          coordinate={destination.location}
+          title={duration}
+          time={arrivalTime}
+          onPress={() => startPinPicking('destination')}
+          accessibilityLabel={`${duration}, ${t('common.map.arriveAt', { time: arrivalTime })}. ${t('booking.editDestination')}`}
+          testID="home-destination-time"
         />
       ) : null}
     </>

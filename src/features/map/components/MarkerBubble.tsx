@@ -1,38 +1,57 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { View } from 'react-native';
 
 import { Text } from '@/components/ui';
-import { makeStyles } from '@/theme';
+import { makeStyles, useTheme } from '@/theme';
+
+/** The bubble must stay inside its small marker box (see sizes.timeBubble). */
+const BUBBLE_MAX_FONT_SCALE = 1.2;
 
 export interface MarkerBubbleProps {
   /** Highlighted part, e.g. "18 min" or "Driver in 4 min". */
   title: string;
-  /** Second part, e.g. "Arrive at 12:45". */
-  subtitle?: string;
+  /** Arrival clock time, e.g. "12:45" (shown with a clock icon). */
+  time?: string;
 }
 
-/** Callout bubble (filled time chip + optional arrival part) with a pointer at the bottom. */
-export function MarkerBubble({ title, subtitle }: MarkerBubbleProps) {
+/** Compact callout: a filled chip, an optional clock time, and a pointer at the bottom. */
+export function MarkerBubble({ title, time }: MarkerBubbleProps) {
   const styles = useStyles();
+  const { colors, sizes } = useTheme();
   return (
     <View style={styles.wrap}>
       <View style={styles.bubble}>
         <View style={styles.chip}>
-          <Text variant="caption" color="textOnPrimary" style={styles.strong} numberOfLines={1}>
+          <Text
+            variant="caption"
+            color="textOnPrimary"
+            style={styles.strong}
+            numberOfLines={1}
+            maxFontSizeMultiplier={BUBBLE_MAX_FONT_SCALE}
+          >
             {title}
           </Text>
         </View>
-        {subtitle ? (
-          <Text variant="caption" style={[styles.strong, styles.subtitle]} numberOfLines={1}>
-            {subtitle}
-          </Text>
+        {time ? (
+          <View style={styles.time}>
+            <Ionicons name="time-outline" size={sizes.icon.xs} color={colors.textSecondary} />
+            <Text
+              variant="caption"
+              style={styles.strong}
+              numberOfLines={1}
+              maxFontSizeMultiplier={BUBBLE_MAX_FONT_SCALE}
+            >
+              {time}
+            </Text>
+          </View>
         ) : null}
       </View>
-      <View style={[styles.pointer, !subtitle && styles.pointerOnChip]} />
+      <View style={[styles.pointer, !time && styles.pointerOnChip]} />
     </View>
   );
 }
 
-const POINTER = 12;
+const POINTER = 10;
 
 const useStyles = makeStyles((t) => ({
   wrap: { maxWidth: '100%', alignItems: 'center' },
@@ -45,19 +64,20 @@ const useStyles = makeStyles((t) => ({
     borderWidth: t.sizes.border,
     borderColor: t.colors.border,
     overflow: 'hidden',
-    ...t.shadows.md,
   },
   chip: {
+    flexShrink: 1,
     justifyContent: 'center',
-    paddingHorizontal: t.spacing.md,
-    paddingVertical: t.spacing.xs,
+    paddingHorizontal: t.spacing.sm,
+    paddingVertical: t.spacing.xxs,
     backgroundColor: t.colors.primaryFill,
   },
-  subtitle: {
-    flexShrink: 1,
-    alignSelf: 'center',
-    paddingLeft: t.spacing.sm,
-    paddingRight: t.spacing.md,
+  time: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: t.spacing.xxs,
+    paddingLeft: t.spacing.xs,
+    paddingRight: t.spacing.sm,
   },
   strong: { fontFamily: t.typography.bodyStrong.fontFamily },
   // A rotated square tucked under the bubble's edge: a small arrow pointing at the marker.

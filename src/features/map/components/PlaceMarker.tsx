@@ -1,21 +1,15 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Marker } from 'react-native-maps';
 
-import { MARKER_SNAPSHOT_MS } from '@/constants/timeouts';
 import { makeStyles, useTheme } from '@/theme';
 import type { LatLng } from '@/types/geo';
-
-import { MarkerBubble, type MarkerBubbleProps } from './MarkerBubble';
 
 export interface PlaceMarkerProps {
   coordinate: LatLng;
   kind: 'pickup' | 'destination';
   /** a11y / callout title (e.g. the address). */
   title?: string;
-  /** Time bubble above the marker ("10 min · Arrive at 15:01"). */
-  label?: MarkerBubbleProps | null;
   /** Tap on the marker (e.g. change this point). */
   onPress?: () => void;
   /** Says what a tap does; required with onPress. */
@@ -24,89 +18,44 @@ export interface PlaceMarkerProps {
 }
 
 /**
- * Pickup (steel blue dot) or destination (flag) marker, optionally with a time bubble above it.
- * Bubble and dot are ONE marker view, laid out symmetrically (bubble area, dot, an equal empty
- * area): the view's centre is the dot, so the default centring puts the dot on the point and
- * the pointer straight above it. (Two separate markers drift apart on iOS: MapKit positions
- * each custom view by its own size, which changes as the text does.)
+ * Static pickup (steel blue dot) or destination (flag) marker. Kept small on purpose: Apple
+ * Maps places large custom markers off their point (see TimeBubbleMarker for the time label).
  */
 export function PlaceMarker({
   coordinate,
   kind,
   title,
-  label,
   onPress,
   accessibilityLabel,
   testID,
 }: PlaceMarkerProps) {
   const styles = useStyles();
-  const { colors, sizes, isDark } = useTheme();
+  const { colors, sizes } = useTheme();
   const pickup = kind === 'pickup';
-  // Google snapshots custom markers: track view changes until new content has drawn.
-  const content = `${label?.title ?? ''}|${label?.subtitle ?? ''}|${isDark}`;
-  const [snapshotted, setSnapshotted] = useState<string | null>(null);
-  useEffect(() => {
-    const timer = setTimeout(() => setSnapshotted(content), MARKER_SNAPSHOT_MS);
-    return () => clearTimeout(timer);
-  }, [content]);
-
-  const dot = (
-    <View style={[styles.base, pickup ? styles.pickup : styles.destination]}>
-      {pickup ? (
-        <View style={styles.dot} />
-      ) : (
-        <Ionicons
-          name="flag"
-          size={sizes.icon.sm}
-          color={colors.textOnPrimary}
-          style={styles.flag}
-        />
-      )}
-    </View>
-  );
 
   return (
     <Marker
       coordinate={coordinate}
       title={title}
       onPress={onPress}
-      accessibilityLabel={
-        accessibilityLabel ??
-        ([label?.title, label?.subtitle, title].filter(Boolean).join(', ') || undefined)
-      }
+      accessibilityLabel={accessibilityLabel ?? title}
       anchor={{ x: 0.5, y: 0.5 }}
-      tracksViewChanges={snapshotted !== content}
-      zIndex={label ? 1 : 0}
+      // Static content: stop re-rendering the native snapshot after the first frame.
+      tracksViewChanges={false}
       testID={testID}
     >
-      {label ? (
-        <View style={styles.labelled}>
-          <View style={styles.bubbleArea}>
-            <MarkerBubble {...label} />
-          </View>
-          {dot}
-          {/* Mirrors the bubble area so the dot is the exact centre of the view. */}
-          <View style={styles.mirror} />
-        </View>
-      ) : (
-        dot
-      )}
+      <View style={[styles.base, pickup ? styles.pickup : styles.destination]}>
+        {pickup ? (
+          <View style={styles.dot} />
+        ) : (
+          <Ionicons name="flag" size={sizes.icon.sm} color={colors.textOnPrimary} />
+        )}
+      </View>
     </Marker>
   );
 }
 
 const useStyles = makeStyles((t) => ({
-  labelled: { width: t.sizes.markerLabel.width, alignItems: 'center' },
-  // Fixed height (room for larger text); the bubble sits at its bottom, just above the dot.
-  bubbleArea: {
-    width: '100%',
-    height: t.sizes.markerLabel.height,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingHorizontal: t.spacing.xs,
-    paddingBottom: t.spacing.xs,
-  },
-  mirror: { height: t.sizes.markerLabel.height },
   base: {
     width: t.sizes.pin.head,
     height: t.sizes.pin.head,
@@ -118,8 +67,6 @@ const useStyles = makeStyles((t) => ({
   },
   pickup: { backgroundColor: t.colors.primaryFill },
   destination: { backgroundColor: t.colors.danger },
-  // The glyph's pole sits left of its box: nudge it so the flag reads as centered.
-  flag: { marginLeft: t.spacing.xxs },
   dot: {
     width: t.sizes.pin.stemWidth * 3,
     height: t.sizes.pin.stemWidth * 3,

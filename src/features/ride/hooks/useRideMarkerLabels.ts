@@ -10,8 +10,12 @@ import { useRideStore } from '../store';
 import { useLiveEta } from './useLiveEta';
 
 export interface RideMarkerLabel {
+  /** Highlighted part: "18 min", "Driver in 4 min", "Driver is here". */
   title: string;
-  subtitle?: string;
+  /** Arrival clock time ("12:45"), when known. */
+  time?: string;
+  /** The whole thing as a sentence for screen readers. */
+  accessibilityLabel: string;
 }
 
 export interface RideMarkerLabels {
@@ -33,30 +37,29 @@ export function useRideMarkerLabels(): RideMarkerLabels {
     useShallow((s) => ({ phase: s.phase, tripMinutes: s.tripMinutes })),
   );
 
-  const arriveAt = (minutesFromNow: number) =>
-    t('common.map.arriveAt', {
-      time: formatClock(new Date(now + minutesFromNow * MINUTE_MS), language),
-    });
+  const label = (title: string, arrivalInMinutes?: number): RideMarkerLabel => {
+    if (arrivalInMinutes === undefined) return { title, accessibilityLabel: title };
+    const time = formatClock(new Date(now + arrivalInMinutes * MINUTE_MS), language);
+    return { title, time, accessibilityLabel: `${title}, ${t('common.map.arriveAt', { time })}` };
+  };
 
   let pickup: RideMarkerLabel | null = null;
-  if (phase === 'driver_arrived') pickup = { title: t('common.map.driverHere') };
+  if (phase === 'driver_arrived') pickup = label(t('common.map.driverHere'));
   else if (phase === 'driver_assigned' && etaMinutes !== null) {
-    pickup = {
-      title: t('common.map.driverIn', { duration: formatDuration(etaMinutes, language) }),
-    };
+    pickup = label(t('common.map.driverIn', { duration: formatDuration(etaMinutes, language) }));
   }
 
   let destination: RideMarkerLabel | null = null;
   if (phase === 'in_progress' && etaMinutes !== null) {
-    destination = { title: formatDuration(etaMinutes, language), subtitle: arriveAt(etaMinutes) };
+    destination = label(formatDuration(etaMinutes, language), etaMinutes);
   } else if (tripMinutes !== null) {
     const title = formatDuration(tripMinutes, language);
     if (phase === 'driver_assigned' && etaMinutes !== null) {
-      destination = { title, subtitle: arriveAt(etaMinutes + tripMinutes) };
+      destination = label(title, etaMinutes + tripMinutes);
     } else if (phase === 'driver_arrived') {
-      destination = { title, subtitle: arriveAt(tripMinutes) };
+      destination = label(title, tripMinutes);
     } else if (phase === 'searching' || phase === 'driver_assigned' || phase === 'in_progress') {
-      destination = { title };
+      destination = label(title);
     }
   }
   return { pickup, destination };
