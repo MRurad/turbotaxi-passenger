@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { Easing, View } from 'react-native';
 import { AnimatedRegion, MarkerAnimated } from 'react-native-maps';
 
-import { CAR_MARKER_ANIMATION_MS } from '@/constants/timeouts';
+import { CAR_MARKER_ANIMATION_MS, CAR_MARKER_SNAPSHOT_MS } from '@/constants/timeouts';
 import { bearingDegrees, distanceMeters } from '@/lib/geo';
 import { makeStyles, useTheme } from '@/theme';
 import type { LatLng } from '@/types/geo';
+
+import { TopDownCar } from './TopDownCar';
 
 /** Ignore GPS jitter below this distance when computing a bearing. */
 const MIN_BEARING_DISTANCE_M = 3;
@@ -32,6 +34,14 @@ export function CarMarker({ coordinate, heading, title }: CarMarkerProps) {
   const [rotation, setRotation] = useState(heading ?? 0);
   // The native marker is a snapshot of the view: retake it once per color scheme.
   const [snapshotScheme, setSnapshotScheme] = useState<boolean | null>(null);
+  const snapshotTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (snapshotTimer.current) clearTimeout(snapshotTimer.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     const from = previous.current;
@@ -69,54 +79,27 @@ export function CarMarker({ coordinate, heading, title }: CarMarkerProps) {
       zIndex={sizes.car.zIndex}
       tracksViewChanges={snapshotScheme !== isDark}
     >
-      {/* Re-mounts on a scheme switch so onLayout fires again; wait a frame so the car is
-          drawn before the snapshot. The padded frame keeps the shadow inside the snapshot. */}
+      {/* Re-mounts on a scheme switch so onLayout fires again; the snapshot waits until the
+          SVG has drawn. The padded frame keeps the outline inside the snapshot. */}
       <View
         key={isDark ? 'dark' : 'light'}
         style={styles.frame}
         onLayout={() => {
           const scheme = isDark;
-          requestAnimationFrame(() => setSnapshotScheme(scheme));
+          if (snapshotTimer.current) clearTimeout(snapshotTimer.current);
+          snapshotTimer.current = setTimeout(
+            () => setSnapshotScheme(scheme),
+            CAR_MARKER_SNAPSHOT_MS,
+          );
         }}
       >
-        <View style={styles.car}>
-          <View style={styles.windshield} />
-          <View style={styles.rearWindow} />
-        </View>
+        <TopDownCar width={sizes.car.width} height={sizes.car.height} />
       </View>
     </MarkerAnimated>
   );
 }
 
-const useStyles = makeStyles((t) => {
-  const glassWidth = t.sizes.car.width - t.sizes.car.glassInset * 2;
-  return {
-    frame: { padding: t.spacing.xs },
-    car: {
-      width: t.sizes.car.width,
-      height: t.sizes.car.height,
-      borderRadius: t.sizes.car.radius,
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      // Bonnet in front (top = direction of travel), short boot behind.
-      paddingTop: t.sizes.car.hood,
-      paddingBottom: t.sizes.car.trunk,
-      backgroundColor: t.colors.mapCar,
-      borderWidth: t.sizes.car.outline,
-      borderColor: t.colors.mapCarOutline,
-      ...t.shadows.sm,
-    },
-    windshield: {
-      width: glassWidth,
-      height: t.sizes.car.windshield,
-      borderRadius: t.sizes.car.glassRadius,
-      backgroundColor: t.colors.mapCarGlass,
-    },
-    rearWindow: {
-      width: glassWidth,
-      height: t.sizes.car.rearWindow,
-      borderRadius: t.sizes.car.glassRadius,
-      backgroundColor: t.colors.mapCarGlass,
-    },
-  };
-});
+const useStyles = makeStyles((t) => ({
+  // Padding keeps the anti-aliased outline inside the marker snapshot.
+  frame: { padding: t.spacing.xxs },
+}));

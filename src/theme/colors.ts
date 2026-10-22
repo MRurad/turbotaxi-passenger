@@ -36,6 +36,9 @@ export interface ColorTokens {
   mapCar: string;
   mapCarGlass: string;
   mapCarOutline: string;
+  mapCarWheel: string;
+  mapCarHeadlight: string;
+  mapCarTaillight: string;
   skeleton: string;
   skeletonHighlight: string;
   shadow: string;
@@ -77,6 +80,9 @@ export const lightColors: ColorTokens = {
   mapCar: palette.steel[800],
   mapCarGlass: palette.steel[200],
   mapCarOutline: palette.neutral[0],
+  mapCarWheel: palette.neutral[900],
+  mapCarHeadlight: palette.status.warning,
+  mapCarTaillight: palette.status.danger,
   skeleton: palette.neutral[100],
   skeletonHighlight: palette.neutral[50],
   shadow: palette.shadow,
@@ -116,6 +122,9 @@ export const darkColors: ColorTokens = {
   mapCar: palette.neutral[50],
   mapCarGlass: palette.steel[700],
   mapCarOutline: palette.neutral[900],
+  mapCarWheel: palette.neutral[900],
+  mapCarHeadlight: palette.status.warning,
+  mapCarTaillight: palette.status.danger,
   // Lighter than surfaceElevated (the sheet) so skeletons stay visible on it.
   skeleton: palette.navy.border,
   skeletonHighlight: palette.neutral[700],

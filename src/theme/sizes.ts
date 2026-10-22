@@ -27,17 +27,9 @@ export const sizes = {
   mapControl: 48,
   /** Driver car on the map, seen from above (rotates with the direction of travel). */
   car: {
-    width: 20,
-    height: 40,
-    radius: 6,
-    /** Bonnet in front of the windshield: what makes the shape read as a car. */
-    hood: 10,
-    windshield: 8,
-    rearWindow: 5,
-    trunk: 4,
-    glassInset: 3,
-    glassRadius: 2,
-    outline: 2,
+    /** On-map size (the vector car is drawn in a 40 × 80 box, nose up). */
+    width: 24,
+    height: 48,
     /** Above the pickup / destination pins (the car ends up on the pickup). */
     zIndex: 10,
   },

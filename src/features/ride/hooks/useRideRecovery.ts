@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
+import { AppState } from 'react-native';
 
+import { RIDE_HISTORY_POLL_MS } from '@/constants/timeouts';
 import { userHub } from '@/realtime/userHub';
 
 import { clearPersistedRide, snapshotOf, startRidePersistence } from '../persistence';
@@ -10,7 +12,7 @@ import {
   isStillCurrent,
   type RecoveryDecision,
 } from '../recovery';
-import { loadRidePlaces, loadRideSnapshot } from '../snapshot';
+import { isActivePhase, loadRidePlaces, loadRideSnapshot } from '../snapshot';
 import { useRideStore } from '../store';
 
 function apply(decision: RecoveryDecision): void {
@@ -20,9 +22,12 @@ function apply(decision: RecoveryDecision): void {
 }
 
 /**
- * Mounted once in the signed-in layout. Persists the ride, restores it after a restart and,
- * on start and every user-hub (re)connect, checks trip history for a ride that ended while
- * the app was away (there is no GET ride endpoint — docs/BACKEND_REQUESTS.md #3/#4).
+ * Mounted once in the signed-in layout. Persists the ride, restores it after a restart and
+ * checks trip history for a ride that ended without the app hearing about it (there is no
+ * GET ride endpoint — docs/BACKEND_REQUESTS.md #3/#4): on start, on every user-hub
+ * (re)connect, on every return to the foreground (iOS pauses timers in the background) and
+ * every RIDE_HISTORY_POLL_MS while a ride is active — also in the background on Android, where
+ * the hub is kept alive during a ride (e.g. a driver cancel whose hub event never arrives).
  */
 export function useRideRecovery(): void {
   useEffect(() => {
@@ -69,7 +74,17 @@ export function useRideRecovery(): void {
     const removeOnConnect = userHub.addOnConnect(() => {
       check().catch(() => undefined);
     });
+    const poll = setInterval(() => {
+      if (isActivePhase(useRideStore.getState().phase)) check().catch(() => undefined);
+    }, RIDE_HISTORY_POLL_MS);
+    const foreground = AppState.addEventListener('change', (state) => {
+      if (state === 'active' && isActivePhase(useRideStore.getState().phase)) {
+        check().catch(() => undefined);
+      }
+    });
     return () => {
+      foreground.remove();
+      clearInterval(poll);
       controller.abort();
       resetPendingRideUpdates();
       removeOnConnect();

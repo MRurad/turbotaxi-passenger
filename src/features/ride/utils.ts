@@ -97,7 +97,8 @@ export function activePolyline(
   phase: RidePhase,
   polylines: { toPickup: string | null; trip: string | null },
 ): string | null {
-  if (phase === 'driver_assigned' || phase === 'driver_arrived') return polylines.toPickup;
+  // Arrived: the car is at the pickup, so there is no leg left to draw.
+  if (phase === 'driver_assigned') return polylines.toPickup;
   if (phase === 'in_progress') return polylines.trip;
   return null;
 }

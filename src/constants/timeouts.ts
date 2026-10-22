@@ -25,6 +25,12 @@ export const QUERY_STALE_TIME_MS = 30_000;
 /** A route price is reused this long for the same route + class + promo (no re-POST on remount). */
 export const ROUTE_ESTIMATE_STALE_TIME_MS = 2 * 60_000;
 
+/**
+ * During an active ride, trip history is re-checked this often: a safety net for a cancel /
+ * completion whose hub event never arrives (there is no GET ride endpoint).
+ */
+export const RIDE_HISTORY_POLL_MS = 30_000;
+
 /** A driver's name / car doesn't change during a ride. */
 export const DRIVER_PROFILE_STALE_TIME_MS = 30 * 60_000;
 
@@ -39,6 +45,9 @@ export const PLACES_STALE_TIME_MS = 24 * 60 * 60_000;
 
 /** Map camera animations. */
 export const MAP_ANIMATION_MS = 450;
+
+/** The car marker is snapshotted this long after layout, once its SVG has drawn. */
+export const CAR_MARKER_SNAPSHOT_MS = 250;
 
 /** Car marker glides between driver location updates over this long. */
 export const CAR_MARKER_ANIMATION_MS = 1_000;

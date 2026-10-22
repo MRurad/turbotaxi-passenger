@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react-native';
 
-import { ACTIVE_RIDE_STALE_MS } from '@/constants/timeouts';
+import { ACTIVE_RIDE_STALE_MS, RIDE_HISTORY_POLL_MS } from '@/constants/timeouts';
 import { VEHICLE_TYPE } from '@/constants/vehicles';
 import type { Trip } from '@/features/history/types';
 import { useRideRecovery } from '@/features/ride/hooks/useRideRecovery';
@@ -277,5 +277,33 @@ describe('useRideRecovery hub lifecycle', () => {
     await unmount();
 
     expect(mockRemoveOnConnect).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('safety-net polling', () => {
+  afterEach(() => jest.useRealTimers());
+
+  it('re-checks trip history while a ride is active and ends it there (e.g. driver cancel)', async () => {
+    jest.useFakeTimers();
+    jest.mocked(loadRideSnapshot).mockResolvedValue(snapshot());
+    jest.mocked(loadRidePlaces).mockResolvedValue(PLACES);
+    jest.mocked(checkPersistedRide).mockResolvedValue({ kind: 'restore', snapshot: snapshot() });
+    const { unmount } = await renderHook(() => useRideRecovery());
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(0);
+    });
+    expect(useRideStore.getState().phase).toBe('driver_assigned');
+
+    const cancelled: RecoveryDecision = {
+      kind: 'finished',
+      phase: 'cancelled',
+      trip: { ...TRIP, status: 'cancelled' },
+    };
+    jest.mocked(checkPersistedRide).mockResolvedValue(cancelled);
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(RIDE_HISTORY_POLL_MS);
+    });
+    expect(useRideStore.getState().phase).toBe('cancelled');
+    await unmount();
   });
 });

@@ -27,6 +27,10 @@ export const queryKeys = {
 
   chatMessages: (rideId: number) => ['chat', 'messages', rideId] as const,
   rideDriver: (driverId: number) => ['ride', 'driver', driverId] as const,
+  /** Road route for a ride leg the backend sent as a straight line. */
+  rideRoad: (rideId: number, leg: 'approach' | 'trip', driverId: number | null) =>
+    ['ride', 'road', rideId, leg, driverId] as const,
+  rideRoadIdle: () => ['ride', 'road', 'idle'] as const,
   /** Placeholder key while no driver is assigned (the query is skipped). */
   rideDriverIdle: () => ['ride', 'driver', 'idle'] as const,
   chatConversations: () => ['chat', 'conversations'] as const,

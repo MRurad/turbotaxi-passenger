@@ -8,7 +8,8 @@ import type { LatLng } from '@/types/geo';
 
 import { RIDE_FRAME_BUCKET_PX } from '../constants';
 import { useRideStore } from '../store';
-import { activePolyline, framePoints } from '../utils';
+import { framePoints } from '../utils';
+import { useRideRoute } from './useRideRoute';
 
 const coordKey = (c?: LatLng | null) => (c ? `${c.latitude},${c.longitude}` : '');
 
@@ -23,16 +24,15 @@ export function useRideCamera(
   /** The map view has been laid out (a fit before that is lost). */
   ready: boolean,
 ) {
-  const { phase, pickup, destination, car, polylines } = useRideStore(
+  const { phase, pickup, destination, car } = useRideStore(
     useShallow((s) => ({
       phase: s.phase,
       pickup: s.pickup?.location ?? null,
       destination: s.destination?.location ?? null,
       car: s.driverLocation,
-      polylines: s.polylines,
     })),
   );
-  const encoded = activePolyline(phase, polylines);
+  const encoded = useRideRoute();
   const route = useMemo(() => decodePolyline(encoded), [encoded]);
   const latest = useRef({ phase, pickup, destination, car, route, framePadding });
 

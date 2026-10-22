@@ -5,41 +5,62 @@ description: The passenger ride state machine (booking → searching → driver 
 
 # Ride flow
 
-## Phases (app-side, in `src/features/ride/types.ts`)
-```ts
-export type RidePhase =
-  | 'idle'            // home map, nothing booked
-  | 'searching'       // POST /api/Rides succeeded, waiting for a driver
-  | 'driver_assigned' // driver accepted, coming to pickup
-  | 'driver_arrived'
-  | 'in_progress'
-  | 'completed'       // show summary, then reset to idle
-  | 'cancelled'       // by user or driver
-  | 'no_driver';      // timeout / nobody accepted
-```
-Backend status strings map to phases in `src/constants/rideStatus.ts` (`mapBackendStatus(s: string | null): RidePhase | 'unknown'`). An unknown status is logged and doesn't change the phase.
+Implemented in `src/features/ride/`. Backend facts are in `docs/REALTIME_CONTRACT.md`, and open questions are in `docs/BACKEND_REQUESTS.md`. There is **no GET ride / active-ride endpoint, and there won't be one** (decided). Live state comes only from SignalR plus the create response.
 
-## Store: `src/features/ride/store.ts` (Zustand + persist to AsyncStorage)
-State: `phase, rideId, pickup, destination (Place: {lat,lng,address}), vehicleType, estimate, driver?, vehicle?, driverLocation?, polylines {toPickup?, trip?}, fare {estimated, final?, discount?, promoCode?}, createdAt, updatedAt`.
-Actions are named transitions, never raw setters: `startSearching(createRideResponse, draft)`, `driverAssigned(evt)`, `driverArrived()`, `rideStarted(evt)`, `rideFinished(evt)`, `rideCancelled(evt)`, `noDriverFound()`, `updateDriverLocation(loc)`, `reset()`.
-- Each transition checks that the current phase allows it (a small `ALLOWED_TRANSITIONS` table). Invalid transitions are ignored and logged in dev. This protects against duplicated or late SignalR events.
-- Only persist what's needed to restore: rideId, phase, places, driver, vehicle, fare. Don't persist driverLocation.
-- On app start: if the persisted phase is active and `updatedAt` is older than 3 h, reset. Otherwise restore and resubscribe. (When `GET /api/rides/active` exists, use it as the source of truth instead.)
+## Phases (`src/types/ride.ts`)
+`idle → searching → driver_assigned → driver_arrived → in_progress → completed`, plus `cancelled` and `no_driver`. Active = searching, driver_assigned, driver_arrived, in_progress (`isActivePhase` in `snapshot.ts`).
 
-## Booking draft: `src/features/booking/store.ts`
-Holds pickup, destination, selected vehicleType and selected promo before the ride is created. Reset after a successful create.
+## From hub event to phase (`utils.ts` → `rideEvents.ts`)
+- **`phaseFromUpdate(evt)`:**
+  - `mapBackendStatus(status)` (`src/constants/rideStatus.ts`) maps the status. Cancellations are matched with an anchored pattern in any spelling (`Canceled`, `CancelledByDriver` …); in-between states like `CancelRequested` are not.
+  - `polylinePhase` breaks ties: `Approach` = driver on the way, `EnRoute` = trip. The accepted and arrived strings were never captured.
+  - Unknown statuses leave the phase unchanged.
+- **`Searching` with a `driverId`:** that driver was only *offered* the ride. Never subscribe to them.
+- **`Searching` after an accept:** the driver dropped out (`driverLost`). Go back to searching, forget the driver, restart the search clock.
+- **`routeInfoFromUpdate(evt)`:** polylines (`toPickup` while approaching, `trip`), ETA, positions, and driver details if ever sent.
+- **Ignored events:** events for another `rideId`. Updates that arrive before recovery has hydrated the store are held and replayed (`flushPendingRideUpdates`).
 
-## Flow
-1. Home: the user sets pickup (current location or pin drag) and destination (search).
-2. Booking sheet: `POST /api/Routes/estimate` for each vehicle type in parallel (`useQueries`). Show price, ETA and the route polyline. The user picks a vehicle and optionally a promo.
-3. "Order": `POST /api/Rides` with userId from auth → `startSearching`. The searching UI has an animated pulse, the elapsed time, and a Cancel button.
-4. Cancel: `POST /api/Rides/{id}/cancel-by-user` → `rideCancelled`. Ask for confirmation first.
-5. Hub events drive the next phases. On `driver_assigned`, call `SubscribeToDriverLocation(driverId)`. Unsubscribe on completed or cancelled.
-6. Searching timeout: if the phase is still `searching` after `SEARCH_TIMEOUT_MS` (constant, 3 min), show `no_driver` with Retry and Cancel.
-7. Completed: a summary sheet with final price, discount and promo, then "Done" → `reset()`.
+## Store (`store.ts`, Zustand)
+- **Named transitions only:** `startSearching` (returns false when refused → the caller cancels that ride), `driverAssigned`, `driverArrived`, `rideStarted`, `rideFinished`, `rideCancelled(reason)`, `noDriverFound`, `driverLost`, `updateRoute`, `updateDriverLocation`, `restore`, `finishFromHistory`, `markHydrated`, `reset`.
+- **`ALLOWED_TRANSITIONS`:** anything else is ignored and logged in dev (late or duplicate events). Skipping ahead is allowed.
+- **`no_driver`:** the store lets go of the ride id, and the app cancels the backend ride on its own 3-minute timeout. Only Retry (a new ride) or give up follow.
+- **`updatedAt`:** changes on phase changes only. Route refreshes don't touch storage.
+- **Persistence (`persistence.ts`):**
+  - The snapshot goes to AsyncStorage: ids, phase, prices, `searchStartedAt`. **Never PII.**
+  - Pickup and destination go to SecureStore.
+  - Driver location and polylines are never stored; SignalR re-sends them.
+  - Both are cleared on reset and on logout (`useClearCacheOnLogout`).
 
-## Routing
-A single `useRideRouteGuard()` hook in the authenticated layout redirects based on `phase`. Active phases go to `/ride`, `completed` goes to `/ride/summary`, and `idle` goes to home. Screens never `router.push` between ride phases themselves.
+## Hooks (mounted once in `src/app/(app)/_layout.tsx`)
+- **`useRideRecovery`:** restores the snapshot on start (snapshots older than 3 h are dropped), then hydrates. It checks the first page of trip history (`recovery.ts`): on start, on every user-hub (re)connect, on every return to the foreground, and every `RIDE_HISTORY_POLL_MS` (30 s) while a ride is active. That last check is a safety net for a cancel or completion whose hub event never arrives. If the ride is final there, it shows the summary or the cancelled screen. A decision is applied only while it is still current (`isStillCurrent`).
+- **`useRideEvents`:**
+  - Wires hub events to the store.
+  - `SubscribeToDriverLocation(driverId)` is an on-connect action while a driver is tracked, and is unsubscribed on exit.
+  - The search timeout runs from `searchStartedAt`.
+  - Haptics and screen-reader announcements happen on phase changes.
+- **`useRideRouteGuard`:** the only navigation between phases. Active, cancelled and no_driver go to `/ride`, completed goes to `/ride/summary`, idle goes home. It does nothing when signed out.
+
+## Ordering, cancel, retry
+- Order: `useCreateRide` → `POST /api/Rides`.
+  - A ride the store refuses (double tap, a ride already active), or one that returns after sign-out, is cancelled immediately.
+  - `OrderButton` only enables once the store is hydrated and idle.
+  - `CreateRideRequest` has no promo field. Show what the response says, and toast if the chosen promo wasn't applied.
+- Cancel: `ConfirmDialog` → `useCancelRide` → `POST /api/Rides/{id}/cancel-by-user` → `rideCancelled('user')`.
+
+## Driver details
+The events carry none. The stop-gap adapter `src/api/services/drivers.ts` reads `GET /api/Drivers/{id}` → `/api/Users/{userId}` + `/api/Vehicles/{vehicleId}`, through `useDriverProfile`. Hub details win field by field (`mergeDriver`). Replace the adapter when the backend sends details (BACKEND_REQUESTS #1).
+
+## Route line (`useRideRoute`)
+The backend's approach polyline is a straight two-point segment (BACKEND_REQUESTS #28).
+- A leg with fewer than 3 points gets its road route from `POST /api/Routes/estimate` (stop-gap): fetched once per ride / leg (/ driver for the approach), starting from the car's position at that moment, and retried on failure.
+- Nothing is drawn rather than a straight line, and there is no line once the driver has arrived.
+- `RideMapLayers` and `useRideCamera` both read it.
+
+## Screens
+`RideScreen` (map + `RideMapLayers` + `SearchPulse` + `RidePanel`, one content component per phase) and `RideSummaryScreen`.
+- The camera (`useRideCamera`) frames per phase and refits on phase, route or sheet-size changes, not on every car move. Map rotation is off, so the car's heading stays right on Apple Maps.
+- The car is `TopDownCar` (react-native-svg) inside `CarMarker`, using the `mapCar*` color tokens.
+- Components stay ≤ 150 lines.
 
 ## Testing
-The store transitions are pure. Unit-test every allowed and disallowed transition plus `mapBackendStatus`.
+Pure parts are unit-tested: transitions, `phaseFromUpdate` against the captured payloads, `rideRedirect`, recovery decisions, persistence. Hooks are tested with a mocked hub and services (`src/features/ride/__tests__`).
