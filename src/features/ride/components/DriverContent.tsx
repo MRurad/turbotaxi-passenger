@@ -9,6 +9,7 @@ import { makeStyles } from '@/theme';
 
 import { TEL_URL_SCHEME } from '../constants';
 import { useDriverProfile } from '../hooks/useDriverProfile';
+import { useLiveEta } from '../hooks/useLiveEta';
 import { useRideStore } from '../store';
 import { mergeDriver } from '../utils';
 import { ChatButton } from './ChatButton';
@@ -22,13 +23,13 @@ export function DriverContent() {
   const { t } = useTranslation();
   const { language } = useChangeLanguage();
   const toast = useToast();
-  const { phase, driverId, eventDriver, vehicleType, etaMinutes } = useRideStore(
+  const etaMinutes = useLiveEta();
+  const { phase, driverId, eventDriver, vehicleType } = useRideStore(
     useShallow((s) => ({
       phase: s.phase,
       driverId: s.driverId,
       eventDriver: s.driver,
       vehicleType: s.vehicleType,
-      etaMinutes: s.etaMinutes,
     })),
   );
   const profile = useDriverProfile(driverId);

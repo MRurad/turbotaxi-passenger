@@ -4,7 +4,7 @@ import { Text } from '@/components/ui';
 import { useChangeLanguage } from '@/i18n/useChangeLanguage';
 import { formatDuration } from '@/lib/format';
 
-import { useRideStore } from '../store';
+import { useLiveEta } from '../hooks/useLiveEta';
 import { RideFareRow } from './RideFareRow';
 import { RideRoute } from './RideRoute';
 
@@ -15,7 +15,7 @@ import { RideRoute } from './RideRoute';
 export function InProgressContent() {
   const { t } = useTranslation();
   const { language } = useChangeLanguage();
-  const etaMinutes = useRideStore((s) => s.etaMinutes);
+  const etaMinutes = useLiveEta();
 
   return (
     <>

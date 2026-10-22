@@ -60,6 +60,7 @@ export const HomeMapLayers = memo(function HomeMapLayers() {
       {booking && minutes !== undefined ? (
         <MarkerLabel
           coordinate={destination.location}
+          lifted
           title={duration}
           subtitle={arrival}
           onPress={() => startPinPicking('destination')}

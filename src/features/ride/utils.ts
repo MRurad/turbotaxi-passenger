@@ -1,4 +1,5 @@
 import { mapBackendStatus } from '@/constants/rideStatus';
+import { MINUTE_MS } from '@/constants/timeouts';
 import { ROUTE_SEGMENTS, ROUTES } from '@/constants/routes';
 import type { RideStatusUpdatedEvent } from '@/realtime/events';
 import type { LatLng } from '@/types/geo';
@@ -102,6 +103,20 @@ export function activePolyline(
   if (phase === 'driver_assigned') return polylines.toPickup;
   if (phase === 'in_progress') return polylines.trip;
   return null;
+}
+
+/**
+ * The ETA counted down from when it arrived (the hub sends it only now and then). Never below
+ * one minute: "0 min" while the car is still moving would be wrong.
+ */
+export function remainingEtaMinutes(
+  etaMinutes: number | null,
+  etaAt: number | null,
+  now: number,
+): number | null {
+  if (etaMinutes === null) return null;
+  const elapsed = etaAt === null ? 0 : Math.floor((now - etaAt) / MINUTE_MS);
+  return Math.max(1, etaMinutes - elapsed);
 }
 
 /** Points to frame on the ride map: what matters in this phase. */

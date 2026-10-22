@@ -23,8 +23,10 @@ const ROAD_RETRY_BASE_MS = 2_000;
  * The encoded route to draw for the current leg. The backend's approach polyline is a straight
  * driver → pickup segment (docs/BACKEND_REQUESTS.md #28), so when a leg comes without road
  * geometry the road route is fetched once per ride / leg / driver from POST /api/Routes/estimate
- * (stop-gap), from where the car is at that moment — not again as it moves. Nothing is drawn
- * rather than a straight line; a failed fetch is retried with backoff.
+ * (stop-gap), from where the car is at that moment — not again as it moves. After an app
+ * reload (no polyline until the next hub update) the leg is routed from the car the same way,
+ * and its duration fills in the missing ETA. Nothing is drawn rather than a straight line; a
+ * failed fetch is retried with backoff.
  */
 export function useRideRoute(): string | null {
   const { phase, polylines, rideId, driverId, car, pickup, destination, vehicleType } =
@@ -43,10 +45,12 @@ export function useRideRoute(): string | null {
   const encoded = activePolyline(phase, polylines);
   const hasRoad = useMemo(() => decodePolyline(encoded).length >= MIN_ROAD_POINTS, [encoded]);
   const approaching = phase === 'driver_assigned';
+  const onLeg = approaching || phase === 'in_progress';
   const leg = approaching ? 'approach' : 'trip';
-  const from = approaching ? car : pickup;
+  // No polyline at all = restored after a reload: route the rest of the trip from the car.
+  const from = approaching || encoded === null ? car : pickup;
   const to = approaching ? pickup : destination;
-  const needsRoad = encoded !== null && !hasRoad && rideId !== null && from && to;
+  const needsRoad = onLeg && !hasRoad && rideId !== null && from && to;
 
   const road = useQuery<RouteEstimate, ApiError>({
     // Keyed by the leg and driver, not the car position: fetched once, not on every move.
@@ -69,6 +73,14 @@ export function useRideRoute(): string | null {
   useEffect(() => {
     if (road.error) logger.warn('ride: road route unavailable', { code: road.error.code });
   }, [road.error]);
+
+  // After a reload the hub hasn't re-sent the ETA yet: use the road route's duration meanwhile.
+  const roadMinutes = needsRoad ? road.data?.durationMinutes : undefined;
+  useEffect(() => {
+    if (roadMinutes === undefined) return;
+    const store = useRideStore.getState();
+    if (store.etaMinutes === null) store.updateRoute({ etaMinutes: roadMinutes });
+  }, [roadMinutes]);
 
   if (hasRoad) return encoded;
   return needsRoad ? (road.data?.encodedPolyline ?? null) : null;

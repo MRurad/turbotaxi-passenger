@@ -10,6 +10,7 @@ import {
   cancelReasonFromStatus,
   framePoints,
   phaseFromUpdate,
+  remainingEtaMinutes,
   rideRedirect,
   routeInfoFromUpdate,
 } from '@/features/ride/utils';
@@ -97,6 +98,18 @@ describe('cancelReasonFromStatus', () => {
     expect(cancelReasonFromStatus('CancelledByDriver')).toBe('driver');
     expect(cancelReasonFromStatus('cancelled_by_user')).toBe('user');
     expect(cancelReasonFromStatus('Cancelled')).toBe('unknown');
+  });
+});
+
+describe('remainingEtaMinutes', () => {
+  const at = 1_000_000;
+  it('counts down from when the ETA arrived, never below 1', () => {
+    expect(remainingEtaMinutes(8, at, at)).toBe(8);
+    expect(remainingEtaMinutes(8, at, at + 3 * 60_000 + 5_000)).toBe(5);
+    expect(remainingEtaMinutes(2, at, at + 10 * 60_000)).toBe(1);
+  });
+  it('is unknown without an ETA', () => {
+    expect(remainingEtaMinutes(null, null, at)).toBeNull();
   });
 });
 

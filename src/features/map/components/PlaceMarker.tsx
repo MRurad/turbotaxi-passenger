@@ -42,7 +42,12 @@ export function PlaceMarker({
         {pickup ? (
           <View style={styles.dot} />
         ) : (
-          <Ionicons name="flag" size={sizes.icon.sm} color={colors.textOnPrimary} />
+          <Ionicons
+            name="flag"
+            size={sizes.icon.sm}
+            color={colors.textOnPrimary}
+            style={styles.flag}
+          />
         )}
       </View>
     </Marker>
@@ -61,6 +66,8 @@ const useStyles = makeStyles((t) => ({
   },
   pickup: { backgroundColor: t.colors.primaryFill },
   destination: { backgroundColor: t.colors.danger },
+  // The glyph's pole sits left of its box: nudge it so the flag reads as centered.
+  flag: { marginLeft: t.spacing.xxs },
   dot: {
     width: t.sizes.pin.stemWidth * 3,
     height: t.sizes.pin.stemWidth * 3,

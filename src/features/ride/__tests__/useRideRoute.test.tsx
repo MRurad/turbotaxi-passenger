@@ -103,4 +103,39 @@ describe('useRideRoute', () => {
     expect(estimateRoute).toHaveBeenCalledTimes(1);
     client.clear();
   });
+
+  it('after a reload (no polyline yet) routes from the car and fills in the ETA', async () => {
+    jest.mocked(estimateRoute).mockResolvedValue({
+      distanceKm: 3.7,
+      durationMinutes: 8,
+      encodedPolyline: ROAD,
+      price: { original: 0, discount: 0, final: 0, currency: 'AZN', hasDiscount: false },
+    });
+    const store = useRideStore.getState();
+    store.reset();
+    store.restore(
+      {
+        rideId: 2,
+        phase: 'driver_assigned',
+        driverId: 4,
+        vehicleType: 1,
+        fare: { estimated: 5, original: 5, discount: 0, promoCode: null, final: null },
+        tripKm: 4,
+        tripMinutes: 9,
+        searchStartedAt: 1,
+        updatedAt: Date.now(),
+      },
+      { pickup: place(40.3769, 49.8671), destination: place(40.4093, 49.8671) },
+    );
+    const { client, wrapper } = setup();
+    const { result } = await renderHook(() => useRideRoute(), { wrapper });
+    expect(estimateRoute).not.toHaveBeenCalled(); // waits for the car's position
+
+    await act(async () => {
+      useRideStore.getState().updateDriverLocation({ latitude: 40.41, longitude: 49.87 });
+    });
+    await waitFor(() => expect(result.current).toBe(ROAD));
+    expect(useRideStore.getState().etaMinutes).toBe(8);
+    client.clear();
+  });
 });

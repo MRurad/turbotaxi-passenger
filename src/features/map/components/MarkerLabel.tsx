@@ -14,6 +14,8 @@ export interface MarkerLabelProps {
   /** Second part, e.g. "Arrive at 12:45". */
   subtitle?: string;
   onPress?: () => void;
+  /** Extra room between the pointer and the marker (e.g. the taller-looking flag). */
+  lifted?: boolean;
   accessibilityLabel?: string;
   testID?: string;
 }
@@ -27,6 +29,7 @@ export function MarkerLabel({
   title,
   subtitle,
   onPress,
+  lifted = false,
   accessibilityLabel,
   testID,
 }: MarkerLabelProps) {
@@ -56,7 +59,7 @@ export function MarkerLabel({
       testID={testID}
     >
       <View
-        style={[styles.wrap, height === 0 && styles.measuring]}
+        style={[styles.wrap, lifted && styles.lifted, height === 0 && styles.measuring]}
         onLayout={(e: LayoutChangeEvent) => setHeight(Math.round(e.nativeEvent.layout.height))}
       >
         <View style={styles.bubble}>
@@ -87,6 +90,7 @@ const useStyles = makeStyles((t) => ({
     paddingTop: t.spacing.xs,
     paddingBottom: t.sizes.pin.head / 2 + t.spacing.xxs,
   },
+  lifted: { paddingBottom: t.sizes.pin.head / 2 + t.spacing.sm },
   // Not yet lifted into place (first layout on iOS): don't flash it over the marker.
   measuring: { opacity: 0 },
   bubble: {

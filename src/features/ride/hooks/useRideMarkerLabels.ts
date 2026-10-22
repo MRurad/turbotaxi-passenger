@@ -7,6 +7,7 @@ import { formatClock, formatDuration } from '@/lib/format';
 import { useNow } from '@/lib/hooks/useNow';
 
 import { useRideStore } from '../store';
+import { useLiveEta } from './useLiveEta';
 
 export interface RideMarkerLabel {
   title: string;
@@ -27,8 +28,9 @@ export function useRideMarkerLabels(): RideMarkerLabels {
   const { t } = useTranslation();
   const { language } = useChangeLanguage();
   const now = useNow(CLOCK_TICK_MS);
-  const { phase, etaMinutes, tripMinutes } = useRideStore(
-    useShallow((s) => ({ phase: s.phase, etaMinutes: s.etaMinutes, tripMinutes: s.tripMinutes })),
+  const etaMinutes = useLiveEta();
+  const { phase, tripMinutes } = useRideStore(
+    useShallow((s) => ({ phase: s.phase, tripMinutes: s.tripMinutes })),
   );
 
   const arriveAt = (minutesFromNow: number) =>

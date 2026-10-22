@@ -28,6 +28,8 @@ export interface RideState {
   polylines: { toPickup: string | null; trip: string | null };
   /** Live ETA / distance for the current leg (to pickup, then to destination). */
   etaMinutes: number | null;
+  /** When etaMinutes was received (memory only): the ETA counts down from there. */
+  etaAt: number | null;
   remainingKm: number | null;
   cancelReason: CancelReason | null;
   /** Searching again because the assigned driver dropped out (memory only, for the notice). */
@@ -130,6 +132,7 @@ const INITIAL: RideState = {
   driverLocation: null,
   polylines: { toPickup: null, trip: null },
   etaMinutes: null,
+  etaAt: null,
   remainingKm: null,
   cancelReason: null,
   driverDropped: false,
@@ -158,6 +161,7 @@ function routePatch(s: RideState, info: RideRouteInfo): Partial<RideState> {
       trip: info.trip ?? s.polylines.trip,
     },
     etaMinutes: info.etaMinutes ?? s.etaMinutes,
+    etaAt: info.etaMinutes !== undefined ? Date.now() : s.etaAt,
     remainingKm: info.remainingKm ?? s.remainingKm,
     driver:
       info.driver ??
@@ -188,6 +192,7 @@ export const useRideStore = create<RideStore>()((set, get) => {
     set({
       ...routePatch(s, info),
       etaMinutes: info.etaMinutes ?? null,
+      etaAt: info.etaMinutes !== undefined ? now : null,
       remainingKm: info.remainingKm ?? null,
       ...extra,
       phase: to,

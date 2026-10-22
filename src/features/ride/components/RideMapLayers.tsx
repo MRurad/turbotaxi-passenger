@@ -39,6 +39,7 @@ export const RideMapLayers = memo(function RideMapLayers() {
       {destination && labels.destination ? (
         <MarkerLabel
           coordinate={destination.location}
+          lifted
           {...labels.destination}
           testID="ride-destination-label"
         />
