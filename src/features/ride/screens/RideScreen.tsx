@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { useBackToWhereTo } from '@/features/booking/hooks/useBackToWhereTo';
+import { HomeTopBar } from '@/features/home/components/HomeTopBar';
 import { AppMap, type AppMapHandle } from '@/features/map/components/AppMap';
 import { BAKU_REGION, USER_ZOOM_DELTA } from '@/features/map/constants';
 import { useCurrentLocation } from '@/features/map/hooks/useCurrentLocation';
@@ -24,9 +25,13 @@ import { useRideStore } from '../store';
 export function RideScreen() {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
-  const { spacing } = useTheme();
+  const { spacing, sizes } = useTheme();
   const mapRef = useRef<AppMapHandle>(null);
-  const layout = useMapOverlayLayout({ overlayTop: 0, frameTop: insets.top + spacing.lg });
+  // Routes are framed below the avatar button (same top bar as home).
+  const layout = useMapOverlayLayout({
+    overlayTop: 0,
+    frameTop: insets.top + sizes.mapControl + spacing.md,
+  });
   const location = useCurrentLocation();
   const phase = useRideStore((s) => s.phase);
   // Start on the pickup instead of flying in from Baku's center.
@@ -67,6 +72,8 @@ export function RideScreen() {
         </AppMap>
       </View>
       {searching && layout.pinPoint ? <SearchPulse point={layout.pinPoint} /> : null}
+      {/* Account menu stays reachable during a ride (profile, dev realtime inspector). */}
+      <HomeTopBar />
       <RealtimeBanner />
       <RidePanel onHeightChange={layout.setSheetHeight} />
     </View>
