@@ -61,7 +61,8 @@ src/
 - Ride status is a **string** from the backend; normalize through `src/constants/rideStatus.ts` with an `unknown` fallback.
 - **There is no GET ride / active ride endpoint.** Live ride state comes only from SignalR (`/hubs/user`) + the `CreateRideResponse`. Persist an active-ride snapshot locally so the app can restore after restart.
 - Hubs: `/hubs/user` (SubscribeUser, SubscribeToDriverLocation(driverId), Ping), `/hubs/chat` (JoinRideChat(rideId, role, actorId), LeaveRideChat(rideId)). Server→client event names are defined in `docs/REALTIME_CONTRACT.md` and mirrored in `src/realtime/events.ts` — that file is the ONLY place event names appear.
-- Maps/places: Google (Maps SDK, Places API (New) autocomplete, Geocoding). Key from `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`.
+- Maps: react-native-maps (Google provider in dev builds, Apple Maps in Expo Go). Key from `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`.
+- Places (search + reverse geocoding): **Photon** (photon.komoot.io, free OpenStreetMap, no key) while Google billing is off. Features import only from `src/lib/places`; the provider is `PLACES_PROVIDER` in `src/constants/places.ts` (set it to `'google'` to use Places API (New) + Geocoding again). Keep the OSM attribution under results, and keep Photon traffic low (debounce, cache, limited concurrency). Reverse geocoding falls back to the OS geocoder.
 
 ## Skills & agents
 Skills in `.claude/skills/` (api-client, realtime-signalr, ride-flow, maps-location, ui-design-system, i18n) — load the relevant one before working in that area.
