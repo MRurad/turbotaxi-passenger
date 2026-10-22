@@ -41,9 +41,9 @@ export const CHAT_HUB_METHODS = {
   leaveRideChat: 'LeaveRideChat',
 } as const;
 
-/** TODO confirm with the backend. */
+/** Server → client, captured on /dev/realtime (2026-10-22). */
 export const CHAT_HUB_EVENTS = {
-  receiveMessage: 'ReceiveMessage',
+  receiveMessage: 'ReceiveChatMessage',
 } as const;
 
 // ── Payloads ─────────────────────────────────────────────────────────────────────────────────
@@ -121,7 +121,10 @@ const chatMessageObjectSchema = z.looseObject({
   sentAtUtc: optionalString,
 });
 
-/** ReceiveMessage(message) — TODO confirm name and shape (not captured yet). */
+/**
+ * ReceiveChatMessage(message): { id, rideId, senderRole ("driver" / "user"), senderId, text,
+ * sentAtUtc } — captured 2026-10-22.
+ */
 export const chatMessageSchema = z
   .tuple([chatMessageObjectSchema])
   .rest(z.unknown())

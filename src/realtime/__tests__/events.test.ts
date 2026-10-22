@@ -1,4 +1,7 @@
+import { isSameActor } from '@/api/mappers/chat';
+import { CHAT_ACTOR_ROLE } from '@/constants/api';
 import {
+  CHAT_HUB_EVENTS,
   chatMessageSchema,
   driverLocationSchema,
   rideStatusUpdatedSchema,
@@ -117,5 +120,27 @@ describe('chatMessageSchema', () => {
     const message = { id: 1, rideId: 2, text: 'Salam' };
     expect(chatMessageSchema.parse([message])).toMatchObject(message);
     expect(chatMessageSchema.safeParse([]).success).toBe(false);
+  });
+});
+
+describe('ReceiveChatMessage (captured 2026-10-22)', () => {
+  it('is the registered chat event and parses the captured payload', () => {
+    expect(CHAT_HUB_EVENTS.receiveMessage).toBe('ReceiveChatMessage');
+    const captured = {
+      id: 35,
+      rideId: 33,
+      senderRole: 'driver',
+      senderId: 4,
+      text: 'Hdjsha',
+      sentAtUtc: '2026-10-22T00:35:25.8541141Z',
+    };
+    expect(chatMessageSchema.parse([captured])).toMatchObject(captured);
+  });
+
+  it("is the driver's message, not mine (roles compare case-insensitively)", () => {
+    const me = { role: CHAT_ACTOR_ROLE, id: 7 };
+    expect(isSameActor('driver', 4, me)).toBe(false);
+    expect(isSameActor('user', 7, me)).toBe(true);
+    expect(isSameActor('User', 7, me)).toBe(true);
   });
 });

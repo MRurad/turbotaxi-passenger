@@ -48,10 +48,12 @@ Arguments are **positional**. The app validates the whole argument list and turn
 
 Sending messages goes over REST: `POST /api/Chat/rides/{rideId}/messages`.
 
-### Server → client (TODO)
-| Placeholder | Payload |
+### Server → client (captured on `/dev/realtime`, 2026-10-22)
+| Event | Arguments |
 |---|---|
-| `ReceiveMessage` | `ChatMessageDto` |
+| `ReceiveChatMessage` | `(message: { id, rideId, senderRole, senderId, text, sentAtUtc })`, e.g. `senderRole: "driver"` |
+
+Roles are lower case (`"driver"`); the passenger sends and joins as `"user"`.
 
 ## Discovering the real names (dev builds)
 

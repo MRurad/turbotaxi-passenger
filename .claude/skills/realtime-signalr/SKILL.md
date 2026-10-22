@@ -11,7 +11,7 @@ Read `docs/REALTIME_CONTRACT.md` first. It is the contract, and it records what 
 - **Arguments are positional.** Schemas validate the whole argument list (a zod tuple) and `.transform` it into one object. Never validate only `args[0]`.
 - `RideStatusUpdated(rideId: int, type: "ride_update", payload)` is the **only** ride event. Phases come from `payload.status` (`Searching`, `OnWay`, `Completed` seen). There are no `RideAccepted` / `RideStarted` / … events.
 - `DriverLocationUpdated(driverId: int, latitude: number, longitude: number)`: no heading.
-- The chat event (`ReceiveMessage`) is still a placeholder. Capture it before relying on it.
+- `ReceiveChatMessage(message)` on `/hubs/chat`: `{ id, rideId, senderRole, senderId, text, sentAtUtc }`. Roles are lower case (`"driver"`, `"user"`).
 
 ## Files
 - `src/realtime/events.ts` is the ONLY place hub paths, method names and event names appear:

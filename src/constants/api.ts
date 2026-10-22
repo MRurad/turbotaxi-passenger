@@ -8,10 +8,11 @@ export const CHAT_PAGE_SIZE = 30;
 export const FIRST_PAGE = 1;
 
 /**
- * Chat `actorRole` for the passenger.
- * TODO confirm with backend (docs/BACKEND_REQUESTS.md #7): "User" / "user" / "Passenger"?
+ * Chat `actorRole` for the passenger. The backend writes roles in lower case (captured chat
+ * messages carry `senderRole: "driver"`), so the passenger is "user".
+ * TODO confirm with backend (docs/BACKEND_REQUESTS.md #7).
  */
-export const CHAT_ACTOR_ROLE = 'User';
+export const CHAT_ACTOR_ROLE = 'user';
 
 /**
  * Backend `PromoDiscountType` int enum.
