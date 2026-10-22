@@ -15,6 +15,8 @@ import { mergeMessagePages, type ChatPages } from '../utils';
 export interface ChatMessagesState {
   messages: ChatMessage[];
   isLoading: boolean;
+  /** Started offline: nothing loaded yet, waiting for the network (show offline, not empty). */
+  isOffline: boolean;
   error: ApiError | null;
   refetch: () => void;
   loadMore: () => void;
@@ -59,6 +61,7 @@ export function useChatMessages(rideId: number): ChatMessagesState {
   return {
     messages,
     isLoading: query.isLoading,
+    isOffline: query.isPending && query.fetchStatus === 'paused',
     error: query.error,
     refetch,
     loadMore,

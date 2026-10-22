@@ -32,6 +32,8 @@ export const ENDPOINTS = {
   users: {
     byId: (id: number) => `/api/Users/${id}`,
     update: '/api/Users',
+    /** DELETE: the signed-in user's own account (App Store 5.1.1(v)). */
+    delete: (id: number) => `/api/Users/${id}`,
   },
   drivers: {
     byId: (id: number) => `/api/Drivers/${id}`,

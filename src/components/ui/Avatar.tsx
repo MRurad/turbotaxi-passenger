@@ -39,7 +39,7 @@ export function Avatar({ name, uri, size = 'md', testID }: AvatarProps) {
       ) : (
         <Text
           variant={size === 'lg' ? 'title' : size === 'md' ? 'bodyStrong' : 'caption'}
-          color="primary"
+          color="primaryText"
         >
           {getInitials(name)}
         </Text>

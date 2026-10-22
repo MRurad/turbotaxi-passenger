@@ -8,6 +8,7 @@ import '@/i18n';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AppProviders } from '@/providers/AppProviders';
 import { RootStack } from '@/providers/RootStack';
 import { SplashGate } from '@/providers/SplashGate';
@@ -22,7 +23,10 @@ export default function RootLayout() {
   return (
     <AppProviders>
       <SplashGate fontsReady={fontsLoaded || fontError !== null}>
-        <RootStack />
+        {/* Inside the gate: hydration isn't re-run by Restart, and the crash screen shows. */}
+        <ErrorBoundary>
+          <RootStack />
+        </ErrorBoundary>
       </SplashGate>
     </AppProviders>
   );

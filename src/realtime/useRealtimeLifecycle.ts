@@ -1,3 +1,4 @@
+import { onlineManager } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 
@@ -9,10 +10,7 @@ import { chatHub } from './chatHub';
 import { pingUserHub, subscribeUser, userHub } from './userHub';
 
 export interface RealtimeLifecycleOptions {
-  /**
-   * True while a ride is active: the connection is then kept in the background.
-   * Wired to the ride store in Prompt 9.
-   */
+  /** True while a ride is active: the connection is then kept in the background. */
   keepAliveInBackground?: () => boolean;
 }
 
@@ -22,7 +20,8 @@ const HUBS_TO_MANAGE = [userHub, chatHub] as const;
 /**
  * Mounted once in the signed-in layout. Starts the user hub (SubscribeUser on every
  * connect/reconnect), pings every 30 s, stops in the background after 30 s when no ride is
- * active, restores the hubs that were wanted on foreground, and resets all hubs on logout.
+ * active, restores the hubs that were wanted on foreground or when the network returns, and
+ * resets all hubs on logout.
  */
 export function useRealtimeLifecycle({
   keepAliveInBackground = noActiveRide,
@@ -58,6 +57,17 @@ export function useRealtimeLifecycle({
       );
     }, PING_INTERVAL_MS);
     return () => clearInterval(timer);
+  }, [userId]);
+
+  // Network back: SignalR may have given up while offline; start what is still wanted.
+  useEffect(() => {
+    if (userId === undefined) return;
+    return onlineManager.subscribe((online) => {
+      if (!online || AppState.currentState !== 'active') return;
+      HUBS_TO_MANAGE.filter((hub) => hub.wasWanted()).forEach((hub) =>
+        hub.start().catch(() => undefined),
+      );
+    });
   }, [userId]);
 
   // Background / foreground.

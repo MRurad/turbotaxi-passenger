@@ -18,6 +18,8 @@ export interface UserPromosState {
   /** Used up, expired or switched off. */
   used: UserPromo[];
   isLoading: boolean;
+  /** Started offline: nothing loaded yet, waiting for the network (show offline, not empty). */
+  isOffline: boolean;
   isRefreshing: boolean;
   error: ApiError | null;
   refetch: () => void;
@@ -74,6 +76,7 @@ export function useUserPromos(): UserPromosState {
     used,
     // Still paging in: the split isn't final yet.
     isLoading: query.isLoading || (hasNextPage === true && !isError),
+    isOffline: query.isPending && query.fetchStatus === 'paused',
     isRefreshing: query.isRefetching && !isFetchingNextPage,
     error: query.error,
     refetch,

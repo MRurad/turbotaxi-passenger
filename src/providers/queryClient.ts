@@ -17,6 +17,9 @@ export function createQueryClient(): QueryClient {
       },
       mutations: {
         retry: 0,
+        // Fail fast with the network error instead of pausing until online: a paused order
+        // or cancel would silently run minutes later.
+        networkMode: 'always',
       },
     },
   });

@@ -56,6 +56,16 @@ export function PromosScreen() {
         ))}
       </View>
     );
+  } else if (promos.isOffline) {
+    content = (
+      <ErrorState
+        icon="cloud-offline-outline"
+        title={t('errors.title')}
+        message={t('errors.network')}
+        retryLabel={t('common.actions.retry')}
+        onRetry={promos.refetch}
+      />
+    );
   } else if (promos.error && promos.active.length + promos.used.length === 0) {
     content = (
       <ErrorState
@@ -65,23 +75,23 @@ export function PromosScreen() {
         onRetry={promos.refetch}
       />
     );
-  } else if (items.length === 0) {
-    content = (
-      <EmptyState
-        icon="pricetag-outline"
-        title={tab === 'active' ? t('promo.empty') : t('promo.emptyUsed')}
-        // Booking happens on home; during a ride there's nothing to book.
-        actionLabel={rideActive ? undefined : t('common.actions.bookRide')}
-        onAction={rideActive ? undefined : () => router.dismissAll()}
-      />
-    );
   } else {
+    // Empty still renders the list, so pull-to-refresh works there too.
     content = (
       <FlatList
         data={items}
         keyExtractor={(promo) => String(promo.id)}
         renderItem={renderItem}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, items.length === 0 && styles.emptyList]}
+        ListEmptyComponent={
+          <EmptyState
+            icon="pricetag-outline"
+            title={tab === 'active' ? t('promo.empty') : t('promo.emptyUsed')}
+            // Booking happens on home; during a ride there's nothing to book.
+            actionLabel={rideActive ? undefined : t('common.actions.bookRide')}
+            onAction={rideActive ? undefined : () => router.dismissAll()}
+          />
+        }
         refreshControl={refreshControl}
         testID="promo-list"
       />
@@ -129,4 +139,5 @@ const useStyles = makeStyles((t) => ({
     paddingTop: t.spacing.sm,
   },
   list: { gap: t.spacing.md, padding: t.spacing.lg },
+  emptyList: { flexGrow: 1 },
 }));

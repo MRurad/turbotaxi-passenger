@@ -15,6 +15,8 @@ type TripPages = InfiniteData<Paged<Trip>, number>;
 export interface TripHistoryState {
   trips: Trip[];
   isLoading: boolean;
+  /** Started offline: nothing loaded yet, waiting for the network (show offline, not empty). */
+  isOffline: boolean;
   isRefreshing: boolean;
   error: ApiError | null;
   refetch: () => void;
@@ -60,6 +62,7 @@ export function useTripHistory(): TripHistoryState {
   return {
     trips,
     isLoading: query.isLoading,
+    isOffline: query.isPending && query.fetchStatus === 'paused',
     isRefreshing: query.isRefetching && !isFetchingNextPage,
     error: query.error,
     refetch,

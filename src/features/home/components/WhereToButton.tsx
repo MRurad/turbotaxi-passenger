@@ -16,7 +16,8 @@ export function WhereToButton({ label, onPress }: WhereToButtonProps) {
     <PressableScale
       onPress={onPress}
       haptic="light"
-      accessibilityRole="search"
+      // It opens the search screen; "search" would announce a search field.
+      accessibilityRole="button"
       accessibilityLabel={label}
       style={styles.field}
       testID="home-where-to"

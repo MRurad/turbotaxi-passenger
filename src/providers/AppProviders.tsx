@@ -5,12 +5,17 @@ import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { OfflineAnnouncer } from '@/components/OfflineAnnouncer';
 import { ToastProvider } from '@/components/ui';
+import { startNetworkTracking } from '@/lib/network';
 import { ThemeProvider } from '@/theme';
 
 import { NavigationThemeProvider } from './NavigationThemeProvider';
 import { createQueryClient } from './queryClient';
 import { useClearCacheOnLogout } from './useClearCacheOnLogout';
+
+// Queries / mutations follow connectivity from the very first render.
+startNetworkTracking();
 
 export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(createQueryClient);
@@ -24,6 +29,7 @@ export function AppProviders({ children }: PropsWithChildren) {
             <QueryClientProvider client={queryClient}>
               {/* Toast wraps the sheet host so toasts paint above open sheets. */}
               <ToastProvider>
+                <OfflineAnnouncer />
                 <BottomSheetModalProvider>{children}</BottomSheetModalProvider>
               </ToastProvider>
             </QueryClientProvider>

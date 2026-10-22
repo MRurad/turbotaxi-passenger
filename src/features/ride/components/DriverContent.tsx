@@ -13,9 +13,10 @@ import { useRideStore } from '../store';
 import { mergeDriver } from '../utils';
 import { ChatButton } from './ChatButton';
 import { DriverCard } from './DriverCard';
+import { RideRoute } from './RideRoute';
 import { RideCancelButton } from './RideCancelButton';
 
-/** Driver on the way / arrived: status, ETA, driver card, Call / Chat, Cancel. */
+/** Driver on the way / arrived: status, ETA, driver card, route, Call / Chat, Cancel. */
 export function DriverContent() {
   const styles = useStyles();
   const { t } = useTranslation();
@@ -70,6 +71,7 @@ export function DriverContent() {
         vehicleType={vehicleType}
         loading={profile.isLoading && !eventDriver}
       />
+      <RideRoute />
       <View style={styles.actions}>
         {phone ? (
           <Button

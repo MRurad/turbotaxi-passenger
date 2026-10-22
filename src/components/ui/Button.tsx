@@ -32,8 +32,8 @@ export interface ButtonProps {
 
 const FOREGROUND: Record<ButtonVariant, ColorToken> = {
   primary: 'textOnPrimary',
-  secondary: 'primary',
-  ghost: 'primary',
+  secondary: 'primaryText',
+  ghost: 'primaryText',
   danger: 'textOnPrimary',
 };
 

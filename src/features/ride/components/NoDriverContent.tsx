@@ -3,6 +3,8 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { Button, EmptyState, useToast } from '@/components/ui';
 
+import { useIsOnline } from '@/lib/network';
+
 import { useCreateRide } from '../hooks/useCreateRide';
 import { useRideStore } from '../store';
 
@@ -19,9 +21,10 @@ export function NoDriverContent() {
     })),
   );
   const create = useCreateRide();
+  const online = useIsOnline();
 
   const retry = () => {
-    if (!pickup || !destination || create.isPending) return;
+    if (!pickup || !destination || create.isPending || !online) return;
     create.mutate(
       { pickup, destination, vehicleType },
       { onError: (error) => toast.show({ message: t(error.messageKey), tone: 'danger' }) },
@@ -42,6 +45,7 @@ export function NoDriverContent() {
           size="lg"
           fullWidth
           loading={create.isPending}
+          disabled={!online}
           onPress={retry}
           testID="ride-retry"
         />

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 
 import { IconButton } from '@/components/ui';
-import { makeStyles, useTheme } from '@/theme';
+import { MAX_FONT_SCALE, makeStyles, useTheme } from '@/theme';
 
 import { CHAT_MAX_LENGTH } from '../constants';
 
@@ -11,7 +11,7 @@ import { CHAT_MAX_LENGTH } from '../constants';
 export function ChatInputBar({ onSend }: { onSend: (text: string) => void }) {
   const styles = useStyles();
   const { t } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const [text, setText] = useState('');
   const canSend = text.trim().length > 0;
 
@@ -28,6 +28,9 @@ export function ChatInputBar({ onSend }: { onSend: (text: string) => void }) {
         onChangeText={setText}
         placeholder={t('chat.placeholder')}
         placeholderTextColor={colors.textMuted}
+        selectionColor={colors.primary}
+        keyboardAppearance={isDark ? 'dark' : 'light'}
+        maxFontSizeMultiplier={MAX_FONT_SCALE}
         multiline
         maxLength={CHAT_MAX_LENGTH}
         style={styles.input}

@@ -28,7 +28,8 @@
       "skip": "Ötür",
       "openSettings": "Ayarları aç",
       "bookRide": "Taksi sifariş et",
-      "seeAll": "Hamısına bax"
+      "seeAll": "Hamısına bax",
+      "restart": "Yenidən başlat"
     },
     "labels": {
       "loading": "Yüklənir…",
@@ -64,8 +65,9 @@
     },
     "connection": {
       "connecting": "Yenidən qoşulur…",
-      "offline": "İnternet bağlantısı yoxdur",
-      "lost": "Bağlantı kəsildi. Qoşulur…"
+      "offline": "İnternet yoxdur. Bağlantınızı yoxlayın.",
+      "lost": "Bağlantı kəsildi. Qoşulur…",
+      "restored": "İnternet bərpa olundu"
     }
   },
   "errors": {
@@ -89,7 +91,8 @@
       "phone": "Düzgün nömrə daxil edin, məsələn: 50 123 45 67",
       "name": "Yalnız hərflərdən istifadə edin",
       "promoCode": "Bu promokod etibarlı deyil"
-    }
+    },
+    "crash": "Tətbiqdə gözlənilməz problem yarandı. Davam etmək üçün yenidən başladın."
   },
   "auth": {
     "welcome": {
@@ -192,7 +195,8 @@
     "editPickup": "Minmə yerini dəyiş",
     "editDestination": "Təyinat yerini dəyiş",
     "originalPrice": "endirimsiz {{price}}",
-    "selectAnother": "Bu tarif üçün hazırda qiymət yoxdur — başqasını seçin."
+    "selectAnother": "Bu tarif üçün hazırda qiymət yoxdur — başqasını seçin.",
+    "orderOffline": "İnternet bərpa olunanda sifariş edə bilərsiniz."
   },
   "ride": {
     "status": {
@@ -226,8 +230,7 @@
     },
     "inProgress": {
       "title": "Xoş yol!",
-      "eta": "{{duration}} sonra təyinat yerində olacaqsınız",
-      "shareTrip": "Gedişi paylaş"
+      "eta": "{{duration}} sonra təyinat yerində olacaqsınız"
     },
     "completed": {
       "title": "Gəlib çatdınız",
@@ -261,7 +264,6 @@
       "chatWithUnread_one": "Sürücüyə yaz, {{count}} yeni mesaj",
       "chatWithUnread_other": "Sürücüyə yaz, {{count}} yeni mesaj"
     },
-    "restoring": "Gedişiniz bərpa olunur…",
     "promoNotApplied": "Promo kod bu sifarişə tətbiq olunmadı",
     "destinationUnknown": "Xəritədə seçilmiş nöqtə"
   },
@@ -284,7 +286,8 @@
     "a11y": {
       "mine": "Siz, {{time}}: {{text}}",
       "theirs": "{{name}}, {{time}}: {{text}}",
-      "withStatus": "{{message}}. {{status}}"
+      "withStatus": "{{message}}. {{status}}",
+      "incoming": "Sürücüdən yeni mesaj: {{text}}"
     },
     "quickRepliesLabel": "Tez cavablar",
     "carWithPlate": "{{car}} · {{plate}}",
@@ -360,9 +363,13 @@
     "version": "Versiya {{version}}",
     "logout": "Hesabdan çıx",
     "deleteAccount": "Hesabı sil",
-    "deleteAccountA11y": "Hesabı sil (tezliklə)",
-    "logoutBlocked": "Çıxış etmək üçün gedişi bitirin və ya ləğv edin.",
-    "account": "Hesab"
+    "account": "Hesab",
+    "deleteConfirm": {
+      "title": "Hesabınız silinsin?",
+      "message": "Hesabınız və gediş tarixçəniz həmişəlik silinəcək. Bunu geri qaytarmaq mümkün deyil.",
+      "confirm": "Hesabı sil"
+    },
+    "rideActiveBlocked": "Əvvəlcə gedişi bitirin və ya ləğv edin."
   },
   "permissions": {
     "location": {

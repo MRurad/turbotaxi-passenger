@@ -5,7 +5,6 @@ import { View } from 'react-native';
 import { useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
 import { useShallow } from 'zustand/react/shallow';
 
-import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { Header, Screen } from '@/components/ui';
 import { ROUTES } from '@/constants/routes';
 import { VEHICLES } from '@/constants/vehicles';
@@ -82,7 +81,6 @@ export function ChatScreen({ rideId }: { rideId: number }) {
       testID="chat-screen"
     >
       <MessageList rideId={rideId} driverName={name} onRetry={retry} />
-      <RealtimeBanner />
     </Screen>
   );
 }

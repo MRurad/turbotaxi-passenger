@@ -1,9 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { AccessibilityInfo } from 'react-native';
 
 import { chatMessageFromEvent } from '@/api/services/chat';
 import { queryKeys } from '@/constants/queryKeys';
 import { TRACKING_PHASES, useRideStore } from '@/features/ride/store';
+import { i18n } from '@/i18n';
 import { logger } from '@/lib/logger';
 import { keepRideChatJoined, onChatMessage } from '@/realtime/chatHub';
 
@@ -14,7 +16,6 @@ import { insertMessage, type ChatPages } from '../utils';
  * Mounted once in the signed-in layout. While a driver is assigned the ride's chat is joined
  * (JoinRideChat, re-joined after every reconnect; LeaveRideChat when the ride ends), so
  * driver messages reach the cache and the unread badge even when the chat screen is closed.
- * The badge depends on the hub's chat event, still unconfirmed (docs/BACKEND_REQUESTS.md #29).
  */
 export function useRideChatConnection(): void {
   const queryClient = useQueryClient();
@@ -40,7 +41,15 @@ export function useRideChatConnection(): void {
             if (message.isMine) useChatStore.getState().reconcileOutgoing(rideId, [message]);
           })
           .catch(() => undefined);
-        if (!message.isMine) useChatStore.getState().messageReceived(rideId);
+        if (!message.isMine) {
+          // Open chat: a screen reader wouldn't notice the new row; closed: the badge counts it.
+          if (useChatStore.getState().openRideId === rideId) {
+            AccessibilityInfo.announceForAccessibility(
+              i18n.t('chat.a11y.incoming', { text: message.text }),
+            );
+          }
+          useChatStore.getState().messageReceived(rideId);
+        }
       } catch (error) {
         // Incomplete payload: fall back to re-reading the history.
         logger.warn('chat: unusable message event', {

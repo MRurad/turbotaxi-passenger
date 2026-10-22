@@ -1,10 +1,16 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { onlineManager, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { AccessibilityInfo } from 'react-native';
 
+import { toApiError } from '@/api/errors';
 import { cancelRide } from '@/api/services/rides';
 import { queryKeys } from '@/constants/queryKeys';
-import { SEARCH_TIMEOUT_MS } from '@/constants/timeouts';
+import {
+  CANCEL_RETRY_DELAY_MS,
+  SEARCH_TIMEOUT_GRACE_MS,
+  SEARCH_TIMEOUT_MS,
+} from '@/constants/timeouts';
+import { useAuthStore } from '@/features/auth/store';
 import { i18n } from '@/i18n';
 import { triggerHaptic } from '@/lib/haptics';
 import {
@@ -16,6 +22,32 @@ import {
 
 import { handleDriverLocation, handleRideUpdate } from '../rideEvents';
 import { TRACKING_PHASES, useRideStore } from '../store';
+
+/**
+ * Stops the server-side search of a ride we gave up on, so no driver accepts it. After a
+ * network error it tries once more: when the network is back, or shortly if NetInfo already
+ * says online. Never for another session (logout / user switch in between).
+ */
+function cancelAbandonedRide(rideId: number): void {
+  const userId = useAuthStore.getState().user?.id;
+  const retry = () => {
+    if (userId === undefined || useAuthStore.getState().user?.id !== userId) return;
+    cancelRide(rideId).catch(() => undefined);
+  };
+  cancelRide(rideId).catch((error: unknown) => {
+    const { code } = toApiError(error);
+    if (code !== 'network' && code !== 'timeout') return;
+    if (onlineManager.isOnline()) {
+      setTimeout(retry, CANCEL_RETRY_DELAY_MS);
+      return;
+    }
+    const off = onlineManager.subscribe((online) => {
+      if (!online) return;
+      off();
+      retry();
+    });
+  });
+}
 
 /**
  * Mounted once in the signed-in layout. User-hub events → ride store; follows the assigned
@@ -68,15 +100,18 @@ export function useRideEvents(): void {
   );
   useEffect(() => {
     if (searchDeadline === null) return;
-    const timer = setTimeout(
-      () => {
-        const { rideId, noDriverFound } = useRideStore.getState();
-        noDriverFound(); // lets go of rideId first: the resulting cancel event is ignored
-        // The backend may still be searching: stop it, so no driver accepts a ride we don't show.
-        if (rideId !== null) cancelRide(rideId).catch(() => undefined);
-      },
-      Math.max(0, searchDeadline - Date.now()),
-    );
+    let timer: ReturnType<typeof setTimeout>;
+    const expire = () => {
+      // Hub down: an accept may be waiting to arrive (and recovery re-checks on connect).
+      if (userHub.getState() !== 'connected') {
+        timer = setTimeout(expire, SEARCH_TIMEOUT_GRACE_MS);
+        return;
+      }
+      const { rideId, noDriverFound } = useRideStore.getState();
+      noDriverFound(); // lets go of rideId first: the resulting cancel event is ignored
+      if (rideId !== null) cancelAbandonedRide(rideId);
+    };
+    timer = setTimeout(expire, Math.max(0, searchDeadline - Date.now()));
     return () => clearTimeout(timer);
   }, [searchDeadline]);
 

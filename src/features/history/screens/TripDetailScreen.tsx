@@ -48,12 +48,12 @@ export function TripDetailScreen({ rideId }: { rideId: number }) {
       </Screen>
     );
   }
-  if (!trip && history.error) {
+  if (!trip && (history.error || history.isOffline)) {
     return (
       <Screen header={header}>
         <ErrorState
           title={t('history.loadError')}
-          message={t(history.error.messageKey)}
+          message={history.error ? t(history.error.messageKey) : t('errors.network')}
           retryLabel={t('common.actions.retry')}
           onRetry={history.refetch}
         />

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { useBackToWhereTo } from '@/features/booking/hooks/useBackToWhereTo';
 import { HomeTopBar } from '@/features/home/components/HomeTopBar';
@@ -75,6 +76,7 @@ export function RideScreen() {
       {/* Account menu stays reachable during a ride (profile, dev realtime inspector). */}
       <HomeTopBar />
       <RealtimeBanner />
+      <OfflineBanner variant="floating" />
       <RidePanel onHeightChange={layout.setSheetHeight} />
     </View>
   );

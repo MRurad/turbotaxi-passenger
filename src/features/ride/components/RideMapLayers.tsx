@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { CarMarker } from '@/features/map/components/CarMarker';
@@ -8,7 +9,7 @@ import { useRideRoute } from '../hooks/useRideRoute';
 import { TRACKING_PHASES, useRideStore } from '../store';
 
 /** Pickup / destination markers, the current leg's route and the driver's car. */
-export function RideMapLayers() {
+export const RideMapLayers = memo(function RideMapLayers() {
   const { phase, pickup, destination, driverLocation } = useRideStore(
     useShallow((s) => ({
       phase: s.phase,
@@ -32,4 +33,4 @@ export function RideMapLayers() {
       ) : null}
     </>
   );
-}
+});

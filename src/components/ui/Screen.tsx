@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
+import { OfflineBanner } from '@/components/OfflineBanner';
+
 import { makeStyles } from '@/theme';
 
 export interface ScreenProps {
@@ -62,6 +64,7 @@ export function Screen({
   return (
     <SafeAreaView testID={testID} edges={edges} style={[styles.flex, styles[background]]}>
       {header}
+      <OfflineBanner />
       {keyboardAvoiding ? (
         <KeyboardAvoidingView
           style={styles.flex}

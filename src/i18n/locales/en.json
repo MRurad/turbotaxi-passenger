@@ -28,7 +28,8 @@
       "skip": "Skip",
       "openSettings": "Open Settings",
       "bookRide": "Book a ride",
-      "seeAll": "See all"
+      "seeAll": "See all",
+      "restart": "Restart"
     },
     "labels": {
       "loading": "Loading…",
@@ -64,8 +65,9 @@
     },
     "connection": {
       "connecting": "Reconnecting…",
-      "offline": "No internet connection",
-      "lost": "Connection lost. Reconnecting…"
+      "offline": "You're offline. Check your internet connection.",
+      "lost": "Connection lost. Reconnecting…",
+      "restored": "Back online"
     }
   },
   "errors": {
@@ -89,7 +91,8 @@
       "phone": "Enter a valid phone number, e.g. 50 123 45 67",
       "name": "Use letters only",
       "promoCode": "This promo code isn't valid"
-    }
+    },
+    "crash": "The app hit an unexpected problem. Restart to continue."
   },
   "auth": {
     "welcome": {
@@ -192,7 +195,8 @@
     "editPickup": "Change pickup",
     "editDestination": "Change destination",
     "originalPrice": "without discount {{price}}",
-    "selectAnother": "No price for this class right now — choose another."
+    "selectAnother": "No price for this class right now — choose another.",
+    "orderOffline": "You can order once you're back online."
   },
   "ride": {
     "status": {
@@ -226,8 +230,7 @@
     },
     "inProgress": {
       "title": "Enjoy your ride",
-      "eta": "Arriving at your destination in {{duration}}",
-      "shareTrip": "Share trip"
+      "eta": "Arriving at your destination in {{duration}}"
     },
     "completed": {
       "title": "You've arrived",
@@ -261,7 +264,6 @@
       "chatWithUnread_one": "Message driver, {{count}} new message",
       "chatWithUnread_other": "Message driver, {{count}} new messages"
     },
-    "restoring": "Restoring your ride…",
     "promoNotApplied": "Your promo code wasn’t applied to this ride",
     "destinationUnknown": "Pinned destination"
   },
@@ -284,7 +286,8 @@
     "a11y": {
       "mine": "You, {{time}}: {{text}}",
       "theirs": "{{name}}, {{time}}: {{text}}",
-      "withStatus": "{{message}}. {{status}}"
+      "withStatus": "{{message}}. {{status}}",
+      "incoming": "New message from your driver: {{text}}"
     },
     "quickRepliesLabel": "Quick replies",
     "carWithPlate": "{{car}} · {{plate}}",
@@ -360,9 +363,13 @@
     "version": "Version {{version}}",
     "logout": "Log out",
     "deleteAccount": "Delete account",
-    "deleteAccountA11y": "Delete account (coming soon)",
-    "logoutBlocked": "Finish or cancel your ride before logging out.",
-    "account": "Account"
+    "account": "Account",
+    "deleteConfirm": {
+      "title": "Delete your account?",
+      "message": "This permanently deletes your account and trip history. This can't be undone.",
+      "confirm": "Delete account"
+    },
+    "rideActiveBlocked": "Finish or cancel your ride first."
   },
   "permissions": {
     "location": {

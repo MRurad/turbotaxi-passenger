@@ -8,8 +8,9 @@ import { useElapsedSeconds } from '../hooks/useElapsedSeconds';
 import { useRideStore } from '../store';
 import { RideCancelButton } from './RideCancelButton';
 import { RideFareRow } from './RideFareRow';
+import { RideRoute } from './RideRoute';
 
-/** "Looking for a driver…", elapsed time, class + price, Cancel. */
+/** "Looking for a driver…", elapsed time, the route, class + price, Cancel. */
 export function SearchingContent() {
   const styles = useStyles();
   const { t } = useTranslation();
@@ -27,6 +28,7 @@ export function SearchingContent() {
       <Text variant="caption" color="textMuted" style={styles.timer} testID="ride-elapsed">
         {t('ride.searching.elapsed', { time: formatElapsed(elapsed) })}
       </Text>
+      <RideRoute />
       <RideFareRow />
       <RideCancelButton />
     </>

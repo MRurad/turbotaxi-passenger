@@ -4,6 +4,15 @@ export const API_TIMEOUT_MS = 15_000;
 /** How long to wait for a driver before showing "no driver found". */
 export const SEARCH_TIMEOUT_MS = 3 * 60_000;
 
+/**
+ * When the search deadline passes while the user hub is down (e.g. right after foregrounding),
+ * re-check this often instead: an accept may still be on its way.
+ */
+export const SEARCH_TIMEOUT_GRACE_MS = 10_000;
+
+/** A timed-out ride's cancel that hit a network error is retried after this long. */
+export const CANCEL_RETRY_DELAY_MS = 5_000;
+
 /** "Searching for 0:42" ticks this often. */
 export const ELAPSED_TICK_MS = 1_000;
 
@@ -31,10 +40,7 @@ export const ROUTE_ESTIMATE_STALE_TIME_MS = 2 * 60_000;
  */
 export const RIDE_HISTORY_POLL_MS = 30_000;
 
-/**
- * An open chat re-fetches this often: a safety net while the hub's chat event name is
- * unconfirmed (docs/BACKEND_REQUESTS.md #1). Live messages normally arrive over SignalR.
- */
+/** An open chat re-fetches this often: a safety net for a missed hub message. */
 export const CHAT_REFETCH_MS = 15_000;
 
 /** A driver's name / car doesn't change during a ride. */

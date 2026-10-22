@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { Button, Text, useToast } from '@/components/ui';
 import { VEHICLES } from '@/constants/vehicles';
 import { useCreateRide } from '@/features/ride/hooks/useCreateRide';
+import { useIsOnline } from '@/lib/network';
 import { useRideStore } from '@/features/ride/store';
 import { useChangeLanguage } from '@/i18n/useChangeLanguage';
 import { logger } from '@/lib/logger';
@@ -35,10 +36,11 @@ export function OrderButton() {
   const rideReady = useRideStore((s) => s.hydrated && s.phase === 'idle');
   // Synchronous guard: a fast double tap must not send two POSTs before re-render.
   const ordering = useRef(false);
+  const online = useIsOnline();
 
   const order = () => {
     const { pickup, destination } = useBookingDraft.getState();
-    if (!pickup || !destination || ordering.current || !rideReady) return;
+    if (!pickup || !destination || ordering.current || !rideReady || !online) return;
     ordering.current = true;
     logger.info('booking: order', { vehicleType, hasPromo }); // no user data
     create.mutate(
@@ -61,7 +63,11 @@ export function OrderButton() {
 
   return (
     <View style={styles.wrap}>
-      {unavailable ? (
+      {!online ? (
+        <Text variant="caption" color="textSecondary" align="center" testID="booking-order-offline">
+          {t('booking.orderOffline')}
+        </Text>
+      ) : unavailable ? (
         <Text variant="caption" color="dangerText" align="center" testID="booking-order-hint">
           {t('booking.selectAnother')}
         </Text>
@@ -71,7 +77,7 @@ export function OrderButton() {
         value={view ? `· ${view.price}` : undefined}
         size="lg"
         fullWidth
-        disabled={!view || selected?.isRefreshing || create.isPending || !rideReady}
+        disabled={!view || selected?.isRefreshing || create.isPending || !rideReady || !online}
         loading={create.isPending || !rideReady || (!view && (selected?.isFetching ?? false))}
         haptic="medium"
         onPress={order}

@@ -36,12 +36,15 @@ export function LocationPermissionCard({ location, onHeightChange }: LocationPer
       style={styles.card}
       testID="location-permission-card"
     >
-      <View style={styles.icon}>
-        <Ionicons name="location-outline" size={sizes.icon.md} color={colors.primary} />
+      {/* Stacked: the whole message stays readable (long ru/az text, large dynamic type). */}
+      <View style={styles.message}>
+        <View style={styles.icon}>
+          <Ionicons name="location-outline" size={sizes.icon.md} color={colors.primary} />
+        </View>
+        <Text variant="caption" color="textSecondary" style={styles.text}>
+          {unavailable ? t('permissions.location.unavailable') : t('permissions.location.denied')}
+        </Text>
       </View>
-      <Text variant="caption" color="textSecondary" numberOfLines={3} style={styles.text}>
-        {unavailable ? t('permissions.location.unavailable') : t('permissions.location.denied')}
-      </Text>
       <Button
         label={action.label}
         variant="ghost"
@@ -57,12 +60,10 @@ export function LocationPermissionCard({ location, onHeightChange }: LocationPer
 
 const useStyles = makeStyles((t) => ({
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: t.spacing.sm,
-    paddingLeft: t.spacing.md,
-    paddingRight: t.spacing.xs,
-    paddingVertical: t.spacing.xs,
+    gap: t.spacing.xs,
+    paddingHorizontal: t.spacing.md,
+    paddingTop: t.spacing.md,
+    paddingBottom: t.spacing.xs,
     borderRadius: t.radii.lg,
     backgroundColor: t.colors.surfaceElevated,
     borderWidth: t.isDark ? t.sizes.border : 0,
@@ -77,6 +78,7 @@ const useStyles = makeStyles((t) => ({
     justifyContent: 'center',
     backgroundColor: t.colors.primarySoft,
   },
+  message: { flexDirection: 'row', alignItems: 'center', gap: t.spacing.sm },
   text: { flex: 1 },
-  action: { paddingHorizontal: t.spacing.md },
+  action: { alignSelf: 'flex-end', paddingHorizontal: t.spacing.md },
 }));

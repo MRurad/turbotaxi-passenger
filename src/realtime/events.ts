@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 /**
  * The ONLY place hub paths, hub method names and event names appear (mirrors
- * docs/REALTIME_CONTRACT.md). User-hub events are captured from real traffic; the chat event
- * is still a placeholder. Unknown events are logged in dev and shown on /dev/realtime.
+ * docs/REALTIME_CONTRACT.md). Server → client events are captured from real traffic
+ * (/dev/realtime). Unknown events are logged in dev and shown there.
  */
 
 export const HUBS = {
@@ -83,6 +83,8 @@ const rideUpdatePayloadSchema = z.looseObject({
   finalPrice: optionalNumber,
   /** Completed: remove route + car from the map. */
   clearMap: z.boolean().nullish(),
+  /** Completed: who the push is for ("user"); not used by the app. */
+  userType: optionalString,
   // Not sent yet (docs/BACKEND_REQUESTS.md #1).
   driverName: optionalString,
   driverSurname: optionalString,

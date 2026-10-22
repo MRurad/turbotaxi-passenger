@@ -25,3 +25,8 @@ export async function updateCurrentUser(input: UpdateProfileInput): Promise<User
   const { data } = await apiClient.put<UserListItemDto>(ENDPOINTS.users.update, body);
   return mapUser(data);
 }
+
+/** Permanently deletes the signed-in user's account (id from the auth store). */
+export async function deleteCurrentUser(): Promise<void> {
+  await apiClient.delete(ENDPOINTS.users.delete(requireUserId()));
+}

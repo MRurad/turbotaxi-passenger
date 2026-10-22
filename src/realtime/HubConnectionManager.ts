@@ -199,7 +199,7 @@ export class HubConnectionManager<M extends Record<string, unknown>> {
 
   private build(): HubConnection {
     const { url, accessTokenFactory, schemas } = this.options;
-    const connection = new HubConnectionBuilder()
+    const builder = new HubConnectionBuilder()
       .withUrl(url, {
         accessTokenFactory,
         transport: HttpTransportType.WebSockets,
@@ -210,9 +210,14 @@ export class HubConnectionManager<M extends Record<string, unknown>> {
         nextRetryDelayInMilliseconds: (ctx) =>
           this.sessionValid() ? retryDelay(ctx.previousRetryCount) : null,
       })
-      .withHubProtocol(new TappingHubProtocol((invocation) => this.onRawInvocation(invocation)))
-      .configureLogging(__DEV__ ? signalrLogger : LogLevel.None)
-      .build();
+      .configureLogging(__DEV__ ? signalrLogger : LogLevel.None);
+    // Taps raw frames for the dev realtime inspector; production uses the stock JSON protocol.
+    if (__DEV__) {
+      builder.withHubProtocol(
+        new TappingHubProtocol((invocation) => this.onRawInvocation(invocation)),
+      );
+    }
+    const connection = builder.build();
 
     const isCurrent = () => connection === this.connection;
     for (const event of Object.keys(schemas)) {

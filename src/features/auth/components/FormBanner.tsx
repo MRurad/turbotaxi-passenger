@@ -1,4 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useEffect } from 'react';
+import { AccessibilityInfo, Platform } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { Text } from '@/components/ui';
@@ -16,6 +18,11 @@ export function FormBanner({ message, tone = 'danger', testID }: FormBannerProps
   const styles = useStyles();
   const { colors, sizes, motion } = useTheme();
   const danger = tone === 'danger';
+
+  // iOS ignores accessibilityLiveRegion (Android only): announce each new message ourselves.
+  useEffect(() => {
+    if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(message);
+  }, [message]);
 
   return (
     <Animated.View

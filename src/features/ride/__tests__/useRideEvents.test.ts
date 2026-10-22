@@ -1,8 +1,11 @@
+import { onlineManager } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react-native';
 
+import { ApiError } from '@/api/errors';
 import { cancelRide } from '@/api/services/rides';
-import { SEARCH_TIMEOUT_MS } from '@/constants/timeouts';
+import { SEARCH_TIMEOUT_GRACE_MS, SEARCH_TIMEOUT_MS } from '@/constants/timeouts';
 import { VEHICLE_TYPE } from '@/constants/vehicles';
+import { useAuthStore } from '@/features/auth/store';
 import { useRideEvents } from '@/features/ride/hooks/useRideEvents';
 import { handleDriverLocation, handleRideUpdate } from '@/features/ride/rideEvents';
 import type { RideSnapshot } from '@/features/ride/snapshot';
@@ -32,6 +35,7 @@ jest.mock('@/realtime/userHub', () => ({
   subscribeToDriverLocation: jest.fn(() => Promise.resolve()),
   unsubscribeFromDriverLocation: jest.fn(() => Promise.resolve()),
   userHub: {
+    getState: jest.fn(() => 'connected'),
     // Behaves like a connected hub: runs the action right away and returns a remover.
     addOnConnect: jest.fn((action: () => unknown) => {
       action();
@@ -51,6 +55,7 @@ jest.mock('@/lib/logger', () => ({
 jest.mock('@/lib/haptics', () => ({ triggerHaptic: jest.fn() }));
 
 const NOW = 1_800_000_000_000;
+const SIGNED_IN = { id: 7, name: '', surname: '', phoneNumber: '', email: '', createdAt: null };
 const CREATED: CreatedRide = {
   rideId: 3,
   status: 'searching',
@@ -94,6 +99,7 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.useRealTimers();
+  onlineManager.setOnline(true);
 });
 
 describe('useRideEvents hub handlers', () => {
@@ -223,6 +229,51 @@ describe('useRideEvents search timeout', () => {
 
     expect(useRideStore.getState().phase).toBe('driver_assigned');
     expect(cancelRide).not.toHaveBeenCalled();
+  });
+
+  it('waits for the hub to reconnect before giving up (an accept may be on its way)', async () => {
+    jest.useFakeTimers({ now: NOW });
+    jest.mocked(userHub.getState).mockReturnValue('reconnecting');
+    startSearching();
+    await renderHook(() => useRideEvents());
+
+    await act(() => jest.advanceTimersByTime(SEARCH_TIMEOUT_MS + SEARCH_TIMEOUT_GRACE_MS));
+    expect(useRideStore.getState().phase).toBe('searching');
+
+    jest.mocked(userHub.getState).mockReturnValue('connected');
+    await act(() => jest.advanceTimersByTime(SEARCH_TIMEOUT_GRACE_MS));
+    expect(useRideStore.getState().phase).toBe('no_driver');
+  });
+
+  it('retries a cancel that failed offline once the network is back', async () => {
+    onlineManager.setOnline(false);
+    jest.useFakeTimers({ now: NOW });
+    jest.mocked(cancelRide).mockRejectedValueOnce(new ApiError({ code: 'network' }));
+    useAuthStore.setState({ user: SIGNED_IN });
+    startSearching();
+    await renderHook(() => useRideEvents());
+
+    await act(() => jest.advanceTimersByTime(SEARCH_TIMEOUT_MS));
+    expect(cancelRide).toHaveBeenCalledTimes(1);
+
+    await act(() => onlineManager.setOnline(true));
+    expect(cancelRide).toHaveBeenCalledTimes(2);
+    expect(cancelRide).toHaveBeenLastCalledWith(3);
+  });
+
+  it('drops that retry if the user signed out meanwhile', async () => {
+    onlineManager.setOnline(false);
+    jest.useFakeTimers({ now: NOW });
+    jest.mocked(cancelRide).mockRejectedValueOnce(new ApiError({ code: 'network' }));
+    useAuthStore.setState({ user: SIGNED_IN });
+    startSearching();
+    await renderHook(() => useRideEvents());
+
+    await act(() => jest.advanceTimersByTime(SEARCH_TIMEOUT_MS));
+    useAuthStore.setState({ user: null });
+    await act(() => onlineManager.setOnline(true));
+
+    expect(cancelRide).toHaveBeenCalledTimes(1);
   });
 });
 

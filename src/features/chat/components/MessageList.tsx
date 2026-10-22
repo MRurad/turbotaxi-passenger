@@ -86,6 +86,17 @@ export function MessageList({ rideId, driverName, onRetry }: MessageListProps) {
       </View>
     );
   }
+  if (chat.isOffline && items.length === 0) {
+    return (
+      <ErrorState
+        icon="cloud-offline-outline"
+        title={t('chat.loadError')}
+        message={t('errors.network')}
+        retryLabel={t('common.actions.retry')}
+        onRetry={chat.refetch}
+      />
+    );
+  }
   if (chat.error && items.length === 0) {
     return (
       <ErrorState

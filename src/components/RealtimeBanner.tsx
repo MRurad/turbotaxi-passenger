@@ -4,6 +4,7 @@ import { AccessibilityInfo, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ConnectionBanner } from '@/components/ui';
+import { useIsOnline } from '@/lib/network';
 import { useDebouncedHubStatus, type HubBannerStatus } from '@/realtime/useDebouncedHubStatus';
 import { userHub } from '@/realtime/userHub';
 import { makeStyles } from '@/theme';
@@ -17,7 +18,10 @@ export function RealtimeBanner() {
   const styles = useStyles();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const status = useDebouncedHubStatus(userHub);
+  const online = useIsOnline();
+  const hubStatus = useDebouncedHubStatus(userHub);
+  // Offline: the app-wide offline banner takes this spot.
+  const status: HubBannerStatus = online ? hubStatus : 'hidden';
   const announced = useRef<HubBannerStatus>('hidden');
 
   const message =
