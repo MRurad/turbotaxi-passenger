@@ -10,10 +10,20 @@ export interface PlaceMarkerProps {
   kind: 'pickup' | 'destination';
   /** a11y / callout title (e.g. the address). */
   title?: string;
+  /** Tap on the marker (e.g. change this point). */
+  onPress?: () => void;
+  /** Says what a tap does; required with onPress. */
+  accessibilityLabel?: string;
 }
 
 /** Static pickup (steel blue dot) or destination (flag) marker. */
-export function PlaceMarker({ coordinate, kind, title }: PlaceMarkerProps) {
+export function PlaceMarker({
+  coordinate,
+  kind,
+  title,
+  onPress,
+  accessibilityLabel,
+}: PlaceMarkerProps) {
   const styles = useStyles();
   const { colors, sizes } = useTheme();
   const pickup = kind === 'pickup';
@@ -22,6 +32,8 @@ export function PlaceMarker({ coordinate, kind, title }: PlaceMarkerProps) {
     <Marker
       coordinate={coordinate}
       title={title}
+      onPress={onPress}
+      accessibilityLabel={accessibilityLabel ?? title}
       anchor={{ x: 0.5, y: 0.5 }}
       // Static content: stop re-rendering the native snapshot after the first frame.
       tracksViewChanges={false}

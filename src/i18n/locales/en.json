@@ -68,6 +68,11 @@
       "offline": "You're offline. Check your internet connection.",
       "lost": "Connection lost. Reconnecting…",
       "restored": "Back online"
+    },
+    "map": {
+      "arriveAt": "Arrive at {{time}}",
+      "driverIn": "Driver in {{duration}}",
+      "driverHere": "Driver is here"
     }
   },
   "errors": {
@@ -213,7 +218,8 @@
     "searching": {
       "title": "Looking for a driver…",
       "subtitle": "This usually takes less than a minute",
-      "elapsed": "Searching for {{time}}"
+      "elapsed": "Searching for {{time}}",
+      "driverDropped": "Your driver cancelled. Looking for another one…"
     },
     "noDriver": {
       "title": "No drivers nearby",

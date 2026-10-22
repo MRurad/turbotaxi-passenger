@@ -139,13 +139,13 @@ export function useHomeMap(
   useEffect(() => {
     if (mapPick) {
       // Start on the point being changed (e.g. the current destination), not where the
-      // route framing left the camera. Choosing a first destination leaves the camera be.
+      // route framing left the camera. A first destination starts zoomed in at the pickup.
       const target =
         pickTarget.current?.target === mapPick
           ? pickTarget.current.point
           : mapPick === 'pickup'
             ? focusPickup
-            : focusDestination;
+            : (focusDestination ?? focusPickup);
       if (target) mapRef.current?.animateTo(target, PICK_ZOOM_DELTA);
       return;
     }

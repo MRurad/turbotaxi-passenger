@@ -288,6 +288,29 @@ describe('driver changes', () => {
     expect(store().searchStartedAt).toBeGreaterThanOrEqual(firstSearch ?? 0);
   });
 
+  it('the captured driver cancel (Pending + "Driver not available") searches again', () => {
+    handleRideUpdate(APPROACH);
+    // Captured on /dev/realtime 2026-10-22 right after the driver cancelled.
+    handleRideUpdate(
+      update({
+        status: 'Pending',
+        finalPrice: 0,
+        completedAtUtc: '0001-01-01T00:00:00',
+        clearMap: false,
+        message: 'Driver not available. Please wait while we search for another driver...',
+        userType: null,
+        encodedPolyline: null,
+        tripEncodedPolyline: null,
+        polylinePhase: null,
+        distanceKm: null,
+        durationMinutes: null,
+      }),
+    );
+    // The old driver keeps sending locations for a while: they must not move a car.
+    handleDriverLocation({ driverId: 4, latitude: 40.415, longitude: 49.869 });
+    expect(store()).toMatchObject({ phase: 'searching', driverId: null, driverLocation: null });
+  });
+
   it('a driver cancel in another spelling ends the ride, naming the driver', () => {
     handleRideUpdate(APPROACH);
     handleRideUpdate(update({ status: 'CanceledByDriver' }));

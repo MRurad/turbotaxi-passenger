@@ -1,3 +1,6 @@
+/** One minute (minutes → ms for clock arithmetic). */
+export const MINUTE_MS = 60_000;
+
 /** REST request timeout (axios). */
 export const API_TIMEOUT_MS = 15_000;
 
@@ -12,6 +15,9 @@ export const SEARCH_TIMEOUT_GRACE_MS = 10_000;
 
 /** A timed-out ride's cancel that hit a network error is retried after this long. */
 export const CANCEL_RETRY_DELAY_MS = 5_000;
+
+/** Clock-based labels ("Arrive at 12:45") re-render this often. */
+export const CLOCK_TICK_MS = 30_000;
 
 /** "Searching for 0:42" ticks this often. */
 export const ELAPSED_TICK_MS = 1_000;
@@ -58,8 +64,8 @@ export const PLACES_STALE_TIME_MS = 24 * 60 * 60_000;
 /** Map camera animations. */
 export const MAP_ANIMATION_MS = 450;
 
-/** The car marker is snapshotted this long after layout, once its SVG has drawn. */
-export const CAR_MARKER_SNAPSHOT_MS = 250;
+/** Custom map markers (car, labels) are snapshotted this long after their content draws. */
+export const MARKER_SNAPSHOT_MS = 250;
 
 /** Car marker glides between driver location updates over this long. */
 export const CAR_MARKER_ANIMATION_MS = 1_000;

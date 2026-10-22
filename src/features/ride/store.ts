@@ -30,6 +30,8 @@ export interface RideState {
   etaMinutes: number | null;
   remainingKm: number | null;
   cancelReason: CancelReason | null;
+  /** Searching again because the assigned driver dropped out (memory only, for the notice). */
+  driverDropped: boolean;
   searchStartedAt: number | null;
   updatedAt: number | null;
 }
@@ -130,6 +132,7 @@ const INITIAL: RideState = {
   etaMinutes: null,
   remainingKm: null,
   cancelReason: null,
+  driverDropped: false,
   searchStartedAt: null,
   updatedAt: null,
 };
@@ -224,7 +227,7 @@ export const useRideStore = create<RideStore>()((set, get) => {
       return true;
     },
     driverAssigned: (info) => {
-      advance('driver_assigned', info);
+      advance('driver_assigned', info, { driverDropped: false });
     },
     driverArrived: (info) => {
       advance('driver_arrived', info);
@@ -253,6 +256,7 @@ export const useRideStore = create<RideStore>()((set, get) => {
           driver: null,
           driverLocation: null,
           polylines: { toPickup: null, trip: get().polylines.trip },
+          driverDropped: true,
           searchStartedAt: Date.now(),
         },
       );

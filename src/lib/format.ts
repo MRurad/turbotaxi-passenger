@@ -106,6 +106,11 @@ export function formatTime(isoUtc: string, lang: Language = getLanguage()): stri
   return date ? format(date, TIME_PATTERN, { locale: DATE_FNS_LOCALES[lang] }) : '';
 }
 
+/** "16:00" for a local Date (e.g. an arrival time computed on the device). */
+export function formatClock(date: Date, lang: Language = getLanguage()): string {
+  return format(date, TIME_PATTERN, { locale: DATE_FNS_LOCALES[lang] });
+}
+
 /** Day heading in the device time zone: "Today", "Yesterday" or "15 January 2026". */
 export function formatDay(
   isoUtc: string,

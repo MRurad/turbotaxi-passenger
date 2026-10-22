@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Easing, View } from 'react-native';
 import { AnimatedRegion, MarkerAnimated } from 'react-native-maps';
 
-import { CAR_MARKER_ANIMATION_MS, CAR_MARKER_SNAPSHOT_MS } from '@/constants/timeouts';
+import { CAR_MARKER_ANIMATION_MS, MARKER_SNAPSHOT_MS } from '@/constants/timeouts';
 import { bearingDegrees, distanceMeters } from '@/lib/geo';
 import { makeStyles, useTheme } from '@/theme';
 import type { LatLng } from '@/types/geo';
@@ -87,10 +87,7 @@ export function CarMarker({ coordinate, heading, title }: CarMarkerProps) {
         onLayout={() => {
           const scheme = isDark;
           if (snapshotTimer.current) clearTimeout(snapshotTimer.current);
-          snapshotTimer.current = setTimeout(
-            () => setSnapshotScheme(scheme),
-            CAR_MARKER_SNAPSHOT_MS,
-          );
+          snapshotTimer.current = setTimeout(() => setSnapshotScheme(scheme), MARKER_SNAPSHOT_MS);
         }}
       >
         <TopDownCar width={sizes.car.width} height={sizes.car.height} />

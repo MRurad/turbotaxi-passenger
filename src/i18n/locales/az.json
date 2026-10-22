@@ -68,6 +68,11 @@
       "offline": "İnternet yoxdur. Bağlantınızı yoxlayın.",
       "lost": "Bağlantı kəsildi. Qoşulur…",
       "restored": "İnternet bərpa olundu"
+    },
+    "map": {
+      "arriveAt": "Çatma: {{time}}",
+      "driverIn": "Sürücü {{duration}} sonra",
+      "driverHere": "Sürücü gəldi"
     }
   },
   "errors": {
@@ -213,7 +218,8 @@
     "searching": {
       "title": "Sürücü axtarılır…",
       "subtitle": "Adətən bir dəqiqədən az çəkir",
-      "elapsed": "Axtarış: {{time}}"
+      "elapsed": "Axtarış: {{time}}",
+      "driverDropped": "Sürücü sifarişi ləğv etdi. Başqa sürücü axtarılır…"
     },
     "noDriver": {
       "title": "Yaxınlıqda sürücü yoxdur",

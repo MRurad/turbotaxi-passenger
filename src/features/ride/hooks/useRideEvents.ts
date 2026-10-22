@@ -120,8 +120,14 @@ export function useRideEvents(): void {
       useRideStore.subscribe((state, prev) => {
         // Not on a restore (idle → …): nothing just happened.
         if (state.phase === prev.phase || prev.phase === 'idle' || state.phase === 'idle') return;
-        AccessibilityInfo.announceForAccessibility(i18n.t(`ride.status.${state.phase}`));
-        if (
+        // The driver dropped out: say so, not just "searching".
+        const dropped = state.phase === 'searching' && state.driverDropped;
+        AccessibilityInfo.announceForAccessibility(
+          i18n.t(dropped ? 'ride.searching.driverDropped' : `ride.status.${state.phase}`),
+        );
+        if (dropped) {
+          triggerHaptic('warning');
+        } else if (
           state.phase === 'driver_assigned' ||
           state.phase === 'driver_arrived' ||
           state.phase === 'completed'
