@@ -52,13 +52,11 @@ const startSearching = () =>
 
 beforeEach(() => {
   jest.clearAllMocks();
-  jest
-    .mocked(useRouter)
-    .mockReturnValue({
-      replace: mockReplace,
-      canDismiss: () => false,
-      dismissAll: jest.fn(),
-    } as unknown as ReturnType<typeof useRouter>);
+  jest.mocked(useRouter).mockReturnValue({
+    replace: mockReplace,
+    canDismiss: () => false,
+    dismissAll: jest.fn(),
+  } as unknown as ReturnType<typeof useRouter>);
   useRideStore.getState().reset();
   useAuthStore.setState({ status: 'authenticated' });
 });
